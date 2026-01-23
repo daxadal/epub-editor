@@ -42,5 +42,6 @@
   "bugs": {
     "email": "e.garciadececa@gmail.com"
   },
-  "author": "Eric García de Ceca <e.garciadececa@gmail.com>"
+  "author": "Eric García de Ceca <e.garciadececa@gmail.com>",
+  "license": "MIT"
 }

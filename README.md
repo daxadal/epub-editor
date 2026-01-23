@@ -28,48 +28,48 @@ npm install
 ### Creating a New EPUB
 
 ```typescript
-import { EPUBBuilder } from './src';
+import { EPUBBuilder } from "./src";
 
 // Create a new EPUB
 const epub = new EPUBBuilder({
-  title: 'My First Book',
-  creator: 'John Doe',
-  language: 'en',
-  publisher: 'Self Published',
+  title: "My First Book",
+  creator: "John Doe",
+  language: "en",
+  publisher: "Self Published",
 });
 
 // Add chapters
 const chapter1 = epub.addChapter({
-  title: 'Chapter 1: Introduction',
-  content: '<p>Welcome to my book!</p>',
+  title: "Chapter 1: Introduction",
+  content: "<p>Welcome to my book!</p>",
 });
 
 // Add nested chapters
 epub.addChapter({
-  title: 'Section 1.1: Getting Started',
+  title: "Section 1.1: Getting Started",
   parentId: chapter1,
-  content: '<p>Let\'s begin...</p>',
+  content: "<p>Let's begin...</p>",
 });
 
 // Add an image
-const coverImage = await fs.readFile('cover.jpg');
+const coverImage = await fs.readFile("cover.jpg");
 epub.addImage({
-  filename: 'cover.jpg',
+  filename: "cover.jpg",
   data: coverImage,
   isCover: true,
 });
 
 // Export the EPUB
-await epub.exportToFile('my-book.epub');
+await epub.exportToFile("my-book.epub");
 ```
 
 ### Parsing and Editing an Existing EPUB
 
 ```typescript
-import { EPUBBuilder } from './src';
+import { EPUBBuilder } from "./src";
 
 // Load existing EPUB
-const epub = await EPUBBuilder.parse('existing-book.epub');
+const epub = await EPUBBuilder.parse("existing-book.epub");
 
 // Get metadata
 const metadata = epub.getMetadata();
@@ -77,12 +77,12 @@ console.log(`Title: ${metadata.title}`);
 
 // Add a new chapter
 epub.addChapter({
-  title: 'Bonus Chapter',
-  content: '<p>Additional content</p>',
+  title: "Bonus Chapter",
+  content: "<p>Additional content</p>",
 });
 
 // Export modified EPUB
-await epub.exportToFile('modified-book.epub');
+await epub.exportToFile("modified-book.epub");
 ```
 
 ## API Documentation
@@ -150,11 +150,11 @@ new EPUBBuilder(metadata: {
 
 ```typescript
 interface AddChapterOptions {
-  title: string;              // Chapter title (required)
-  content?: string;           // HTML content
-  parentId?: string | null;   // Parent chapter ID for nesting
-  headingLevel?: number;      // 1-6, default based on nesting
-  linear?: boolean;           // Include in reading order, default: true
+  title: string; // Chapter title (required)
+  content?: string; // HTML content
+  parentId?: string | null; // Parent chapter ID for nesting
+  headingLevel?: number; // 1-6, default based on nesting
+  linear?: boolean; // Include in reading order, default: true
 }
 ```
 
@@ -162,10 +162,10 @@ interface AddChapterOptions {
 
 ```typescript
 interface AddImageOptions {
-  filename: string;           // Image filename with extension
-  data: Buffer | string;      // Image data (Buffer or base64)
-  alt?: string;               // Alt text for accessibility
-  isCover?: boolean;          // Mark as cover image
+  filename: string; // Image filename with extension
+  data: Buffer | string; // Image data (Buffer or base64)
+  alt?: string; // Alt text for accessibility
+  isCover?: boolean; // Mark as cover image
 }
 ```
 
@@ -173,9 +173,9 @@ interface AddImageOptions {
 
 ```typescript
 interface ValidationResult {
-  isValid: boolean;           // Overall validation status
-  errors: string[];           // Critical errors
-  warnings: string[];         // Non-critical warnings
+  isValid: boolean; // Overall validation status
+  errors: string[]; // Critical errors
+  warnings: string[]; // Non-critical warnings
 }
 ```
 
@@ -217,9 +217,9 @@ See [EPUB_BUILDER_EXAMPLES.md](EPUB_BUILDER_EXAMPLES.md) for comprehensive examp
 The EPUBBuilder automatically generates a compliant EPUB 3.3 Navigation Document based on your chapter structure:
 
 ```typescript
-const part1 = epub.addChapter({ title: 'Part I' });
-const chapter1 = epub.addChapter({ title: 'Chapter 1', parentId: part1 });
-const section1 = epub.addChapter({ title: 'Section 1.1', parentId: chapter1 });
+const part1 = epub.addChapter({ title: "Part I" });
+const chapter1 = epub.addChapter({ title: "Chapter 1", parentId: part1 });
+const section1 = epub.addChapter({ title: "Section 1.1", parentId: chapter1 });
 
 // Automatically creates:
 // Part I
@@ -231,18 +231,18 @@ const section1 = epub.addChapter({ title: 'Section 1.1', parentId: chapter1 });
 
 ```typescript
 // From file
-const image1 = await fs.readFile('photo.jpg');
-epub.addImage({ filename: 'photo.jpg', data: image1 });
+const image1 = await fs.readFile("photo.jpg");
+epub.addImage({ filename: "photo.jpg", data: image1 });
 
 // From base64
-epub.addImage({ 
-  filename: 'icon.png', 
-  data: 'iVBORw0KGgoAAAANSUhEUg...' 
+epub.addImage({
+  filename: "icon.png",
+  data: "iVBORw0KGgoAAAANSUhEUg...",
 });
 
 // Reference in content
 epub.addChapter({
-  content: '<img src="../images/photo.jpg" alt="Photo"/>'
+  content: '<img src="../images/photo.jpg" alt="Photo"/>',
 });
 ```
 
@@ -251,11 +251,11 @@ epub.addChapter({
 ```typescript
 // Add your own CSS
 epub.addStylesheet({
-  filename: 'custom.css',
+  filename: "custom.css",
   content: `
     body { font-family: Georgia, serif; }
     h1 { color: #2c3e50; }
-  `
+  `,
 });
 
 // Default styles are automatically included
@@ -266,10 +266,10 @@ epub.addStylesheet({
 
 ```typescript
 try {
-  const epub = await EPUBBuilder.parse('book.epub');
+  const epub = await EPUBBuilder.parse("book.epub");
   // Successfully parsed
 } catch (error) {
-  console.error('Failed to parse:', error.message);
+  console.error("Failed to parse:", error.message);
   // Provides descriptive error messages
 }
 ```
@@ -307,10 +307,10 @@ Built-in validation checks:
 ```typescript
 const validation = epub.validate();
 if (!validation.isValid) {
-  console.error('Errors:', validation.errors);
+  console.error("Errors:", validation.errors);
 }
 if (validation.warnings.length > 0) {
-  console.warn('Warnings:', validation.warnings);
+  console.warn("Warnings:", validation.warnings);
 }
 ```
 
@@ -332,6 +332,10 @@ Contributions are welcome! Please ensure:
 2. EPUB 3.3 compliance is maintained
 3. Error messages are descriptive
 4. Examples are updated for new features
+
+## License
+
+MIT
 
 ## Author
 
