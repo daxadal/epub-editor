@@ -21,7 +21,7 @@ async function createSimpleBook() {
   // Add chapters
   console.log('✍️  Adding chapters...');
 
-  const intro = epub.addChapter({
+  epub.addChapter({
     title: 'Introduction',
     content: `
       <p>Welcome to this simple guide!</p>
