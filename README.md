@@ -1,6 +1,6 @@
-# EPUB Parser & Builder
+# EPUB Editor
 
-A comprehensive TypeScript library for creating, parsing, and manipulating EPUB 3.3 files.
+A comprehensive TypeScript library for creating, parsing, and manipulating EPUB files.
 
 ## Features
 
@@ -333,17 +333,13 @@ Contributions are welcome! Please ensure:
 3. Error messages are descriptive
 4. Examples are updated for new features
 
-## License
-
-BSD
-
 ## Author
 
-Aaron Miller <aaron@readsocialapi.com>
+Eric García de Ceca <e.garciadececa@gmail.com>
 
 ## Repository
 
-https://github.com/Vaporbook/epub-parser
+https://github.com/daxadal/epub-editor
 
 ---
 
