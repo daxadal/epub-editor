@@ -77,7 +77,6 @@ async function mergeExample() {
       // Create a section chapter for this book
       const sectionId = mergedEPUB.addChapter({
         title: sourceMeta.title,
-        content: `<p>This section contains chapters from "${sourceMeta.title}"</p>`,
         headingLevel: 1,
       });
 
