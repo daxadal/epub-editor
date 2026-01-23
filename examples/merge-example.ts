@@ -1,14 +1,15 @@
-/**
- * Merge the 4 "Kits Out For Temeria" series EPUBs into one combined EPUB
- * Run with: npx ts-node examples/merge-kits-out-for-temeria.ts
- */
+/* eslint-disable security/detect-non-literal-regexp */
 
 import * as path from 'path';
 
 import * as fs from 'fs-extra';
 
-import { EPUBBuilder } from '../src';
+import { Chapter, EPUBBuilder } from '../src';
 
+/**
+ * Merge the 4 "Kits Out For Temeria" series EPUBs into one combined EPUB
+ * Run with: npx ts-node examples/merge-kits-out-for-temeria.ts
+ */
 async function mergeExample() {
   console.log('📚 Merging "Kits Out For Temeria" series...\n');
 
