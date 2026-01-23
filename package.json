@@ -1,7 +1,7 @@
 {
-  "name": "epub-parser",
+  "name": "epub-editor",
   "version": "0.0.1",
-  "description": "Epub parser",
+  "description": "Epub Editor",
   "main": "src/index.ts",
   "scripts": {
     "lint": "eslint ./src",
@@ -30,6 +30,17 @@
     "typescript": "^4.9.5"
   },
   "keywords": [
-    "epub"
-  ]
+    "epub",
+    "editor",
+    "ebook"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/daxadal/epub-editor.git"
+  },
+  "homepage": "https://github.com/daxadal/epub-editor",
+  "bugs": {
+    "email": "e.garciadececa@gmail.com"
+  },
+  "author": "Eric García de Ceca <e.garciadececa@gmail.com>"
 }
