@@ -1,5 +1,3 @@
-
-
 import { promisify } from 'util';
 
 import JSZip from 'jszip';
@@ -491,24 +489,35 @@ export class EPUBBuilder {
   /**
    * Extract metadata from OPF
    */
-  private static extractMetadata(
-    opfData: any,
-  ): DublinCoreMetadata & { title: string; creator: string } {
+  private static extractMetadata(opfData: any): DublinCoreMetadata {
     const meta = opfData?.package?.metadata?.[0];
 
-    const title = meta?.['dc:title']?.[0] || 'Untitled';
-    const creator = meta?.['dc:creator']?.[0] || 'Unknown';
-    const language = meta?.['dc:language']?.[0] || 'en';
-    const identifier =
-      meta?.['dc:identifier']?.[0]?._ ||
-      meta?.['dc:identifier']?.[0] ||
-      undefined;
-    const date = meta?.['dc:date']?.[0] || undefined;
-    const publisher = meta?.['dc:publisher']?.[0] || undefined;
-    const description = meta?.['dc:description']?.[0] || undefined;
-    const subject = meta?.['dc:subject'] || undefined;
-    const rights = meta?.['dc:rights']?.[0] || undefined;
-    const contributor = meta?.['dc:contributor'] || undefined;
+    const parseMetaField = (fieldName: string) =>
+      meta?.[fieldName]?.[0]?._ ?? meta?.[fieldName]?.[0];
+
+    const title = parseMetaField('dc:title') ?? 'Untitled';
+    const creator = parseMetaField('dc:creator') ?? 'Unknown';
+    const language = parseMetaField('dc:language') ?? 'en';
+    const identifier = parseMetaField('dc:identifier');
+    const date = parseMetaField('dc:date');
+    const publisher = parseMetaField('dc:publisher');
+    const description = parseMetaField('dc:description');
+    const subject = meta?.['dc:subject'];
+    const rights = parseMetaField('dc:rights');
+    const contributor = parseMetaField('dc:contributor');
+
+    console.log('Extracted Metadata:', {
+      title,
+      creator,
+      language,
+      identifier,
+      date,
+      publisher,
+      description,
+      subject,
+      rights,
+      contributor,
+    });
 
     return {
       title,
