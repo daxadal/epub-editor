@@ -7,50 +7,49 @@
  */
 export function getMimeType(filename: string): string {
   const ext = filename.toLowerCase().split('.').pop() || '';
-  
+
   const mimeTypes: Record<string, string> = {
     // Images
-    'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    'png': 'image/png',
-    'gif': 'image/gif',
-    'svg': 'image/svg+xml',
-    'webp': 'image/webp',
-    'bmp': 'image/bmp',
-    'tif': 'image/tiff',
-    'tiff': 'image/tiff',
-    
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    svg: 'image/svg+xml',
+    webp: 'image/webp',
+    bmp: 'image/bmp',
+    tif: 'image/tiff',
+    tiff: 'image/tiff',
+
     // Documents
-    'xhtml': 'application/xhtml+xml',
-    'html': 'application/xhtml+xml',
-    'xml': 'application/xml',
-    
+    xhtml: 'application/xhtml+xml',
+    html: 'application/xhtml+xml',
+    xml: 'application/xml',
+
     // Stylesheets
-    'css': 'text/css',
-    
+    css: 'text/css',
+
     // Fonts
-    'otf': 'font/otf',
-    'ttf': 'font/ttf',
-    'woff': 'font/woff',
-    'woff2': 'font/woff2',
-    
+    otf: 'font/otf',
+    ttf: 'font/ttf',
+    woff: 'font/woff',
+    woff2: 'font/woff2',
+
     // Audio
-    'mp3': 'audio/mpeg',
-    'mp4': 'audio/mp4',
-    'ogg': 'audio/ogg',
-    'opus': 'audio/opus',
-    
+    mp3: 'audio/mpeg',
+    ogg: 'audio/ogg',
+    opus: 'audio/opus',
+
     // Video
-    'webm': 'video/webm',
-    'mp4': 'video/mp4',
-    
+    webm: 'video/webm',
+    mp4: 'video/mp4',
+
     // Other
-    'js': 'application/javascript',
-    'json': 'application/json',
-    'pdf': 'application/pdf',
-    'txt': 'text/plain',
+    js: 'application/javascript',
+    json: 'application/json',
+    pdf: 'application/pdf',
+    txt: 'text/plain',
   };
-  
+
   return mimeTypes[ext] || 'application/octet-stream';
 }
 
@@ -93,12 +92,15 @@ export function sanitizeFilename(filename: string): string {
 /**
  * Generate a safe filename from a title
  */
-export function generateFilenameFromTitle(title: string, extension: string = 'xhtml'): string {
+export function generateFilenameFromTitle(
+  title: string,
+  extension: string = 'xhtml',
+): string {
   const base = title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .substring(0, 50); // Limit length
-  
+
   return `${base}.${extension}`;
 }

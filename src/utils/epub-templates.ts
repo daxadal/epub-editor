@@ -2,8 +2,16 @@
  * EPUB 3.3 Templates and Document Generators
  */
 
-import { DublinCoreMetadata, Chapter, ManifestItem, SpineItem } from '../types/epub-builder-types';
-import { EPUBNavigationDocument, NavListItem } from '../types/navigation-document';
+import {
+  DublinCoreMetadata,
+  Chapter,
+  ManifestItem,
+  SpineItem,
+} from '../types/epub-builder-types';
+import {
+  EPUBNavigationDocument,
+  NavListItem,
+} from '../types/navigation-document';
 
 /**
  * Generate the mimetype file content
@@ -27,9 +35,12 @@ export function generateContainer(): string {
 /**
  * Generate XHTML template for a chapter
  */
-export function generateChapterXHTML(chapter: Chapter, stylesheetHrefs: string[] = []): string {
+export function generateChapterXHTML(
+  chapter: Chapter,
+  stylesheetHrefs: string[] = [],
+): string {
   const styleLinks = stylesheetHrefs
-    .map(href => `  <link rel="stylesheet" type="text/css" href="${href}"/>`)
+    .map((href) => `  <link rel="stylesheet" type="text/css" href="${href}"/>`)
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -55,29 +66,34 @@ ${styleLinks}
 export function generateOPF(
   metadata: DublinCoreMetadata,
   manifestItems: ManifestItem[],
-  spineItems: SpineItem[]
+  spineItems: SpineItem[],
 ): string {
   const identifier = metadata.identifier || generateUUID();
   const language = metadata.language || 'en';
   const date = metadata.date || new Date().toISOString().split('T')[0];
-  
+
   // Generate metadata section
-  const metadataXml = generateMetadataSection(metadata, identifier, language, date);
-  
+  const metadataXml = generateMetadataSection(
+    metadata,
+    identifier,
+    language,
+    date,
+  );
+
   // Generate manifest section
   const manifestXml = manifestItems
-    .map(item => {
+    .map((item) => {
       const props = item.properties ? ` properties="${item.properties}"` : '';
       return `    <item id="${item.id}" href="${item.href}" media-type="${item.mediaType}"${props}/>`;
     })
     .join('\n');
-  
+
   // Generate spine section
   const spineXml = spineItems
-    .map(item => {
+    .map((item) => {
       const linear = item.linear === false ? ' linear="no"' : '';
       const props = item.properties ? ` properties="${item.properties}"` : '';
-      return `    <itemref idref="${item.id}"${linear}${props}/>`;
+      return `    <itemref idref="${item.idref}"${linear}${props}/>`;
     })
     .join('\n');
 
@@ -100,10 +116,23 @@ function generateMetadataSection(
   metadata: DublinCoreMetadata,
   identifier: string,
   language: string,
-  date: string
+  date: string,
 ): string {
-  const { title, creator, publisher, description, subject, rights, contributor, type, format, source, relation, coverage } = metadata;
-  
+  const {
+    title,
+    creator,
+    publisher,
+    description,
+    subject,
+    rights,
+    contributor,
+    type,
+    format,
+    source,
+    relation,
+    coverage,
+  } = metadata;
+
   let metadataXml = `  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:identifier id="pub-id">${escapeXml(identifier)}</dc:identifier>
     <dc:title>${escapeXml(title)}</dc:title>
@@ -111,55 +140,57 @@ function generateMetadataSection(
     <dc:language>${escapeXml(language)}</dc:language>
     <dc:date>${escapeXml(date)}</dc:date>
     <meta property="dcterms:modified">${new Date().toISOString().split('.')[0]}Z</meta>`;
-  
+
   if (publisher) {
     metadataXml += `\n    <dc:publisher>${escapeXml(publisher)}</dc:publisher>`;
   }
-  
+
   if (description) {
     metadataXml += `\n    <dc:description>${escapeXml(description)}</dc:description>`;
   }
-  
+
   if (subject) {
     const subjects = Array.isArray(subject) ? subject : [subject];
-    subjects.forEach(s => {
+    subjects.forEach((s) => {
       metadataXml += `\n    <dc:subject>${escapeXml(s)}</dc:subject>`;
     });
   }
-  
+
   if (rights) {
     metadataXml += `\n    <dc:rights>${escapeXml(rights)}</dc:rights>`;
   }
-  
+
   if (contributor) {
-    const contributors = Array.isArray(contributor) ? contributor : [contributor];
-    contributors.forEach(c => {
+    const contributors = Array.isArray(contributor)
+      ? contributor
+      : [contributor];
+    contributors.forEach((c) => {
       metadataXml += `\n    <dc:contributor>${escapeXml(c)}</dc:contributor>`;
     });
   }
-  
+
   if (type) {
     metadataXml += `\n    <dc:type>${escapeXml(type)}</dc:type>`;
   }
-  
+
   if (format) {
     metadataXml += `\n    <dc:format>${escapeXml(format)}</dc:format>`;
   }
-  
+
   if (source) {
     metadataXml += `\n    <dc:source>${escapeXml(source)}</dc:source>`;
   }
-  
+
   if (relation) {
     metadataXml += `\n    <dc:relation>${escapeXml(relation)}</dc:relation>`;
   }
-  
+
   if (coverage) {
     metadataXml += `\n    <dc:coverage>${escapeXml(coverage)}</dc:coverage>`;
   }
-  
+
   metadataXml += '\n  </metadata>';
-  
+
   return metadataXml;
 }
 
@@ -168,33 +199,33 @@ function generateMetadataSection(
  */
 export function generateNavigationDocument(
   navDoc: EPUBNavigationDocument,
-  stylesheetHrefs: string[] = []
+  stylesheetHrefs: string[] = [],
 ): string {
   const styleLinks = stylesheetHrefs
-    .map(href => `  <link rel="stylesheet" type="text/css" href="${href}"/>`)
+    .map((href) => `  <link rel="stylesheet" type="text/css" href="${href}"/>`)
     .join('\n');
-  
+
   const title = navDoc.metadata?.title || 'Navigation';
   const lang = navDoc.metadata?.lang || 'en';
-  
+
   let bodyContent = '';
-  
+
   // Generate TOC nav
   bodyContent += generateNavElement(navDoc.toc);
-  
+
   // Generate page-list nav if present
   if (navDoc.pageList) {
     bodyContent += '\n' + generateNavElement(navDoc.pageList);
   }
-  
+
   // Generate landmarks nav if present
   if (navDoc.landmarks) {
     bodyContent += '\n' + generateNavElement(navDoc.landmarks);
   }
-  
+
   // Generate custom navs if present
   if (navDoc.customNavs && navDoc.customNavs.length > 0) {
-    navDoc.customNavs.forEach(customNav => {
+    navDoc.customNavs.forEach((customNav) => {
       bodyContent += '\n' + generateNavElement(customNav);
     });
   }
@@ -219,22 +250,24 @@ ${bodyContent}
 function generateNavElement(navElement: any): string {
   const epubType = navElement['epub:type'];
   const hidden = navElement.hidden ? ' hidden="hidden"' : '';
-  const ariaLabel = navElement['aria-labelledby'] ? ` aria-labelledby="${navElement['aria-labelledby']}"` : '';
-  
+  const ariaLabel = navElement['aria-labelledby']
+    ? ` aria-labelledby="${navElement['aria-labelledby']}"`
+    : '';
+
   let navXml = `  <nav epub:type="${epubType}"${hidden}${ariaLabel}>`;
-  
+
   // Add heading if present
   if (navElement.heading) {
     const level = navElement.heading.level || 2;
     const id = navElement.heading.id ? ` id="${navElement.heading.id}"` : '';
     navXml += `\n    <h${level}${id}>${escapeXml(navElement.heading.content)}</h${level}>`;
   }
-  
+
   // Generate ordered list
   navXml += '\n' + generateNavList(navElement.ol, 2);
-  
+
   navXml += '\n  </nav>';
-  
+
   return navXml;
 }
 
@@ -244,31 +277,35 @@ function generateNavElement(navElement: any): string {
 function generateNavList(items: NavListItem[], indent: number): string {
   const indentStr = '  '.repeat(indent);
   let xml = `${indentStr}<ol>`;
-  
-  items.forEach(item => {
+
+  items.forEach((item) => {
     xml += `\n${indentStr}  <li>`;
-    
+
     if (item.a) {
       const href = item.a.href;
       const content = item.a.content;
-      const epubType = item.a['epub:type'] ? ` epub:type="${item.a['epub:type']}"` : '';
+      const epubType = item.a['epub:type']
+        ? ` epub:type="${item.a['epub:type']}"`
+        : '';
       const title = item.a.title ? ` title="${escapeXml(item.a.title)}"` : '';
       xml += `\n${indentStr}    <a href="${escapeXml(href)}"${epubType}${title}>${escapeXml(content)}</a>`;
     } else if (item.span) {
       const content = item.span.content;
-      const title = item.span.title ? ` title="${escapeXml(item.span.title)}"` : '';
+      const title = item.span.title
+        ? ` title="${escapeXml(item.span.title)}"`
+        : '';
       xml += `\n${indentStr}    <span${title}>${escapeXml(content)}</span>`;
     }
-    
+
     if (item.ol && item.ol.length > 0) {
       xml += '\n' + generateNavList(item.ol, indent + 2);
     }
-    
+
     xml += `\n${indentStr}  </li>`;
   });
-  
+
   xml += `\n${indentStr}</ol>`;
-  
+
   return xml;
 }
 

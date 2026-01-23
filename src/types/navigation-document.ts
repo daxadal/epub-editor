@@ -30,7 +30,7 @@ export interface NavLink {
     /** Any other HTML attributes */
     [key: string]: unknown;
   };
-  
+
   /**
    * Span element used as a heading for grouping lists
    * Cannot occur in "leaf" list items (must have a nested ol)
@@ -66,7 +66,7 @@ export interface NavElement {
    * Required for reading system processing
    */
   'epub:type': string;
-  
+
   /**
    * Optional heading element (h1-h6)
    */
@@ -78,24 +78,24 @@ export interface NavElement {
     /** Any other HTML attributes */
     [key: string]: unknown;
   };
-  
+
   /**
    * Ordered list representing the primary level of content navigation
    * Exactly one ol element is required
    */
   ol: NavListItem[];
-  
+
   /**
    * HTML hidden attribute to exclude from rendering in spine
    * Has no effect on reading system navigation interfaces
    */
   hidden?: boolean;
-  
+
   /**
    * Optional aria-labelledby attribute for accessibility
    */
   'aria-labelledby'?: string;
-  
+
   /** Any other HTML attributes */
   [key: string]: unknown;
 }
@@ -166,14 +166,14 @@ export interface CustomNav extends NavElement {
 /**
  * EPUB Navigation Document
  * A specialized XHTML content document that defines navigation for an EPUB publication
- * 
+ *
  * Conformance Requirements:
  * - MUST conform to XHTML content document constraints
  * - MUST include exactly one toc nav element
  * - MAY include at most one page-list nav element
  * - MAY include at most one landmarks nav element
  * - MAY include any number of custom nav elements
- * 
+ *
  * @see https://www.w3.org/TR/epub-33/#sec-nav
  */
 export interface EPUBNavigationDocument {
@@ -189,31 +189,31 @@ export interface EPUBNavigationDocument {
     xmlns?: string;
     [key: string]: unknown;
   };
-  
+
   /**
    * Table of Contents - REQUIRED
    * Exactly one toc nav element must be present
    */
   toc: TocNav;
-  
+
   /**
    * Page List - OPTIONAL
    * At most one page-list nav element
    */
   pageList?: PageListNav;
-  
+
   /**
    * Landmarks - OPTIONAL
    * At most one landmarks nav element
    */
   landmarks?: LandmarksNav;
-  
+
   /**
    * Custom navigation elements - OPTIONAL
    * Any number of additional nav elements with custom epub:type values
    */
   customNavs?: CustomNav[];
-  
+
   /**
    * Additional content outside nav elements
    * The navigation document can include other XHTML content
@@ -226,14 +226,14 @@ export interface EPUBNavigationDocument {
  * @see https://www.w3.org/TR/epub-ssv-11/
  */
 export type RecommendedLandmarkType =
-  | 'toc'           // Table of Contents
-  | 'bodymatter'    // Start of main content
-  | 'loi'           // List of Illustrations
-  | 'lot'           // List of Tables
-  | 'preface'       // Preface
-  | 'bibliography'  // Bibliography
-  | 'index'         // Index
-  | 'glossary';     // Glossary
+  | 'toc' // Table of Contents
+  | 'bodymatter' // Start of main content
+  | 'loi' // List of Illustrations
+  | 'lot' // List of Tables
+  | 'preface' // Preface
+  | 'bibliography' // Bibliography
+  | 'index' // Index
+  | 'glossary'; // Glossary
 
 /**
  * Helper type for creating a landmarks nav with recommended types

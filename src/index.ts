@@ -1,6 +1,6 @@
 /**
  * EPUB Builder - Create and manipulate EPUB 3.3 files
- * 
+ *
  * @module epub-builder
  */
 

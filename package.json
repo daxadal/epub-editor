@@ -12,9 +12,12 @@
     "tsc": "rm -rf dist && tsc --project tsconfig.compile.json"
   },
   "dependencies": {
+    "fs-extra": "^11.3.3",
+    "jszip": "^3.10.1",
     "xml2js": ">=0.0.1"
   },
   "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
     "@types/xml2js": "^0.4.14",
     "@typescript-eslint/eslint-plugin": "^8.36.0",
     "@typescript-eslint/parser": "^8.36.0",

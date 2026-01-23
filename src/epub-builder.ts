@@ -1,6 +1,6 @@
 /**
  * EPUBBuilder - Create and manipulate EPUB 3.3 files
- * 
+ *
  * @example
  * ```typescript
  * const epub = new EPUBBuilder({
@@ -8,18 +8,19 @@
  *   creator: 'John Doe',
  *   language: 'en'
  * });
- * 
+ *
  * const chapter1 = epub.addChapter({ title: 'Chapter 1', content: '<p>Hello</p>' });
  * epub.addChapter({ title: 'Section 1.1', parentId: chapter1, content: '<p>Nested</p>' });
- * 
+ *
  * await epub.exportToFile('my-book.epub');
  * ```
  */
 
+import { promisify } from 'util';
+
 import JSZip from 'jszip';
 import * as fs from 'fs-extra';
-import { parseString, Builder } from 'xml2js';
-import { promisify } from 'util';
+import { parseString } from 'xml2js';
 
 import {
   DublinCoreMetadata,
@@ -33,15 +34,12 @@ import {
   ValidationResult,
   ManifestItem,
   SpineItem,
-  EPUBStructure,
 } from './types/epub-builder-types';
-
 import {
   EPUBNavigationDocument,
   TocNav,
   NavListItem,
 } from './types/navigation-document';
-
 import {
   generateMimetype,
   generateContainer,
@@ -49,14 +47,11 @@ import {
   generateOPF,
   generateNavigationDocument,
 } from './utils/epub-templates';
-
 import {
   getMimeType,
   isValidImageExtension,
   sanitizeFilename,
-  generateFilenameFromTitle,
 } from './utils/mime-types';
-
 import { DEFAULT_CSS } from './utils/default-styles';
 
 const parseXml = promisify(parseString);
@@ -75,7 +70,9 @@ export class EPUBBuilder {
   /**
    * Create a new EPUB builder
    */
-  constructor(metadata: Partial<DublinCoreMetadata> & { title: string; creator: string }) {
+  constructor(
+    metadata: Partial<DublinCoreMetadata> & { title: string; creator: string },
+  ) {
     if (!metadata.title) {
       throw new Error('Title is required');
     }
@@ -140,7 +137,7 @@ export class EPUBBuilder {
     this.chapterCounter++;
 
     const filename = `text/chapter-${this.chapterCounter}.xhtml`;
-    
+
     const chapter: Chapter = {
       id: chapterId,
       title: options.title,
@@ -157,7 +154,9 @@ export class EPUBBuilder {
     if (chapter.parentId) {
       const parent = this.chapters.get(chapter.parentId);
       if (!parent) {
-        throw new Error(`Parent chapter with ID "${chapter.parentId}" not found`);
+        throw new Error(
+          `Parent chapter with ID "${chapter.parentId}" not found`,
+        );
       }
       parent.children.push(chapter);
     } else {
@@ -201,7 +200,9 @@ export class EPUBBuilder {
    * Get all root chapters (non-nested)
    */
   public getRootChapters(): Chapter[] {
-    return this.rootChapterIds.map(id => this.chapters.get(id)!).filter(Boolean);
+    return this.rootChapterIds
+      .map((id) => this.chapters.get(id)!)
+      .filter(Boolean);
   }
 
   /**
@@ -217,10 +218,12 @@ export class EPUBBuilder {
     if (chapter.parentId) {
       const parent = this.chapters.get(chapter.parentId);
       if (parent) {
-        parent.children = parent.children.filter(c => c.id !== chapterId);
+        parent.children = parent.children.filter((c) => c.id !== chapterId);
       }
     } else {
-      this.rootChapterIds = this.rootChapterIds.filter(id => id !== chapterId);
+      this.rootChapterIds = this.rootChapterIds.filter(
+        (id) => id !== chapterId,
+      );
     }
 
     // Delete chapter and all its children recursively
@@ -228,7 +231,7 @@ export class EPUBBuilder {
   }
 
   private deleteChapterRecursive(chapter: Chapter): void {
-    chapter.children.forEach(child => this.deleteChapterRecursive(child));
+    chapter.children.forEach((child) => this.deleteChapterRecursive(child));
     this.chapters.delete(chapter.id);
   }
 
@@ -246,10 +249,11 @@ export class EPUBBuilder {
 
     const sanitized = sanitizeFilename(options.filename);
     const filename = `images/${sanitized}`;
-    
-    const data = typeof options.data === 'string'
-      ? Buffer.from(options.data, 'base64')
-      : options.data;
+
+    const data =
+      typeof options.data === 'string'
+        ? Buffer.from(options.data, 'base64')
+        : options.data;
 
     const image: ImageResource = {
       id: imageId,
@@ -322,7 +326,9 @@ export class EPUBBuilder {
     // Check for orphaned chapters
     this.chapters.forEach((chapter, id) => {
       if (chapter.parentId && !this.chapters.has(chapter.parentId)) {
-        errors.push(`Chapter "${chapter.title}" (${id}) references non-existent parent "${chapter.parentId}"`);
+        errors.push(
+          `Chapter "${chapter.title}" (${id}) references non-existent parent "${chapter.parentId}"`,
+        );
       }
     });
 
@@ -340,7 +346,9 @@ export class EPUBBuilder {
     if (options.validate !== false) {
       const validation = this.validate();
       if (!validation.isValid) {
-        throw new Error(`EPUB validation failed:\n${validation.errors.join('\n')}`);
+        throw new Error(
+          `EPUB validation failed:\n${validation.errors.join('\n')}`,
+        );
       }
     }
 
@@ -353,21 +361,23 @@ export class EPUBBuilder {
     zip.file('META-INF/container.xml', generateContainer());
 
     // Add stylesheets
-    this.stylesheets.forEach(stylesheet => {
+    this.stylesheets.forEach((stylesheet) => {
       zip.file(`EPUB/${stylesheet.filename}`, stylesheet.content);
     });
 
     // Get stylesheet hrefs for chapter templates
-    const stylesheetHrefs = Array.from(this.stylesheets.values()).map(s => `../${s.filename}`);
+    const stylesheetHrefs = Array.from(this.stylesheets.values()).map(
+      (s) => `../${s.filename}`,
+    );
 
     // Add chapters
-    this.chapters.forEach(chapter => {
+    this.chapters.forEach((chapter) => {
       const xhtml = generateChapterXHTML(chapter, stylesheetHrefs);
       zip.file(`EPUB/${chapter.filename}`, xhtml);
     });
 
     // Add images
-    this.images.forEach(image => {
+    this.images.forEach((image) => {
       zip.file(`EPUB/${image.filename}`, image.data);
     });
 
@@ -381,7 +391,8 @@ export class EPUBBuilder {
     zip.file('EPUB/package.opf', opf);
 
     // Generate zip
-    const compression = options.compression !== undefined ? options.compression : 9;
+    const compression =
+      options.compression !== undefined ? options.compression : 9;
     return await zip.generateAsync({
       type: 'nodebuffer',
       compression: 'DEFLATE',
@@ -393,7 +404,10 @@ export class EPUBBuilder {
   /**
    * Export EPUB to a file
    */
-  public async exportToFile(filepath: string, options: ExportOptions = {}): Promise<void> {
+  public async exportToFile(
+    filepath: string,
+    options: ExportOptions = {},
+  ): Promise<void> {
     const buffer = await this.export(options);
     await fs.writeFile(filepath, buffer);
   }
@@ -406,7 +420,9 @@ export class EPUBBuilder {
       const data = await fs.readFile(filepath);
       return await EPUBBuilder.parseBuffer(data);
     } catch (error) {
-      throw new Error(`Failed to parse EPUB file: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to parse EPUB file: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -424,9 +440,10 @@ export class EPUBBuilder {
       }
 
       const containerXml = await containerFile.async('string');
-      const container = await parseXml(containerXml);
-      const opfPath = container?.container?.rootfiles?.[0]?.rootfile?.[0]?.$?.['full-path'];
-      
+      const container: any = await parseXml(containerXml);
+      const opfPath =
+        container?.container?.rootfiles?.[0]?.rootfile?.[0]?.$?.['full-path'];
+
       if (!opfPath) {
         throw new Error('Invalid EPUB: OPF path not found in container.xml');
       }
@@ -442,7 +459,7 @@ export class EPUBBuilder {
 
       // Extract metadata
       const metadata = EPUBBuilder.extractMetadata(opfData);
-      
+
       // Create EPUB instance
       const epub = new EPUBBuilder(metadata);
 
@@ -451,20 +468,27 @@ export class EPUBBuilder {
 
       return epub;
     } catch (error) {
-      throw new Error(`Failed to parse EPUB buffer: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to parse EPUB buffer: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   /**
    * Extract metadata from OPF
    */
-  private static extractMetadata(opfData: any): DublinCoreMetadata & { title: string; creator: string } {
+  private static extractMetadata(
+    opfData: any,
+  ): DublinCoreMetadata & { title: string; creator: string } {
     const meta = opfData?.package?.metadata?.[0];
-    
+
     const title = meta?.['dc:title']?.[0] || 'Untitled';
     const creator = meta?.['dc:creator']?.[0] || 'Unknown';
     const language = meta?.['dc:language']?.[0] || 'en';
-    const identifier = meta?.['dc:identifier']?.[0]?._ || meta?.['dc:identifier']?.[0] || undefined;
+    const identifier =
+      meta?.['dc:identifier']?.[0]?._ ||
+      meta?.['dc:identifier']?.[0] ||
+      undefined;
     const date = meta?.['dc:date']?.[0] || undefined;
     const publisher = meta?.['dc:publisher']?.[0] || undefined;
     const description = meta?.['dc:description']?.[0] || undefined;
@@ -493,11 +517,11 @@ export class EPUBBuilder {
     epub: EPUBBuilder,
     zip: JSZip,
     opfData: any,
-    opfPath: string
+    opfPath: string,
   ): Promise<void> {
     const manifest = opfData?.package?.manifest?.[0]?.item || [];
     const spine = opfData?.package?.spine?.[0]?.itemref || [];
-    
+
     const opfDir = opfPath.substring(0, opfPath.lastIndexOf('/') + 1);
 
     // Extract chapters from spine order
@@ -505,21 +529,26 @@ export class EPUBBuilder {
     for (const itemref of spine) {
       const idref = itemref.$?.idref;
       const manifestItem = manifest.find((item: any) => item.$.id === idref);
-      
-      if (manifestItem && manifestItem.$?.['media-type'] === 'application/xhtml+xml') {
+
+      if (
+        manifestItem &&
+        manifestItem.$?.['media-type'] === 'application/xhtml+xml'
+      ) {
         const href = manifestItem.$.href;
         const properties = manifestItem.$?.properties;
-        
+
         // Skip navigation document
         if (properties?.includes('nav')) continue;
-        
+
         const filePath = opfDir + href;
         const file = zip.file(filePath);
-        
+
         if (file) {
           const content = await file.async('string');
           const chapterId = epub.addChapter({
-            title: EPUBBuilder.extractTitleFromXHTML(content) || `Chapter ${chapterIds.length + 1}`,
+            title:
+              EPUBBuilder.extractTitleFromXHTML(content) ||
+              `Chapter ${chapterIds.length + 1}`,
             content: EPUBBuilder.extractBodyFromXHTML(content),
             linear: itemref.$?.linear !== 'no',
           });
@@ -535,7 +564,7 @@ export class EPUBBuilder {
         const href = item.$.href;
         const filePath = opfDir + href;
         const file = zip.file(filePath);
-        
+
         if (file) {
           const data = await file.async('nodebuffer');
           const filename = href.split('/').pop() || 'image';
@@ -555,10 +584,10 @@ export class EPUBBuilder {
   private static extractTitleFromXHTML(xhtml: string): string | null {
     const titleMatch = xhtml.match(/<title[^>]*>([^<]+)<\/title>/i);
     if (titleMatch) return titleMatch[1];
-    
+
     const h1Match = xhtml.match(/<h1[^>]*>([^<]+)<\/h1>/i);
     if (h1Match) return h1Match[1];
-    
+
     return null;
   }
 
@@ -570,7 +599,9 @@ export class EPUBBuilder {
     if (bodyMatch) {
       // Remove the section wrapper if present
       const content = bodyMatch[1];
-      const sectionMatch = content.match(/<section[^>]*>([\s\S]*?)<\/section>/i);
+      const sectionMatch = content.match(
+        /<section[^>]*>([\s\S]*?)<\/section>/i,
+      );
       if (sectionMatch) {
         // Remove the heading
         const inner = sectionMatch[1];
@@ -632,7 +663,7 @@ export class EPUBBuilder {
     };
 
     if (chapter.children.length > 0) {
-      item.ol = chapter.children.map(child => this.chapterToNavItem(child));
+      item.ol = chapter.children.map((child) => this.chapterToNavItem(child));
     }
 
     return item;
@@ -654,7 +685,7 @@ export class EPUBBuilder {
     });
 
     // Add chapters to manifest and spine
-    this.chapters.forEach(chapter => {
+    this.chapters.forEach((chapter) => {
       manifestItems.push({
         id: chapter.id,
         href: chapter.filename,
@@ -668,7 +699,7 @@ export class EPUBBuilder {
     });
 
     // Add stylesheets to manifest
-    this.stylesheets.forEach(stylesheet => {
+    this.stylesheets.forEach((stylesheet) => {
       manifestItems.push({
         id: stylesheet.id,
         href: stylesheet.filename,
@@ -677,7 +708,7 @@ export class EPUBBuilder {
     });
 
     // Add images to manifest
-    this.images.forEach(image => {
+    this.images.forEach((image) => {
       manifestItems.push({
         id: image.id,
         href: image.filename,
@@ -722,7 +753,7 @@ export class EPUBBuilder {
    */
   private getNextChapterOrder(): number {
     let maxOrder = 0;
-    this.chapters.forEach(chapter => {
+    this.chapters.forEach((chapter) => {
       if (chapter.order > maxOrder) {
         maxOrder = chapter.order;
       }
