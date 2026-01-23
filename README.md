@@ -8,6 +8,10 @@ A comprehensive TypeScript library for creating, parsing, and manipulating EPUB 
 npm install
 ```
 
+## License
+
+MIT
+
 ## Author
 
 Eric García de Ceca <e.garciadececa@gmail.com>
