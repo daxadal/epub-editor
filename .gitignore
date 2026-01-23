@@ -126,3 +126,4 @@ globalConfig.json
 
 .DS_Store
 examples/*.epub
+resources/

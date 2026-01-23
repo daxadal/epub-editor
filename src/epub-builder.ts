@@ -201,6 +201,13 @@ export class EPUBBuilder {
   }
 
   /**
+   * Get all chapters (including nested)
+   */
+  public getAllChapters(): Chapter[] {
+    return Array.from(this.chapters.values());
+  }
+
+  /**
    * Delete a chapter
    */
   public deleteChapter(chapterId: string): void {
@@ -277,6 +284,13 @@ export class EPUBBuilder {
   }
 
   /**
+   * Get all images
+   */
+  public getAllImages(): ImageResource[] {
+    return Array.from(this.images.values());
+  }
+
+  /**
    * Add a custom stylesheet
    * @returns Stylesheet ID
    */
@@ -294,6 +308,13 @@ export class EPUBBuilder {
 
     this.stylesheets.set(styleId, stylesheet);
     return styleId;
+  }
+
+  /**
+   * Get all stylesheets
+   */
+  public getAllStylesheets(): StylesheetResource[] {
+    return Array.from(this.stylesheets.values());
   }
 
   /**
