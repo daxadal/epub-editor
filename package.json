@@ -4,8 +4,8 @@
   "description": "Epub Editor",
   "main": "src/index.ts",
   "scripts": {
-    "lint": "eslint ./src",
-    "lint:fix": "eslint ./src --fix",
+    "lint": "eslint ./src ./examples",
+    "lint:fix": "eslint ./src ./examples --fix",
     "prettier": "prettier --check **/*.ts",
     "prettier:fix": "prettier --write **/*.ts",
     "test": "jest --runInBand",

@@ -3,25 +3,28 @@
  * Run with: npx ts-node examples/edit-example.ts <path-to-epub>
  */
 
-import { EPUBBuilder } from '../src';
 import * as path from 'path';
+
+import { EPUBBuilder } from '../src';
 
 async function editExistingEPUB() {
   const args = process.argv.slice(2);
-  
+
   if (args.length === 0) {
     console.error('Usage: npx ts-node examples/edit-example.ts <path-to-epub>');
     console.error('');
-    console.error('This example loads an existing EPUB, adds a new chapter, and saves it.');
+    console.error(
+      'This example loads an existing EPUB, adds a new chapter, and saves it.',
+    );
     process.exit(1);
   }
 
   const inputPath = args[0];
-  
+
   try {
     console.log(`📖 Loading EPUB from: ${inputPath}`);
     const epub = await EPUBBuilder.parse(inputPath);
-    
+
     // Display current metadata
     const metadata = epub.getMetadata();
     console.log('');
@@ -30,7 +33,7 @@ async function editExistingEPUB() {
     console.log(`   Author: ${metadata.creator}`);
     console.log(`   Language: ${metadata.language}`);
     console.log(`   Publisher: ${metadata.publisher || 'N/A'}`);
-    
+
     // Display chapters
     const chapters = epub.getRootChapters();
     console.log('');
@@ -43,7 +46,7 @@ async function editExistingEPUB() {
         });
       }
     });
-    
+
     // Add a new chapter
     console.log('');
     console.log('✍️  Adding new bonus chapter...');
@@ -63,65 +66,71 @@ async function editExistingEPUB() {
         <p>The navigation document will be automatically updated to include this chapter.</p>
       `,
     });
-    
+
     console.log(`   Chapter ID: ${bonusChapter}`);
-    
+
     // Optionally append to an existing chapter
     if (chapters.length > 0) {
       console.log('');
       console.log('➕ Appending content to first chapter...');
-      epub.appendToChapter(chapters[0].id, `
+      epub.appendToChapter(
+        chapters[0].id,
+        `
         <hr/>
         <p><em>Note: This content was appended using EPUBBuilder.</em></p>
-      `);
+      `,
+      );
     }
-    
+
     // Update metadata
     console.log('');
     console.log('🔄 Updating metadata...');
     epub.setMetadata({
-      description: `${metadata.description || ''} Modified with EPUBBuilder.`.trim(),
+      description:
+        `${metadata.description || ''} Modified with EPUBBuilder.`.trim(),
     });
-    
+
     // Validate
     console.log('');
     console.log('🔍 Validating modified EPUB...');
     const validation = epub.validate();
-    
+
     if (!validation.isValid) {
       console.error('❌ Validation failed:');
-      validation.errors.forEach(err => console.error(`  - ${err}`));
+      validation.errors.forEach((err) => console.error(`  - ${err}`));
       return;
     }
-    
+
     if (validation.warnings.length > 0) {
       console.warn('⚠️  Warnings:');
-      validation.warnings.forEach(warn => console.warn(`  - ${warn}`));
+      validation.warnings.forEach((warn) => console.warn(`  - ${warn}`));
     }
-    
+
     // Export to new file
     const outputPath = path.join(
       path.dirname(inputPath),
-      `${path.basename(inputPath, '.epub')}-modified.epub`
+      `${path.basename(inputPath, '.epub')}-modified.epub`,
     );
-    
+
     console.log('');
     console.log('📦 Exporting modified EPUB...');
     await epub.exportToFile(outputPath);
-    
+
     const buffer = await epub.export();
     const sizeKB = (buffer.length / 1024).toFixed(2);
-    
+
     console.log('');
     console.log('✅ Modified EPUB created successfully!');
     console.log(`   Original: ${inputPath}`);
     console.log(`   Modified: ${outputPath}`);
     console.log(`   Size: ${sizeKB} KB`);
     console.log(`   Total chapters: ${chapters.length + 1}`);
-    
   } catch (error) {
     console.error('');
-    console.error('❌ Error:', error instanceof Error ? error.message : String(error));
+    console.error(
+      '❌ Error:',
+      error instanceof Error ? error.message : String(error),
+    );
     process.exit(1);
   }
 }

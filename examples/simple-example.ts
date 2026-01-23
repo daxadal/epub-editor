@@ -3,8 +3,9 @@
  * Run with: npx ts-node examples/simple-example.ts
  */
 
-import { EPUBBuilder } from '../src';
 import * as path from 'path';
+
+import { EPUBBuilder } from '../src';
 
 async function createSimpleBook() {
   console.log('📚 Creating EPUB...');
@@ -31,7 +32,7 @@ async function createSimpleBook() {
 
   const part1 = epub.addChapter({
     title: 'Part I: Basics',
-    content: '<p>Let\'s start with the fundamentals.</p>',
+    content: "<p>Let's start with the fundamentals.</p>",
   });
 
   epub.addChapter({
@@ -85,32 +86,32 @@ async function createSimpleBook() {
   // Validate
   console.log('🔍 Validating...');
   const validation = epub.validate();
-  
+
   if (!validation.isValid) {
     console.error('❌ Validation failed:');
-    validation.errors.forEach(err => console.error(`  - ${err}`));
+    validation.errors.forEach((err) => console.error(`  - ${err}`));
     return;
   }
 
   if (validation.warnings.length > 0) {
     console.warn('⚠️  Warnings:');
-    validation.warnings.forEach(warn => console.warn(`  - ${warn}`));
+    validation.warnings.forEach((warn) => console.warn(`  - ${warn}`));
   }
 
   // Export
   const outputPath = path.join(__dirname, 'simple-guide.epub');
   console.log('📦 Exporting...');
-  
+
   await epub.exportToFile(outputPath);
-  
+
   const buffer = await epub.export();
   const sizeKB = (buffer.length / 1024).toFixed(2);
-  
+
   console.log('✅ EPUB created successfully!');
   console.log(`   Location: ${outputPath}`);
   console.log(`   Size: ${sizeKB} KB`);
   console.log(`   Chapters: ${epub.getRootChapters().length} root chapters`);
-  
+
   const metadata = epub.getMetadata();
   console.log(`   Title: ${metadata.title}`);
   console.log(`   Author: ${metadata.creator}`);

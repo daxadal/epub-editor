@@ -3,9 +3,11 @@
  * Run with: npx ts-node examples/merge-kits-out-for-temeria.ts
  */
 
-import { EPUBBuilder } from '../src';
 import * as path from 'path';
+
 import * as fs from 'fs-extra';
+
+import { EPUBBuilder } from '../src';
 
 async function mergeExample() {
   console.log('📚 Merging "Kits Out For Temeria" series...\n');
@@ -28,7 +30,7 @@ async function mergeExample() {
         const fullPath = path.join(basePath, file);
         console.log(`   Loading: ${file}`);
         return await EPUBBuilder.parse(fullPath);
-      })
+      }),
     );
     console.log('✅ All EPUBs loaded successfully\n');
 
@@ -55,9 +57,9 @@ async function mergeExample() {
     const mergedEPUB = new EPUBBuilder({
       title: 'Kits Out For Temeria',
       creator: Array.from(authors).join(', '),
-      language: language,
+      language,
       publisher: metadataList[0].publisher,
-      description: `Complete series containing: ${metadataList.map(m => m.title).join('; ')}`,
+      description: `Complete series containing: ${metadataList.map((m) => m.title).join('; ')}`,
     });
 
     console.log('🔧 Merging content...');
@@ -83,15 +85,17 @@ async function mergeExample() {
       console.log(`      ✓ Created section: ${sourceMeta.title}`);
 
       // Get all stylesheets from this EPUB (except default)
-      const stylesheets = sourceEPUB.getAllStylesheets().filter(
-        (s) => s.id !== 'default-style'
-      );
+      const stylesheets = sourceEPUB
+        .getAllStylesheets()
+        .filter((s) => s.id !== 'default-style');
 
       // Add stylesheets with unique naming
       const stylesheetMap = new Map<string, string>(); // old filename -> new filename
       for (const stylesheet of stylesheets) {
-        const contentHash = Buffer.from(stylesheet.content).toString('base64').substring(0, 20);
-        
+        const contentHash = Buffer.from(stylesheet.content)
+          .toString('base64')
+          .substring(0, 20);
+
         if (!addedStylesheets.has(contentHash)) {
           // This stylesheet hasn't been added yet
           const uniqueFilename = `book${bookNumber}-${path.basename(stylesheet.filename)}`;
@@ -103,7 +107,10 @@ async function mergeExample() {
           stylesheetMap.set(stylesheet.filename, uniqueFilename);
           console.log(`      ✓ Added stylesheet: ${uniqueFilename}`);
         } else {
-          stylesheetMap.set(stylesheet.filename, addedStylesheets.get(contentHash)!);
+          stylesheetMap.set(
+            stylesheet.filename,
+            addedStylesheets.get(contentHash)!,
+          );
         }
       }
 
@@ -114,14 +121,14 @@ async function mergeExample() {
       const imageMap = new Map<string, string>(); // old filename -> new filename
       for (const image of images) {
         const dataHash = image.data.toString('base64').substring(0, 20);
-        
+
         if (!addedImages.has(dataHash)) {
           // This image hasn't been added yet
           const originalFilename = path.basename(image.filename);
           const ext = path.extname(originalFilename);
           const baseName = path.basename(originalFilename, ext);
           const uniqueFilename = `book${bookNumber}-${baseName}${ext}`;
-          
+
           mergedEPUB.addImage({
             filename: uniqueFilename,
             data: image.data,
@@ -149,7 +156,7 @@ async function mergeExample() {
         imageMap.forEach((newFilename, oldFilename) => {
           const oldPath = oldFilename;
           const newPath = `images/${newFilename}`;
-          
+
           // Handle various possible path formats
           const patterns = [
             new RegExp(`src=["']\\.\\./${oldPath}["']`, 'g'),
@@ -157,9 +164,12 @@ async function mergeExample() {
             new RegExp(`src=["']\\.\\./${path.basename(oldPath)}["']`, 'g'),
             new RegExp(`src=["']${path.basename(oldPath)}["']`, 'g'),
           ];
-          
-          patterns.forEach(pattern => {
-            updatedContent = updatedContent.replace(pattern, `src="../${newPath}"`);
+
+          patterns.forEach((pattern) => {
+            updatedContent = updatedContent.replace(
+              pattern,
+              `src="../${newPath}"`,
+            );
           });
         });
 
@@ -177,21 +187,26 @@ async function mergeExample() {
     }
 
     // Export the merged EPUB
-    const outputPath = path.join(basePath, 'examples', 'kits-out-of-temeria.epub');
+    const outputPath = path.join(
+      basePath,
+      'examples',
+      'kits-out-of-temeria.epub',
+    );
     console.log(`\n💾 Exporting merged EPUB to: ${outputPath}`);
-    
+
     await mergedEPUB.exportToFile(outputPath);
-    
+
     console.log('✅ Successfully created merged EPUB!');
     console.log('\n📊 Summary:');
     console.log(`   Total chapters: ${mergedEPUB.getAllChapters().length}`);
     console.log(`   Total images: ${mergedEPUB.getAllImages().length}`);
-    console.log(`   Total stylesheets: ${mergedEPUB.getAllStylesheets().length}`);
-    
+    console.log(
+      `   Total stylesheets: ${mergedEPUB.getAllStylesheets().length}`,
+    );
+
     // Get file size
     const stats = await fs.stat(outputPath);
     console.log(`   File size: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
-    
   } catch (error) {
     console.error('\n❌ Error merging EPUBs:', error);
     process.exit(1);
