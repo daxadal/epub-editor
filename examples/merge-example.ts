@@ -117,133 +117,134 @@ function copyChapter(
 }
 
 /**
- * Merge the 4 "Kits Out For Temeria" series EPUBs into one combined EPUB
- * Run with: npx ts-node examples/merge-kits-out-for-temeria.ts
+ * Merge the series EPUBs into one combined EPUB
+ * Run with: npx ts-node examples/merge-example.ts
  */
-async function mergeExample() {
-  console.log('📚 Merging "Kits Out For Temeria" series...\n');
+async function mergeExample({
+  seriesName,
+  outputFile,
+  sourceFiles,
+}: {
+  seriesName: string;
+  outputFile: string;
+  sourceFiles: string[];
+}) {
+  console.log(`📚 Merging "${seriesName}" series...\n`);
 
-  // Define the source EPUBs in order
-  const sourceFiles = [
+  const basePath = path.join(__dirname, '..');
+
+  // Parse all source EPUBs
+  console.log('📖 Loading source EPUBs...');
+  const sourceEPUBs = await Promise.all(
+    sourceFiles.map(async (file) => {
+      const fullPath = path.join(basePath, file);
+      console.log(`   Loading: ${file}`);
+      return await EPUBBuilder.parse(fullPath);
+    }),
+  );
+  console.log('✅ All EPUBs loaded successfully\n');
+
+  // Extract metadata from all EPUBs
+  const metadataList = sourceEPUBs.map((epub) => epub.getMetadata());
+
+  // Collect unique authors
+  const authors = new Set<string>();
+  metadataList.forEach((meta) => {
+    if (meta.creator) {
+      authors.add(meta.creator);
+    }
+  });
+
+  // Use the language from the first EPUB
+  const language = metadataList[0].language || 'en';
+
+  console.log('📋 Merged Metadata:');
+  console.log(`   Title: ${seriesName}`);
+  console.log(`   Authors: ${Array.from(authors).join(', ')}`);
+  console.log(`   Language: ${language}\n`);
+
+  // Create the merged EPUB
+  const mergedEPUB = new EPUBBuilder({
+    title: seriesName,
+    creator: Array.from(authors).join(', '),
+    language,
+    publisher: metadataList[0].publisher,
+    description: `Complete series containing: ${metadataList.map((m) => m.title).join('; ')}`,
+  });
+
+  console.log('🔧 Merging content...');
+
+  // Track added resources to avoid duplicates
+  const addedStylesheets = new Map<string, string>(); // content hash -> new filename
+  const addedImages = new Map<string, string>(); // data hash -> new filename
+
+  // Process each source EPUB
+  for (let i = 0; i < sourceEPUBs.length; i++) {
+    const sourceEPUB = sourceEPUBs[i];
+    const sourceMeta = metadataList[i];
+    const bookNumber = i + 1;
+
+    console.log(`\n   📕 Processing Book ${bookNumber}: ${sourceMeta.title}`);
+
+    // Create a section chapter for this book
+    const sectionId = mergedEPUB.addChapter({
+      title: sourceMeta.title,
+      headingLevel: 1,
+    });
+
+    console.log(`      ✓ Created section: ${sourceMeta.title}`);
+
+    copyStyleSheets(sourceEPUB, addedStylesheets, bookNumber, mergedEPUB);
+
+    // Get all images from this EPUB
+    const imageMap = copyImages(
+      sourceEPUB,
+      addedImages,
+      bookNumber,
+      mergedEPUB,
+    );
+
+    // Get all root chapters from this EPUB
+    const rootChapters = sourceEPUB.getRootChapters();
+
+    // Add all chapters as children of the section
+    let chapterCount = 0;
+    for (const chapter of rootChapters) {
+      copyChapter(chapter, imageMap, mergedEPUB, sectionId);
+      chapterCount++;
+    }
+
+    console.log(`      ✓ Added ${chapterCount} chapters`);
+  }
+
+  // Export the merged EPUB
+  const outputPath = path.join(basePath, outputFile);
+  console.log(`\n💾 Exporting merged EPUB to: ${outputPath}`);
+
+  await mergedEPUB.exportToFile(outputPath);
+
+  console.log('✅ Successfully created merged EPUB!');
+  console.log('\n📊 Summary:');
+  console.log(`   Total chapters: ${mergedEPUB.getAllChapters().length}`);
+  console.log(`   Total images: ${mergedEPUB.getAllImages().length}`);
+  console.log(`   Total stylesheets: ${mergedEPUB.getAllStylesheets().length}`);
+
+  // Get file size
+  const stats = await fs.stat(outputPath);
+  console.log(`   File size: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
+}
+
+// Run the merge
+mergeExample({
+  seriesName: 'Kits Out For Temeria',
+  outputFile: 'examples/kits-out-of-temeria.epub',
+  sourceFiles: [
     'resources/1 - companions.epub',
     'resources/2 - acquisition - Faetality.epub',
     'resources/3 - interlude for naming - Faetality.epub',
     'resources/4 - vision test - Faetality.epub',
-  ];
-
-  const basePath = path.join(__dirname, '..');
-
-  try {
-    // Parse all source EPUBs
-    console.log('📖 Loading source EPUBs...');
-    const sourceEPUBs = await Promise.all(
-      sourceFiles.map(async (file) => {
-        const fullPath = path.join(basePath, file);
-        console.log(`   Loading: ${file}`);
-        return await EPUBBuilder.parse(fullPath);
-      }),
-    );
-    console.log('✅ All EPUBs loaded successfully\n');
-
-    // Extract metadata from all EPUBs
-    const metadataList = sourceEPUBs.map((epub) => epub.getMetadata());
-
-    // Collect unique authors
-    const authors = new Set<string>();
-    metadataList.forEach((meta) => {
-      if (meta.creator) {
-        authors.add(meta.creator);
-      }
-    });
-
-    // Use the language from the first EPUB
-    const language = metadataList[0].language || 'en';
-
-    console.log('📋 Merged Metadata:');
-    console.log(`   Title: Kits Out For Temeria`);
-    console.log(`   Authors: ${Array.from(authors).join(', ')}`);
-    console.log(`   Language: ${language}\n`);
-
-    // Create the merged EPUB
-    const mergedEPUB = new EPUBBuilder({
-      title: 'Kits Out For Temeria',
-      creator: Array.from(authors).join(', '),
-      language,
-      publisher: metadataList[0].publisher,
-      description: `Complete series containing: ${metadataList.map((m) => m.title).join('; ')}`,
-    });
-
-    console.log('🔧 Merging content...');
-
-    // Track added resources to avoid duplicates
-    const addedStylesheets = new Map<string, string>(); // content hash -> new filename
-    const addedImages = new Map<string, string>(); // data hash -> new filename
-
-    // Process each source EPUB
-    for (let i = 0; i < sourceEPUBs.length; i++) {
-      const sourceEPUB = sourceEPUBs[i];
-      const sourceMeta = metadataList[i];
-      const bookNumber = i + 1;
-
-      console.log(`\n   📕 Processing Book ${bookNumber}: ${sourceMeta.title}`);
-
-      // Create a section chapter for this book
-      const sectionId = mergedEPUB.addChapter({
-        title: sourceMeta.title,
-        headingLevel: 1,
-      });
-
-      console.log(`      ✓ Created section: ${sourceMeta.title}`);
-
-      copyStyleSheets(sourceEPUB, addedStylesheets, bookNumber, mergedEPUB);
-
-      // Get all images from this EPUB
-      const imageMap = copyImages(
-        sourceEPUB,
-        addedImages,
-        bookNumber,
-        mergedEPUB,
-      );
-
-      // Get all root chapters from this EPUB
-      const rootChapters = sourceEPUB.getRootChapters();
-
-      // Add all chapters as children of the section
-      let chapterCount = 0;
-      for (const chapter of rootChapters) {
-        copyChapter(chapter, imageMap, mergedEPUB, sectionId);
-        chapterCount++;
-      }
-
-      console.log(`      ✓ Added ${chapterCount} chapters`);
-    }
-
-    // Export the merged EPUB
-    const outputPath = path.join(
-      basePath,
-      'examples',
-      'kits-out-of-temeria.epub',
-    );
-    console.log(`\n💾 Exporting merged EPUB to: ${outputPath}`);
-
-    await mergedEPUB.exportToFile(outputPath);
-
-    console.log('✅ Successfully created merged EPUB!');
-    console.log('\n📊 Summary:');
-    console.log(`   Total chapters: ${mergedEPUB.getAllChapters().length}`);
-    console.log(`   Total images: ${mergedEPUB.getAllImages().length}`);
-    console.log(
-      `   Total stylesheets: ${mergedEPUB.getAllStylesheets().length}`,
-    );
-
-    // Get file size
-    const stats = await fs.stat(outputPath);
-    console.log(`   File size: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
-  } catch (error) {
-    console.error('\n❌ Error merging EPUBs:', error);
-    process.exit(1);
-  }
-}
-
-// Run the merge
-mergeExample();
+  ],
+}).catch((error) => {
+  console.error('\n❌ Error merging EPUBs:', error);
+  process.exit(1);
+});
