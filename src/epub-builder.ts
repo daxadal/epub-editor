@@ -63,9 +63,6 @@ export class EPUBBuilder {
   private stylesheets: Map<string, StylesheetResource>;
   private rootChapterIds: string[];
   private chapterCounter: number;
-  private imageCounter: number;
-  private stylesheetCounter: number;
-  private hasDefaultStylesheet: boolean;
 
   /**
    * Create a new EPUB builder
@@ -94,9 +91,6 @@ export class EPUBBuilder {
     this.stylesheets = new Map();
     this.rootChapterIds = [];
     this.chapterCounter = 0;
-    this.imageCounter = 0;
-    this.stylesheetCounter = 0;
-    this.hasDefaultStylesheet = false;
 
     // Add default stylesheet
     this.addDefaultStylesheet();
@@ -111,7 +105,6 @@ export class EPUBBuilder {
       filename: 'css/styles.css',
       content: DEFAULT_CSS,
     });
-    this.hasDefaultStylesheet = true;
   }
 
   /**
@@ -245,7 +238,6 @@ export class EPUBBuilder {
     }
 
     const imageId = this.generateImageId();
-    this.imageCounter++;
 
     const sanitized = sanitizeFilename(options.filename);
     const filename = `images/${sanitized}`;
@@ -288,7 +280,6 @@ export class EPUBBuilder {
    */
   public addStylesheet(options: AddStylesheetOptions): string {
     const styleId = this.generateStylesheetId();
-    this.stylesheetCounter++;
 
     const sanitized = sanitizeFilename(options.filename);
     const filename = `css/${sanitized}`;
