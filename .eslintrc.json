@@ -8,11 +8,13 @@
     "ecmaVersion": 12
   },
   "extends": [
+    "standard",
     "prettier",
     "eslint:recommended",
     "plugin:import/recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:import/typescript"
+    "plugin:import/typescript",
+    "plugin:security/recommended-legacy"
   ],
   "plugins": ["prettier", "import", "@typescript-eslint"],
   "rules": {
@@ -21,7 +23,14 @@
     "prettier/prettier": ["warn"],
     "prefer-const": "warn",
     "object-shorthand": "warn",
-    "no-console": "off"
+    "no-console": "off",
+    "no-redeclare": "off",
+    "no-unused-vars": "off",
+    "no-useless-constructor": "off",
+    "security/detect-object-injection": "off",
+    "@typescript-eslint/no-dupe-class-members": "error",
+    "@typescript-eslint/no-redeclare": "error",
+    "@typescript-eslint/no-unused-vars": ["error", { "caughtErrors": "none" }]
   },
   "settings": {
     "import/resolver": {
