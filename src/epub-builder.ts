@@ -1,25 +1,10 @@
-/**
- * EPUBBuilder - Create and manipulate EPUB 3.3 files
- *
- * @example
- * ```typescript
- * const epub = new EPUBBuilder({
- *   title: 'My Book',
- *   creator: 'John Doe',
- *   language: 'en'
- * });
- *
- * const chapter1 = epub.addChapter({ title: 'Chapter 1', content: '<p>Hello</p>' });
- * epub.addChapter({ title: 'Section 1.1', parentId: chapter1, content: '<p>Nested</p>' });
- *
- * await epub.exportToFile('my-book.epub');
- * ```
- */
+
 
 import { promisify } from 'util';
 
 import JSZip from 'jszip';
 import * as fs from 'fs-extra';
+import { v4 as uuidV4 } from 'uuid';
 import { parseString } from 'xml2js';
 
 import {
@@ -56,6 +41,23 @@ import { DEFAULT_CSS } from './utils/default-styles';
 
 const parseXml = promisify(parseString);
 
+/**
+ * EPUBBuilder - Create and manipulate EPUB 3.3 files
+ *
+ * @example
+ * ```typescript
+ * const epub = new EPUBBuilder({
+ *   title: 'My Book',
+ *   creator: 'John Doe',
+ *   language: 'en'
+ * });
+ *
+ * const chapter1 = epub.addChapter({ title: 'Chapter 1', content: '<p>Hello</p>' });
+ * epub.addChapter({ title: 'Section 1.1', parentId: chapter1, content: '<p>Nested</p>' });
+ *
+ * await epub.exportToFile('my-book.epub');
+ * ```
+ */
 export class EPUBBuilder {
   private metadata: DublinCoreMetadata;
   private chapters: Map<string, Chapter>;
@@ -82,7 +84,7 @@ export class EPUBBuilder {
       title: metadata.title,
       creator: metadata.creator,
       language: metadata.language || 'en',
-      identifier: metadata.identifier || this.generateUUID(),
+      identifier: metadata.identifier || uuidV4(),
       date: metadata.date || new Date().toISOString().split('T')[0],
     };
 
@@ -722,21 +724,21 @@ export class EPUBBuilder {
    * Generate unique chapter ID
    */
   private generateChapterId(): string {
-    return `chapter-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `chapter-${uuidV4()}`;
   }
 
   /**
    * Generate unique image ID
    */
   private generateImageId(): string {
-    return `image-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `image-${uuidV4()}`;
   }
 
   /**
    * Generate unique stylesheet ID
    */
   private generateStylesheetId(): string {
-    return `style-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `style-${uuidV4()}`;
   }
 
   /**
@@ -750,16 +752,5 @@ export class EPUBBuilder {
       }
     });
     return maxOrder + 1;
-  }
-
-  /**
-   * Generate UUID v4
-   */
-  private generateUUID(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
   }
 }
