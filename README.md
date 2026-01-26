@@ -2,6 +2,8 @@
 
 A comprehensive TypeScript library for creating, parsing, and manipulating EPUB files.
 
+This library has been created using the official EPUB specification, programmed using Copilot + Claude Sonnet 4.5, and reviewed, debugged and fixed by me.
+
 ## Features
 
 ### EPUBBuilder - Create and Edit EPUB Files
@@ -16,8 +18,6 @@ A comprehensive TypeScript library for creating, parsing, and manipulating EPUB 
 - ✅ **Automatic Navigation** - Auto-generates navigation documents from chapter structure
 - ✅ **Validation** - Built-in EPUB structure validation
 - ✅ **TypeScript Types** - Complete TypeScript type definitions
-
-This library has been created using the official EPUB specification, programmed using Copilot + Claude Sonnet 4.5, and reviewed, debugged and fixed by me.
 
 ## Installation
 
