@@ -9,7 +9,7 @@
     "lint:fix": "eslint ./src ./examples --fix",
     "prettier": "prettier --check **/*.ts",
     "prettier:fix": "prettier --write **/*.ts",
-    "test": "echo \"Tests not properly implemented\"",
+    "test": "jest --runInBand",
     "tsc": "rm -rf dist && tsc --project tsconfig.compile.json"
   },
   "dependencies": {
