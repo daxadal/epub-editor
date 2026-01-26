@@ -17,6 +17,8 @@ A comprehensive TypeScript library for creating, parsing, and manipulating EPUB 
 - ✅ **Validation** - Built-in EPUB structure validation
 - ✅ **TypeScript Types** - Complete TypeScript type definitions
 
+This library has been created using the official EPUB specification, programmed using Copilot + Claude Sonnet 4.5, and reviewed, debugged and fixed by me.
+
 ## Installation
 
 ```bash
