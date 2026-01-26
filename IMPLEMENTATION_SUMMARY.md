@@ -78,6 +78,7 @@ A fully-functional EPUB 3.3 builder class has been successfully implemented with
 ## 📁 Files Created
 
 ### Core Implementation
+
 ```
 src/
 ├── epub-builder.ts              # Main EPUBBuilder class (615 lines)
@@ -93,6 +94,7 @@ src/
 ```
 
 ### Documentation & Examples
+
 ```
 ├── README.md                    # Main documentation
 ├── EPUB_BUILDER_EXAMPLES.md     # Comprehensive examples
@@ -105,6 +107,7 @@ src/
 ## 🔧 API Reference
 
 ### Constructor
+
 ```typescript
 new EPUBBuilder({
   title: string,        // Required
@@ -115,6 +118,7 @@ new EPUBBuilder({
 ```
 
 ### Chapter Methods
+
 ```typescript
 addChapter(options: AddChapterOptions): string
 setChapterContent(chapterId: string, content: string): void
@@ -125,6 +129,7 @@ deleteChapter(chapterId: string): void
 ```
 
 ### Image Methods
+
 ```typescript
 addImage(options: AddImageOptions): string
 getImage(imageId: string): ImageResource | undefined
@@ -132,6 +137,7 @@ deleteImage(imageId: string): void
 ```
 
 ### Other Methods
+
 ```typescript
 addStylesheet(options: AddStylesheetOptions): string
 setMetadata(metadata: Partial<DublinCoreMetadata>): void
@@ -142,6 +148,7 @@ exportToFile(filepath: string, options?: ExportOptions): Promise<void>
 ```
 
 ### Static Methods
+
 ```typescript
 EPUBBuilder.parse(filepath: string): Promise<EPUBBuilder>
 EPUBBuilder.parseBuffer(buffer: Buffer): Promise<EPUBBuilder>
@@ -150,21 +157,25 @@ EPUBBuilder.parseBuffer(buffer: Buffer): Promise<EPUBBuilder>
 ## 🎯 Design Decisions
 
 ### File Organization
+
 - **Each chapter = separate XHTML file**: Standard EPUB practice for better compatibility
 - **Automatic file naming**: `chapter-1.xhtml`, `chapter-2.xhtml`, etc.
 - **Organized directory structure**: `/text/`, `/images/`, `/css/`
 
 ### Chapter Nesting
+
 - **Parent ID system**: Simple and intuitive
 - **Automatic hierarchy**: Children tracked in parent objects
 - **Navigation auto-generation**: TOC reflects structure automatically
 
 ### Image Management
+
 - **Transparent to user**: No manual file path management needed
 - **Format detection**: Based on file extension
 - **Root-relative paths**: Images referenced from EPUB root
 
 ### Parsing Strategy
+
 - **Graceful error handling**: Descriptive errors for malformed EPUBs
 - **Structure extraction**: Preserves chapter order and content
 - **Metadata extraction**: Full Dublin Core support
@@ -172,6 +183,7 @@ EPUBBuilder.parseBuffer(buffer: Buffer): Promise<EPUBBuilder>
 ## 📦 Dependencies Used
 
 As requested, only uses installed dependencies:
+
 - ✅ `jszip` - ZIP file creation and parsing
 - ✅ `xml2js` - XML parsing (for EPUB parsing)
 - ✅ `fs-extra` - File system operations
@@ -189,6 +201,7 @@ As requested, only uses installed dependencies:
 ## 🧪 Usage Examples
 
 ### Simple Creation
+
 ```typescript
 const epub = new EPUBBuilder({ title: 'My Book', creator: 'Author' });
 epub.addChapter({ title: 'Chapter 1', content: '<p>Hello</p>' });
@@ -196,12 +209,14 @@ await epub.exportToFile('book.epub');
 ```
 
 ### With Nesting
+
 ```typescript
 const part1 = epub.addChapter({ title: 'Part 1' });
 epub.addChapter({ title: 'Chapter 1.1', parentId: part1, content: '...' });
 ```
 
 ### Parsing & Editing
+
 ```typescript
 const epub = await EPUBBuilder.parse('existing.epub');
 epub.addChapter({ title: 'New Chapter', content: '...' });
@@ -209,6 +224,7 @@ await epub.exportToFile('modified.epub');
 ```
 
 ### With Images
+
 ```typescript
 const coverData = await fs.readFile('cover.jpg');
 epub.addImage({ filename: 'cover.jpg', data: coverData, isCover: true });
