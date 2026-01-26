@@ -1,6 +1,7 @@
 /**
  * EPUB 3.3 Templates and Document Generators
  */
+import { v4 as uuidV4 } from 'uuid';
 
 import {
   DublinCoreMetadata,
@@ -68,7 +69,7 @@ export function generateOPF(
   manifestItems: ManifestItem[],
   spineItems: SpineItem[],
 ): string {
-  const identifier = metadata.identifier || generateUUID();
+  const identifier = metadata.identifier || uuidV4();
   const language = metadata.language || 'en';
   const date = metadata.date || new Date().toISOString().split('T')[0];
 
@@ -319,15 +320,4 @@ function escapeXml(unsafe: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
-}
-
-/**
- * Generate a UUID v4
- */
-function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
 }
