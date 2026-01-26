@@ -2,6 +2,8 @@
 
 A comprehensive TypeScript library for creating, parsing, and manipulating EPUB 3.3 files.
 
+This library has been created using the official EPUB specification, programmed using Copilot + Claude Sonnet 4.5, and reviewed, debugged and fixed by me.
+
 ## Installation
 
 ```bash
