@@ -99,7 +99,7 @@ export function generateFilenameFromTitle(
   const base = title
     .toLowerCase()
     .replaceAll(/[^a-z0-9]+/g, '-')
-    .replaceAll(/^-+|-+$/g, '')
+    .replaceAll(/(^-+)|(-+$)/g, '')
     .substring(0, 50); // Limit length
 
   return `${base}.${extension}`;
