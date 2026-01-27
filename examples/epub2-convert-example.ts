@@ -26,16 +26,15 @@ async function main() {
   console.log(`  Identifier: ${epub2.getMetadata().identifier}`);
 
   // Get chapter information
-  const chapters = epub2.getChapters();
+  const chapters = epub2.getAllChapters();
   console.log(`\nFound ${chapters.length} chapters:`);
   chapters.forEach((chapter, index) => {
-    const indent = '  '.repeat(chapter.level);
-    console.log(`  ${indent}${index + 1}. ${chapter.title}`);
+    console.log(`  ${index + 1}. ${chapter.title}`);
   });
 
   // Get resource information
-  const images = epub2.getImages();
-  const stylesheets = epub2.getStylesheets();
+  const images = epub2.getAllImages();
+  const stylesheets = epub2.getAllStylesheets();
   console.log(`\nResources:`);
   console.log(`  Images: ${images.length}`);
   console.log(`  Stylesheets: ${stylesheets.length}`);
@@ -43,7 +42,7 @@ async function main() {
   // Validate the original EPUB 2
   const validation = epub2.validate();
   console.log(`\nEPUB 2 Validation:`);
-  console.log(`  Valid: ${validation.valid}`);
+  console.log(`  Valid: ${validation.isValid}`);
   if (validation.errors.length > 0) {
     console.log(`  Errors: ${validation.errors.length}`);
   }
@@ -62,16 +61,15 @@ async function main() {
   console.log(`  Identifier: ${epub3.getMetadata().identifier}`);
 
   // Verify chapters were converted
-  const epub3Chapters = epub3.getChapters();
+  const epub3Chapters = epub3.getAllChapters();
   console.log(`\nConverted ${epub3Chapters.length} chapters:`);
   epub3Chapters.forEach((chapter, index) => {
-    const indent = '  '.repeat(chapter.level);
-    console.log(`  ${indent}${index + 1}. ${chapter.title}`);
+    console.log(`  ${index + 1}. ${chapter.title}`);
   });
 
   // Verify resources were converted
-  const epub3Images = epub3.getImages();
-  const epub3Stylesheets = epub3.getStylesheets();
+  const epub3Images = epub3.getAllImages();
+  const epub3Stylesheets = epub3.getAllStylesheets();
   console.log(`\nConverted Resources:`);
   console.log(`  Images: ${epub3Images.length}`);
   console.log(`  Stylesheets: ${epub3Stylesheets.length}`);
@@ -79,7 +77,7 @@ async function main() {
   // Validate the converted EPUB 3
   const epub3Validation = epub3.validate();
   console.log(`\nEPUB 3 Validation:`);
-  console.log(`  Valid: ${epub3Validation.valid}`);
+  console.log(`  Valid: ${epub3Validation.isValid}`);
   if (epub3Validation.errors.length > 0) {
     console.log(`  Errors: ${epub3Validation.errors.length}`);
   }

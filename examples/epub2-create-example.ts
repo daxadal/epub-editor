@@ -12,21 +12,19 @@ async function main() {
   console.log('Creating EPUB 2 document...\n');
 
   // Create a new EPUB 2 builder
-  const epub = new EPUB2Builder();
-
-  // Set metadata
-  epub.setTitle('My EPUB 2 Book');
-  epub.setAuthor('John Doe');
-  epub.setLanguage('en');
-  epub.setPublisher('Sample Press');
-  epub.setDescription('A sample EPUB 2 book created with epub-builder');
-  epub.setSubject('Fiction');
-  epub.setDate(new Date('2024-01-15'));
-  epub.setRights('Copyright © 2024 John Doe. All rights reserved.');
+  const epub = new EPUB2Builder({
+    title: 'My EPUB 2 Book',
+    creator: 'John Doe',
+    language: 'en',
+    publisher: 'Sample Press',
+    description: 'A sample EPUB 2 book created with epub-builder',
+    subject: 'Fiction',
+    rights: 'Copyright © 2024 John Doe. All rights reserved.',
+  });
 
   // Add a custom stylesheet
   epub.addStylesheet({
-    id: 'custom-styles',
+    filename: 'custom-styles',
     content: `
       body {
         font-family: Georgia, serif;
@@ -51,7 +49,6 @@ async function main() {
         margin: 2em 0;
       }
     `,
-    mediaType: 'text/css',
   });
 
   // Add chapters with nested structure
@@ -92,7 +89,7 @@ async function main() {
   });
 
   // Add more top-level chapters
-  const chapter2 = await epub.addChapter({
+  await epub.addChapter({
     title: 'Chapter 1: The Beginning',
     content: `
       <div class="chapter-header">
@@ -125,7 +122,7 @@ async function main() {
   // Validate the EPUB
   const validation = epub.validate();
   console.log('Validation result:');
-  console.log(`Valid: ${validation.valid}`);
+  console.log(`Valid: ${validation.isValid}`);
   if (validation.errors.length > 0) {
     console.log('Errors:', validation.errors);
   }
