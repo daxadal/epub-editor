@@ -52,7 +52,7 @@ async function main() {
   });
 
   // Add chapters with nested structure
-  const chapter1 = await epub.addChapter({
+  const chapter1 = epub.addChapter({
     title: 'Introduction',
     content: `
       <div class="chapter-header">
@@ -64,7 +64,7 @@ async function main() {
   });
 
   // Add nested sub-chapters
-  await epub.addChapter({
+  epub.addChapter({
     title: 'Background',
     content: `
       <h2>Background</h2>
@@ -74,7 +74,7 @@ async function main() {
     parentId: chapter1,
   });
 
-  await epub.addChapter({
+  epub.addChapter({
     title: 'Characters',
     content: `
       <h2>Main Characters</h2>
@@ -89,7 +89,7 @@ async function main() {
   });
 
   // Add more top-level chapters
-  await epub.addChapter({
+  epub.addChapter({
     title: 'Chapter 1: The Beginning',
     content: `
       <div class="chapter-header">
@@ -100,7 +100,7 @@ async function main() {
     `,
   });
 
-  await epub.addChapter({
+  epub.addChapter({
     title: 'Chapter 2: The Journey',
     content: `
       <div class="chapter-header">
