@@ -1,4 +1,4 @@
-import { promisify } from 'util';
+import { promisify } from 'node:util';
 
 import JSZip from 'jszip';
 import * as fs from 'fs-extra';
@@ -58,9 +58,9 @@ const parseXml = promisify(parseString);
  */
 export class EPUBBuilder {
   private metadata: DublinCoreMetadata;
-  private chapters: Map<string, Chapter>;
-  private images: Map<string, ImageResource>;
-  private stylesheets: Map<string, StylesheetResource>;
+  private readonly chapters: Map<string, Chapter>;
+  private readonly images: Map<string, ImageResource>;
+  private readonly stylesheets: Map<string, StylesheetResource>;
   private rootChapterIds: string[];
   private chapterCounter: number;
 
@@ -403,8 +403,7 @@ export class EPUBBuilder {
     zip.file('EPUB/package.opf', opf);
 
     // Generate zip
-    const compression =
-      options.compression !== undefined ? options.compression : 9;
+    const compression = options.compression ?? 9;
     return await zip.generateAsync({
       type: 'nodebuffer',
       compression: 'DEFLATE',
