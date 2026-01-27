@@ -4,22 +4,23 @@ import JSZip from 'jszip';
 import * as fs from 'fs-extra';
 import { parseString } from 'xml2js';
 
-import { BaseEPUB3Builder } from './base-epub-builder';
-import { EPUB3Builder } from './epub3-builder';
+import { BaseEPUB3Builder } from '../base-epub/base-epub.builder';
+import { EPUB3Builder } from '../epub3/epub3.builder';
 import {
   DublinCoreMetadata,
   Chapter,
   ManifestItem,
   SpineItem,
   ExportOptions,
-} from './types/base-epub-types';
-import { NCXDocument, NCXNavPoint } from './types/epub2-types';
-import { generateMimetype, generateContainer } from './utils/epub-templates';
+} from '../base-epub/base-epub.types';
+import { generateMimetype, generateContainer } from '../epub3/epub3.templates';
+
+import { NCXDocument, NCXNavPoint } from './epub2.types';
 import {
   generateChapterXHTML,
   generateOPF,
   generateNCX,
-} from './utils/epub2-templates';
+} from './epub2.templates';
 
 const parseXml = promisify(parseString);
 

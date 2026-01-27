@@ -1,6 +1,13 @@
 import { v4 as uuidV4 } from 'uuid';
 
 import {
+  getMimeType,
+  isValidImageExtension,
+  sanitizeFilename,
+} from '../utils/mime-types';
+import { DEFAULT_CSS } from '../utils/default-styles';
+
+import {
   DublinCoreMetadata,
   Chapter,
   ImageResource,
@@ -9,13 +16,7 @@ import {
   AddImageOptions,
   AddStylesheetOptions,
   ValidationResult,
-} from './types/base-epub-types';
-import {
-  getMimeType,
-  isValidImageExtension,
-  sanitizeFilename,
-} from './utils/mime-types';
-import { DEFAULT_CSS } from './utils/default-styles';
+} from './base-epub.types';
 
 /**
  * Abstract base class for EPUB builders
