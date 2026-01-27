@@ -525,6 +525,19 @@ export class EPUBBuilder {
     const opfDir = opfPath.substring(0, opfPath.lastIndexOf('/') + 1);
 
     // Extract chapters from spine order
+    await EPUBBuilder.extractChapters(epub, zip, manifest, opfDir, spine);
+
+    // Extract images
+    await EPUBBuilder.extractImages(epub, zip, manifest, opfDir);
+  }
+
+  private static async extractChapters(
+    epub: EPUBBuilder,
+    zip: JSZip,
+    manifest: any,
+    opfDir: string,
+    spine: any,
+  ) {
     const chapterIds: string[] = [];
     for (const itemref of spine) {
       const idref = itemref.$?.idref;
@@ -556,8 +569,14 @@ export class EPUBBuilder {
         }
       }
     }
+  }
 
-    // Extract images
+  private static async extractImages(
+    epub: EPUBBuilder,
+    zip: JSZip,
+    manifest: any,
+    opfDir: string,
+  ) {
     for (const item of manifest) {
       const mimeType = item.$?.['media-type'];
       if (mimeType?.startsWith('image/')) {
