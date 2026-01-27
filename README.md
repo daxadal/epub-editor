@@ -6,7 +6,7 @@ This library has been created using the official EPUB specification, programmed 
 
 ## Features
 
-### EPUB3Builder - Create and Edit EPUB Files
+### EPUBBuilder - Create and Edit EPUB Files
 
 - ✅ **EPUB 3.3 Compliant** - Fully supports the latest EPUB specification
 - ✅ **Create EPUBs from Scratch** - Easy-to-use API for building new EPUB files
@@ -30,10 +30,10 @@ npm install
 ### Creating a New EPUB
 
 ```typescript
-import { EPUB3Builder } from './src';
+import { EPUBBuilder } from './src';
 
 // Create a new EPUB
-const epub = new EPUB3Builder({
+const epub = new EPUBBuilder({
   title: 'My First Book',
   creator: 'John Doe',
   language: 'en',
@@ -68,10 +68,10 @@ await epub.exportToFile('my-book.epub');
 ### Parsing and Editing an Existing EPUB
 
 ```typescript
-import { EPUB3Builder } from './src';
+import { EPUBBuilder } from './src';
 
 // Load existing EPUB
-const epub = await EPUB3Builder.parse('existing-book.epub');
+const epub = await EPUBBuilder.parse('existing-book.epub');
 
 // Get metadata
 const metadata = epub.getMetadata();
@@ -89,12 +89,12 @@ await epub.exportToFile('modified-book.epub');
 
 ## API Documentation
 
-### EPUB3Builder Class
+### EPUBBuilder Class
 
 #### Constructor
 
 ```typescript
-new EPUB3Builder(metadata: {
+new EPUBBuilder(metadata: {
   title: string;        // Required
   creator: string;      // Required (author)
   language?: string;    // Default: 'en'
@@ -143,8 +143,8 @@ new EPUB3Builder(metadata: {
 
 **Static Methods**
 
-- `EPUB3Builder.parse(filepath: string): Promise<EPUB3Builder>` - Parse EPUB file
-- `EPUB3Builder.parseBuffer(buffer: Buffer): Promise<EPUB3Builder>` - Parse from Buffer
+- `EPUBBuilder.parse(filepath: string): Promise<EPUBBuilder>` - Parse EPUB file
+- `EPUBBuilder.parseBuffer(buffer: Buffer): Promise<EPUBBuilder>` - Parse from Buffer
 
 ### Type Definitions
 
@@ -186,7 +186,7 @@ interface ValidationResult {
 ```
 epub-parser-2/
 ├── src/
-│   ├── epub-builder.ts              # Main EPUB3Builder class
+│   ├── epub-builder.ts              # Main EPUBBuilder class
 │   ├── index.ts                     # Public API exports
 │   ├── types/
 │   │   ├── epub-builder-types.ts    # Type definitions
@@ -216,7 +216,7 @@ See [EPUB_BUILDER_EXAMPLES.md](EPUB_BUILDER_EXAMPLES.md) for comprehensive examp
 
 ### Automatic Navigation Document
 
-The EPUB3Builder automatically generates a compliant EPUB 3.3 Navigation Document based on your chapter structure:
+The EPUBBuilder automatically generates a compliant EPUB 3.3 Navigation Document based on your chapter structure:
 
 ```typescript
 const part1 = epub.addChapter({ title: 'Part I' });
@@ -268,7 +268,7 @@ epub.addStylesheet({
 
 ```typescript
 try {
-  const epub = await EPUB3Builder.parse('book.epub');
+  const epub = await EPUBBuilder.parse('book.epub');
   // Successfully parsed
 } catch (error) {
   console.error('Failed to parse:', error.message);
