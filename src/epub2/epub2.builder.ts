@@ -103,8 +103,7 @@ export class EPUB2Builder extends BaseEPUB3Builder {
     zip.file('EPUB/package.opf', opf);
 
     // Generate zip
-    const compression =
-      options.compression !== undefined ? options.compression : 9;
+    const compression = options.compression ?? 9;
     return await zip.generateAsync({
       type: 'nodebuffer',
       compression: 'DEFLATE',
