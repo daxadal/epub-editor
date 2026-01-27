@@ -400,7 +400,7 @@ async function createBook() {
       margin: 1em 0;
     }
   `;
-  
+
   epub.addStylesheet({
     filename: 'code-styles.css',
     content: customCSS,
@@ -500,7 +500,7 @@ function greet(name) {
   const part2 = epub.addChapter({
     title: 'Part II: Advanced Concepts',
     headingLevel: 1,
-    content: '<p>Now let\'s explore advanced topics.</p>',
+    content: "<p>Now let's explore advanced topics.</p>",
   });
 
   epub.addChapter({

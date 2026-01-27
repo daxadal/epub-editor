@@ -22,9 +22,9 @@ import { DEFAULT_CSS } from './utils/default-styles';
  */
 export abstract class BaseEPUBBuilder {
   protected metadata: DublinCoreMetadata;
-  protected chapters: Map<string, Chapter>;
-  protected images: Map<string, ImageResource>;
-  protected stylesheets: Map<string, StylesheetResource>;
+  protected readonly chapters: Map<string, Chapter>;
+  protected readonly images: Map<string, ImageResource>;
+  protected readonly stylesheets: Map<string, StylesheetResource>;
   protected rootChapterIds: string[];
   protected chapterCounter: number;
 

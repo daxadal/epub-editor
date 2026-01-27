@@ -1,6 +1,7 @@
 /**
  * EPUB 2 and EPUB 3 Templates and Document Generators
  */
+import { v4 as uuidV4 } from 'uuid';
 
 import {
   DublinCoreMetadata,
@@ -69,7 +70,7 @@ export function generateOPF(
   manifestItems: ManifestItem[],
   spineItems: SpineItem[],
 ): string {
-  const identifier = metadata.identifier || generateUUID();
+  const identifier = metadata.identifier || uuidV4();
   const language = metadata.language || 'en';
   const date = metadata.date || new Date().toISOString().split('T')[0];
 
@@ -315,22 +316,11 @@ function generateNavList(items: NavListItem[], indent: number): string {
  */
 function escapeXml(unsafe: string): string {
   return unsafe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
-
-/**
- * Generate a UUID v4
- */
-function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;');
 }
 
 // ============================================================================

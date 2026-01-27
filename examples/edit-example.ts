@@ -3,7 +3,7 @@
  * Run with: npx ts-node examples/edit-example.ts <path-to-epub>
  */
 
-import * as path from 'path';
+import * as path from 'node:path';
 
 import { EPUBBuilder } from '../src';
 

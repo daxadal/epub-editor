@@ -29,7 +29,7 @@ const navDoc: EPUBNavigationDocument = {
     lang: 'en',
     xmlns: 'http://www.w3.org/1999/xhtml',
   },
-  
+
   // Required: Table of Contents
   toc: {
     'epub:type': 'toc',
@@ -80,7 +80,7 @@ const navDoc: EPUBNavigationDocument = {
       },
     ],
   },
-  
+
   // Optional: Page List
   pageList: {
     'epub:type': 'page-list',
@@ -104,7 +104,7 @@ const navDoc: EPUBNavigationDocument = {
       },
     ],
   },
-  
+
   // Optional: Landmarks
   landmarks: {
     'epub:type': 'landmarks',
@@ -130,7 +130,7 @@ const navDoc: EPUBNavigationDocument = {
       },
     ],
   },
-  
+
   // Optional: Custom navigation
   customNavs: [
     {
@@ -157,6 +157,7 @@ const navDoc: EPUBNavigationDocument = {
 ### Core Types
 
 #### `EPUBNavigationDocument`
+
 The main type representing a complete EPUB Navigation Document.
 
 ```typescript
@@ -167,8 +168,8 @@ interface EPUBNavigationDocument {
     xmlns?: string;
     [key: string]: unknown;
   };
-  toc: TocNav;              // REQUIRED
-  pageList?: PageListNav;   // OPTIONAL
+  toc: TocNav; // REQUIRED
+  pageList?: PageListNav; // OPTIONAL
   landmarks?: LandmarksNav; // OPTIONAL
   customNavs?: CustomNav[]; // OPTIONAL
   additionalContent?: unknown;
@@ -176,6 +177,7 @@ interface EPUBNavigationDocument {
 ```
 
 #### `NavListItem`
+
 Represents a list item in any navigation list.
 
 ```typescript
@@ -199,6 +201,7 @@ interface NavListItem {
 ### Navigation Types
 
 #### `TocNav`
+
 Table of Contents navigation (required, exactly one).
 
 ```typescript
@@ -208,6 +211,7 @@ interface TocNav extends NavElement {
 ```
 
 #### `PageListNav`
+
 Page list navigation (optional, at most one). Should be flat with no nested sublists.
 
 ```typescript
@@ -218,6 +222,7 @@ interface PageListNav extends NavElement {
 ```
 
 #### `LandmarksNav`
+
 Landmarks navigation (optional, at most one). Should be flat, and all links must have `epub:type`.
 
 ```typescript
@@ -236,6 +241,7 @@ interface LandmarksNav extends NavElement {
 ```
 
 #### `CustomNav`
+
 Custom navigation elements (optional, any number).
 
 ```typescript
