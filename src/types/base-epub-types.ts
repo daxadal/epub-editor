@@ -3,23 +3,29 @@
  */
 
 /**
- * Dublin Core Metadata - shared across EPUB versions
+ * Dublin Core metadata fields for EPUB
+ * @see https://www.dublincore.org/specifications/dublin-core/dcmi-terms/
  */
 export interface DublinCoreMetadata {
   title: string;
   creator: string;
-  language: string;
+  language?: string;
   identifier?: string;
   date?: string;
   publisher?: string;
   description?: string;
   subject?: string | string[];
   rights?: string;
-  contributor?: string;
+  contributor?: string | string[];
+  type?: string;
+  format?: string;
+  source?: string;
+  relation?: string;
+  coverage?: string;
 }
 
 /**
- * Chapter/Content Document representation
+ * Chapter structure in the EPUB
  */
 export interface Chapter {
   id: string;
@@ -30,11 +36,11 @@ export interface Chapter {
   order: number;
   children: Chapter[];
   headingLevel?: number;
-  linear: boolean;
+  linear?: boolean;
 }
 
 /**
- * Image resource
+ * Image resource in the EPUB
  */
 export interface ImageResource {
   id: string;
@@ -46,7 +52,7 @@ export interface ImageResource {
 }
 
 /**
- * Stylesheet resource
+ * CSS Stylesheet resource
  */
 export interface StylesheetResource {
   id: string;
@@ -55,7 +61,7 @@ export interface StylesheetResource {
 }
 
 /**
- * Options for adding a chapter
+ * Options for adding a new chapter
  */
 export interface AddChapterOptions {
   title: string;
@@ -84,9 +90,10 @@ export interface AddStylesheetOptions {
 }
 
 /**
- * Export options
+ * Options for exporting EPUB
  */
 export interface ExportOptions {
+  filepath?: string;
   validate?: boolean;
   compression?: number;
 }
@@ -101,7 +108,7 @@ export interface ValidationResult {
 }
 
 /**
- * Manifest item
+ * EPUB Package Document (OPF) manifest item
  */
 export interface ManifestItem {
   id: string;
@@ -111,9 +118,10 @@ export interface ManifestItem {
 }
 
 /**
- * Spine item
+ * EPUB Package Document (OPF) spine item
  */
 export interface SpineItem {
   idref: string;
   linear?: boolean;
+  properties?: string;
 }
