@@ -74,10 +74,10 @@ function copyChapter(
 
     // Handle various possible path formats
     const patterns = [
-      new RegExp(`src=["']\\.\\./${oldPath}["']`, 'g'),
-      new RegExp(`src=["']${oldPath}["']`, 'g'),
-      new RegExp(`src=["']\\.\\./${path.basename(oldPath)}["']`, 'g'),
-      new RegExp(`src=["']${path.basename(oldPath)}["']`, 'g'),
+      new RegExp(String.raw`src=["']\.\./${oldPath}["']`, 'g'),
+      new RegExp(String.raw`src=["']${oldPath}["']`, 'g'),
+      new RegExp(String.raw`src=["']\.\./${path.basename(oldPath)}["']`, 'g'),
+      new RegExp(String.raw`src=["']${path.basename(oldPath)}["']`, 'g'),
     ];
 
     patterns.forEach((pattern) => {
