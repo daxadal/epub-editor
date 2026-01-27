@@ -5,11 +5,11 @@
  */
 
 export { EPUB2Builder } from './epub2-builder';
-export { EPUBBuilder } from './epub-builder';
+export { EPUB3Builder } from './epub3-builder';
 export { BaseEPUBBuilder } from './base-epub-builder';
 
-// Export EPUBBuilder as EPUBBuilder for backwards compatibility
-export { EPUBBuilder as EPUBBuilder } from './epub-builder';
+// Export EPUB3Builder as EPUBBuilder for backwards compatibility
+export { EPUB3Builder as EPUBBuilder } from './epub3-builder';
 
 // Export shared types
 export {
@@ -39,4 +39,4 @@ export {
   NavListItem,
   NavElement,
   RecommendedLandmarkType,
-} from './types/epub-builder-types';
+} from './types/epub3-types';
