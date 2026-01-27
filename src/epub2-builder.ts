@@ -16,10 +16,10 @@ import {
 import { NCXDocument, NCXNavPoint } from './types/epub2-types';
 import { generateMimetype, generateContainer } from './utils/epub-templates';
 import {
-  generateChapterXHTML_EPUB2,
-  generateOPF_EPUB2,
+  generateChapterXHTML,
+  generateOPF,
+  generateNCX,
 } from './utils/epub2-templates';
-import { generateNCX } from './utils/epub2-templates';
 
 const parseXml = promisify(parseString);
 
@@ -83,7 +83,7 @@ export class EPUB2Builder extends BaseEPUB3Builder {
 
     // Add chapters
     this.chapters.forEach((chapter) => {
-      const xhtml = generateChapterXHTML_EPUB2(chapter, stylesheetHrefs);
+      const xhtml = generateChapterXHTML(chapter, stylesheetHrefs);
       zip.file(`EPUB/${chapter.filename}`, xhtml);
     });
 
@@ -272,7 +272,7 @@ export class EPUB2Builder extends BaseEPUB3Builder {
       return (chapterA?.order || 0) - (chapterB?.order || 0);
     });
 
-    return generateOPF_EPUB2(this.metadata, manifestItems, spineItems, ncxId);
+    return generateOPF(this.metadata, manifestItems, spineItems, ncxId);
   }
 
   /**

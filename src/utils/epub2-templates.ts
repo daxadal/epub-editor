@@ -7,6 +7,7 @@ import {
   SpineItem,
 } from '../types/base-epub-types';
 import { NCXDocument, NCXNavPoint } from '../types/epub2-types';
+
 import { escapeXml } from './epub-templates';
 
 // ============================================================================
@@ -16,7 +17,7 @@ import { escapeXml } from './epub-templates';
  * Generate XHTML 1.1 template for a chapter (EPUB 2)
  */
 
-export function generateChapterXHTML_EPUB2(
+export function generateChapterXHTML(
   chapter: Chapter,
   stylesheetHrefs: string[] = [],
 ): string {
@@ -45,7 +46,7 @@ ${styleLinks}
 /**
  * Generate the EPUB 2 Package Document (OPF 2.0)
  */
-export function generateOPF_EPUB2(
+export function generateOPF(
   metadata: DublinCoreMetadata,
   manifestItems: ManifestItem[],
   spineItems: SpineItem[],
@@ -56,7 +57,7 @@ export function generateOPF_EPUB2(
   const date = metadata.date || new Date().toISOString().split('T')[0];
 
   // Generate metadata section for EPUB 2
-  const metadataXml = generateMetadataSection_EPUB2(
+  const metadataXml = generateMetadataSection(
     metadata,
     identifier,
     language,
@@ -93,7 +94,7 @@ ${spineXml}
 /**
  * Generate metadata section for OPF 2.0
  */
-export function generateMetadataSection_EPUB2(
+export function generateMetadataSection(
   metadata: DublinCoreMetadata,
   identifier: string,
   language: string,
