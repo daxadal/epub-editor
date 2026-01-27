@@ -4,9 +4,9 @@
  * @module epub-builder
  */
 
-export { EPUB2Builder } from './epub2-builder';
-export { EPUB3Builder } from './epub3-builder';
-export { BaseEPUB3Builder } from './base-epub-builder';
+export { EPUB2Builder } from './epub2/epub2.builder';
+export { EPUB3Builder } from './epub3/epub3.builder';
+export { BaseEPUB3Builder } from './base-epub/base-epub.builder';
 
 // Export shared types
 export {
@@ -21,10 +21,10 @@ export {
   ValidationResult,
   ManifestItem,
   SpineItem,
-} from './types/base-epub-types';
+} from './base-epub/base-epub.types';
 
 // Export EPUB 2 specific types
-export { NCXDocument, NCXNavPoint } from './types/epub2-types';
+export { NCXDocument, NCXNavPoint } from './epub2/epub2.types';
 
 // Export EPUB 3 specific types
 export {
@@ -36,4 +36,4 @@ export {
   NavListItem,
   NavElement,
   RecommendedLandmarkType,
-} from './types/navigation-document';
+} from './epub3/epub3.types';

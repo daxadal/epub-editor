@@ -5,10 +5,10 @@ import {
   DublinCoreMetadata,
   ManifestItem,
   SpineItem,
-} from '../types/base-epub-types';
-import { NCXDocument, NCXNavPoint } from '../types/epub2-types';
+} from '../base-epub/base-epub.types';
+import { escapeXml } from '../utils/xml.utils';
 
-import { escapeXml } from './xml.utils';
+import { NCXDocument, NCXNavPoint } from './epub2.types';
 
 // ============================================================================
 // EPUB 2 Specific Templates
