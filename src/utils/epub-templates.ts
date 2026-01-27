@@ -11,7 +11,7 @@ import {
 import {
   EPUBNavigationDocument,
   NavListItem,
-} from '../types/epub3-types';
+} from '../types/epub-builder-types';
 import { NCXDocument, NCXNavPoint } from '../types/epub2-types';
 
 /**

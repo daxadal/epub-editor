@@ -4,7 +4,7 @@ import * as fs from 'fs-extra';
 import { parseString } from 'xml2js';
 
 import { BaseEPUBBuilder } from './base-epub-builder';
-import { EPUB3Builder } from './epub3-builder';
+import { EPUBBuilder } from './epub-builder';
 import {
   DublinCoreMetadata,
   Chapter,
@@ -125,11 +125,11 @@ export class EPUB2Builder extends BaseEPUBBuilder {
 
   /**
    * Convert this EPUB 2 to EPUB 3
-   * @returns New EPUB3Builder instance with converted content
+   * @returns New EPUBBuilder instance with converted content
    */
-  public toEPUB3(): EPUB3Builder {
-    // Create new EPUB3Builder with the same metadata
-    const epub3 = new EPUB3Builder(this.metadata);
+  public toEPUB3(): EPUBBuilder {
+    // Create new EPUBBuilder with the same metadata
+    const epub3 = new EPUBBuilder(this.metadata);
 
     // Copy all chapters
     const chapterMap = new Map<string, string>(); // old ID -> new ID
