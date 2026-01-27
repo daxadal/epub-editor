@@ -8,7 +8,7 @@ import {
 } from '../types/base-epub-types';
 import { NCXDocument, NCXNavPoint } from '../types/epub2-types';
 
-import { escapeXml } from './epub-templates';
+import { escapeXml } from './xml.utils';
 
 // ============================================================================
 // EPUB 2 Specific Templates
