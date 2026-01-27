@@ -14,13 +14,12 @@ import {
   ExportOptions,
 } from './types/base-epub-types';
 import { NCXDocument, NCXNavPoint } from './types/epub2-types';
+import { generateMimetype, generateContainer } from './utils/epub-templates';
 import {
-  generateMimetype,
-  generateContainer,
   generateChapterXHTML_EPUB2,
   generateOPF_EPUB2,
-  generateNCX,
-} from './utils/epub-templates';
+} from './utils/epub2-templates';
+import { generateNCX } from './utils/epub2-templates';
 
 const parseXml = promisify(parseString);
 
