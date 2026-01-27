@@ -1,4 +1,4 @@
-import { promisify } from 'util';
+import { promisify } from 'node:util';
 
 import JSZip from 'jszip';
 import * as fs from 'fs-extra';

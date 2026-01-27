@@ -4,7 +4,7 @@
  * Demonstrates creating a blank EPUB 2 document with chapters, images, and stylesheets
  */
 
-import * as path from 'path';
+import * as path from 'node:path';
 
 import { EPUB2Builder } from '../src';
 
