@@ -1,4 +1,4 @@
-# EPUBBuilder Implementation Summary
+# EPUB3Builder Implementation Summary
 
 ## 🎯 Completed Implementation
 
@@ -39,8 +39,8 @@ A fully-functional EPUB 3.3 builder class has been successfully implemented with
    - Configurable compression level
 
 6. **✅ Parse Existing EPUBs**
-   - `EPUBBuilder.parse()` loads from file
-   - `EPUBBuilder.parseBuffer()` loads from Buffer
+   - `EPUB3Builder.parse()` loads from file
+   - `EPUB3Builder.parseBuffer()` loads from Buffer
    - Graceful error handling with descriptive messages
    - Extracts metadata, chapters, images, stylesheets
    - Allows editing and re-export
@@ -81,7 +81,7 @@ A fully-functional EPUB 3.3 builder class has been successfully implemented with
 
 ```
 src/
-├── epub-builder.ts              # Main EPUBBuilder class (615 lines)
+├── epub-builder.ts              # Main EPUB3Builder class (615 lines)
 ├── index.ts                     # Public API exports
 ├── types/
 │   ├── epub-builder-types.ts    # EPUB builder type definitions
@@ -109,7 +109,7 @@ src/
 ### Constructor
 
 ```typescript
-new EPUBBuilder({
+new EPUB3Builder({
   title: string,        // Required
   creator: string,      // Required
   language?: string,    // Optional, default: 'en'
@@ -150,8 +150,8 @@ exportToFile(filepath: string, options?: ExportOptions): Promise<void>
 ### Static Methods
 
 ```typescript
-EPUBBuilder.parse(filepath: string): Promise<EPUBBuilder>
-EPUBBuilder.parseBuffer(buffer: Buffer): Promise<EPUBBuilder>
+EPUB3Builder.parse(filepath: string): Promise<EPUB3Builder>
+EPUB3Builder.parseBuffer(buffer: Buffer): Promise<EPUB3Builder>
 ```
 
 ## 🎯 Design Decisions
@@ -203,7 +203,7 @@ As requested, only uses installed dependencies:
 ### Simple Creation
 
 ```typescript
-const epub = new EPUBBuilder({ title: 'My Book', creator: 'Author' });
+const epub = new EPUB3Builder({ title: 'My Book', creator: 'Author' });
 epub.addChapter({ title: 'Chapter 1', content: '<p>Hello</p>' });
 await epub.exportToFile('book.epub');
 ```
@@ -218,7 +218,7 @@ epub.addChapter({ title: 'Chapter 1.1', parentId: part1, content: '...' });
 ### Parsing & Editing
 
 ```typescript
-const epub = await EPUBBuilder.parse('existing.epub');
+const epub = await EPUB3Builder.parse('existing.epub');
 epub.addChapter({ title: 'New Chapter', content: '...' });
 await epub.exportToFile('modified.epub');
 ```

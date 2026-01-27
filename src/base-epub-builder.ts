@@ -21,7 +21,7 @@ import { DEFAULT_CSS } from './utils/default-styles';
  * Abstract base class for EPUB builders
  * Provides shared functionality for EPUB 2 and EPUB 3 builders
  */
-export abstract class BaseEPUBBuilder {
+export abstract class BaseEPUB3Builder {
   protected metadata: DublinCoreMetadata;
   protected readonly chapters: Map<string, Chapter>;
   protected readonly images: Map<string, ImageResource>;

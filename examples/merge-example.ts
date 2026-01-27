@@ -4,12 +4,12 @@ import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
 
-import { Chapter, EPUBBuilder } from '../src';
+import { Chapter, EPUB3Builder } from '../src';
 
 function copyStyleSheets(
-  sourceEPUB: EPUBBuilder,
+  sourceEPUB: EPUB3Builder,
   bookNumber: number,
-  mergedEPUB: EPUBBuilder,
+  mergedEPUB: EPUB3Builder,
 ): Map<string, string> {
   // Get all stylesheets from this EPUB (except default)
   const stylesheets = sourceEPUB
@@ -32,9 +32,9 @@ function copyStyleSheets(
 }
 
 function copyImages(
-  sourceEPUB: EPUBBuilder,
+  sourceEPUB: EPUB3Builder,
   bookNumber: number,
-  mergedEPUB: EPUBBuilder,
+  mergedEPUB: EPUB3Builder,
 ): Map<string, string> {
   const images = sourceEPUB.getAllImages();
 
@@ -63,7 +63,7 @@ function copyChapter(
   chapter: Chapter,
   stylesheetMap: Map<string, string>,
   imageMap: Map<string, string>,
-  mergedEPUB: EPUBBuilder,
+  mergedEPUB: EPUB3Builder,
   sectionId: string,
 ) {
   // Update content to reflect new image and stylesheet paths
@@ -137,7 +137,7 @@ async function mergeExample({
     sourceFiles.map(async (file) => {
       const fullPath = path.join(basePath, file);
       console.log(`   Loading: ${file}`);
-      return await EPUBBuilder.parse(fullPath);
+      return await EPUB3Builder.parse(fullPath);
     }),
   );
   console.log('✅ All EPUBs loaded successfully\n');
@@ -162,7 +162,7 @@ async function mergeExample({
   console.log(`   Language: ${language}\n`);
 
   // Create the merged EPUB
-  const mergedEPUB = new EPUBBuilder({
+  const mergedEPUB = new EPUB3Builder({
     title: seriesName,
     creator: Array.from(authors).join(', '),
     language,
