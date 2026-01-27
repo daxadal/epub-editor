@@ -10,7 +10,7 @@ function copyStyleSheets(
   sourceEPUB: EPUBBuilder,
   bookNumber: number,
   mergedEPUB: EPUBBuilder,
-) {
+): Map<string, string> {
   // Get all stylesheets from this EPUB (except default)
   const stylesheets = sourceEPUB
     .getAllStylesheets()
@@ -28,13 +28,14 @@ function copyStyleSheets(
     stylesheetMap.set(stylesheet.filename, uniqueFilename);
     console.log(`      ✓ Added stylesheet: ${uniqueFilename}`);
   }
+  return stylesheetMap;
 }
 
 function copyImages(
   sourceEPUB: EPUBBuilder,
   bookNumber: number,
   mergedEPUB: EPUBBuilder,
-) {
+): Map<string, string> {
   const images = sourceEPUB.getAllImages();
 
   // Add images with unique naming
@@ -60,12 +61,31 @@ function copyImages(
 
 function copyChapter(
   chapter: Chapter,
+  stylesheetMap: Map<string, string>,
   imageMap: Map<string, string>,
   mergedEPUB: EPUBBuilder,
   sectionId: string,
 ) {
   // Update content to reflect new image and stylesheet paths
   let updatedContent = chapter.content;
+
+  // Update stylesheet references in content
+  stylesheetMap.forEach((newFilename, oldFilename) => {
+    const oldPath = oldFilename;
+    const newPath = `styles/${newFilename}`;
+
+    // Handle various possible path formats
+    const patterns = [
+      new RegExp(String.raw`src=["']\.\./${oldPath}["']`, 'g'),
+      new RegExp(String.raw`src=["']${oldPath}["']`, 'g'),
+      new RegExp(String.raw`src=["']\.\./${path.basename(oldPath)}["']`, 'g'),
+      new RegExp(String.raw`src=["']${path.basename(oldPath)}["']`, 'g'),
+    ];
+
+    patterns.forEach((pattern) => {
+      updatedContent = updatedContent.replace(pattern, `src="../${newPath}"`);
+    });
+  });
 
   // Update image references in content
   imageMap.forEach((newFilename, oldFilename) => {
@@ -168,9 +188,7 @@ async function mergeExample({
 
     console.log(`      ✓ Created section: ${sourceMeta.title}`);
 
-    copyStyleSheets(sourceEPUB, bookNumber, mergedEPUB);
-
-    // Get all images from this EPUB
+    const stylesheetMap = copyStyleSheets(sourceEPUB, bookNumber, mergedEPUB);
     const imageMap = copyImages(sourceEPUB, bookNumber, mergedEPUB);
 
     // Get all root chapters from this EPUB
@@ -179,7 +197,7 @@ async function mergeExample({
     // Add all chapters as children of the section
     let chapterCount = 0;
     for (const chapter of rootChapters) {
-      copyChapter(chapter, imageMap, mergedEPUB, sectionId);
+      copyChapter(chapter, stylesheetMap, imageMap, mergedEPUB, sectionId);
       chapterCount++;
     }
 
