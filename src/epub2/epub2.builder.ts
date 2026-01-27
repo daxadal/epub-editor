@@ -421,20 +421,20 @@ export class EPUB2Builder extends BaseEPUB3Builder {
   }
 
   private static extractTitleFromXHTML(xhtml: string): string | null {
-    const titleMatch = xhtml.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
     if (titleMatch) return titleMatch[1];
 
-    const h1Match = xhtml.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+    const h1Match = /<h1[^>]*>([^<]+)<\/h1>/i.exec(xhtml);
     if (h1Match) return h1Match[1];
 
     return null;
   }
 
   private static extractBodyFromXHTML(xhtml: string): string {
-    const bodyMatch = xhtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    const bodyMatch = /<body[^>]*>([\s\S]*?)<\/body>/i.exec(xhtml);
     if (bodyMatch) {
       const content = bodyMatch[1];
-      const divMatch = content.match(/<div[^>]*>([\s\S]*?)<\/div>/i);
+      const divMatch = /<div[^>]*>([\s\S]*?)<\/div>/i.exec(content);
       if (divMatch) {
         const inner = divMatch[1];
         return inner.replace(/<h[1-6][^>]*>.*?<\/h[1-6]>/i, '').trim();
