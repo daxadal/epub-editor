@@ -601,10 +601,10 @@ export class EPUBBuilder {
    * Extract title from XHTML content
    */
   private static extractTitleFromXHTML(xhtml: string): string | null {
-    const titleMatch = xhtml.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
     if (titleMatch) return titleMatch[1];
 
-    const h1Match = xhtml.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+    const h1Match = /<h1[^>]*>([^<]+)<\/h1>/i.exec(xhtml);
     if (h1Match) return h1Match[1];
 
     return null;
@@ -614,13 +614,11 @@ export class EPUBBuilder {
    * Extract body content from XHTML
    */
   private static extractBodyFromXHTML(xhtml: string): string {
-    const bodyMatch = xhtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    const bodyMatch = /<body[^>]*>([\s\S]*?)<\/body>/i.exec(xhtml);
     if (bodyMatch) {
       // Remove the section wrapper if present
       const content = bodyMatch[1];
-      const sectionMatch = content.match(
-        /<section[^>]*>([\s\S]*?)<\/section>/i,
-      );
+      const sectionMatch = /<section[^>]*>([\s\S]*?)<\/section>/i.exec(content);
       if (sectionMatch) {
         // Remove the heading
         const inner = sectionMatch[1];
