@@ -1,4 +1,4 @@
-import { promisify } from 'util';
+import { promisify } from 'node:util';
 
 import JSZip from 'jszip';
 import * as fs from 'fs-extra';
@@ -58,9 +58,9 @@ const parseXml = promisify(parseString);
  */
 export class EPUBBuilder {
   private metadata: DublinCoreMetadata;
-  private chapters: Map<string, Chapter>;
-  private images: Map<string, ImageResource>;
-  private stylesheets: Map<string, StylesheetResource>;
+  private readonly chapters: Map<string, Chapter>;
+  private readonly images: Map<string, ImageResource>;
+  private readonly stylesheets: Map<string, StylesheetResource>;
   private rootChapterIds: string[];
   private chapterCounter: number;
 
@@ -403,8 +403,7 @@ export class EPUBBuilder {
     zip.file('EPUB/package.opf', opf);
 
     // Generate zip
-    const compression =
-      options.compression !== undefined ? options.compression : 9;
+    const compression = options.compression ?? 9;
     return await zip.generateAsync({
       type: 'nodebuffer',
       compression: 'DEFLATE',
@@ -526,6 +525,19 @@ export class EPUBBuilder {
     const opfDir = opfPath.substring(0, opfPath.lastIndexOf('/') + 1);
 
     // Extract chapters from spine order
+    await EPUBBuilder.extractChapters(epub, zip, manifest, opfDir, spine);
+
+    // Extract images
+    await EPUBBuilder.extractImages(epub, zip, manifest, opfDir);
+  }
+
+  private static async extractChapters(
+    epub: EPUBBuilder,
+    zip: JSZip,
+    manifest: any,
+    opfDir: string,
+    spine: any,
+  ) {
     const chapterIds: string[] = [];
     for (const itemref of spine) {
       const idref = itemref.$?.idref;
@@ -557,8 +569,14 @@ export class EPUBBuilder {
         }
       }
     }
+  }
 
-    // Extract images
+  private static async extractImages(
+    epub: EPUBBuilder,
+    zip: JSZip,
+    manifest: any,
+    opfDir: string,
+  ) {
     for (const item of manifest) {
       const mimeType = item.$?.['media-type'];
       if (mimeType?.startsWith('image/')) {
@@ -583,10 +601,10 @@ export class EPUBBuilder {
    * Extract title from XHTML content
    */
   private static extractTitleFromXHTML(xhtml: string): string | null {
-    const titleMatch = xhtml.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
     if (titleMatch) return titleMatch[1];
 
-    const h1Match = xhtml.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+    const h1Match = /<h1[^>]*>([^<]+)<\/h1>/i.exec(xhtml);
     if (h1Match) return h1Match[1];
 
     return null;
@@ -596,13 +614,11 @@ export class EPUBBuilder {
    * Extract body content from XHTML
    */
   private static extractBodyFromXHTML(xhtml: string): string {
-    const bodyMatch = xhtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    const bodyMatch = /<body[^>]*>([\s\S]*?)<\/body>/i.exec(xhtml);
     if (bodyMatch) {
       // Remove the section wrapper if present
       const content = bodyMatch[1];
-      const sectionMatch = content.match(
-        /<section[^>]*>([\s\S]*?)<\/section>/i,
-      );
+      const sectionMatch = /<section[^>]*>([\s\S]*?)<\/section>/i.exec(content);
       if (sectionMatch) {
         // Remove the heading
         const inner = sectionMatch[1];

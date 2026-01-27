@@ -8,7 +8,6 @@
  */
 
 export {
-  PhrasingContent,
   NavLink,
   NavListItem,
   NavElement,

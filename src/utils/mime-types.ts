@@ -83,9 +83,9 @@ export function isValidContentDocumentMimeType(mimeType: string): boolean {
 export function sanitizeFilename(filename: string): string {
   // Remove or replace invalid characters
   return filename
-    .replace(/[^a-zA-Z0-9._-]/g, '-')
-    .replace(/^\.+/, '') // Remove leading dots
-    .replace(/\.+$/, '') // Remove trailing dots
+    .replaceAll(/[^a-zA-Z0-9._-]/g, '-')
+    .replaceAll(/^\.+/g, '') // Remove leading dots
+    .replaceAll(/\.+$/g, '') // Remove trailing dots
     .toLowerCase();
 }
 
@@ -98,8 +98,8 @@ export function generateFilenameFromTitle(
 ): string {
   const base = title
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replaceAll(/[^a-z0-9]+/g, '-')
+    .replaceAll(/(^-+)|(-+$)/g, '')
     .substring(0, 50); // Limit length
 
   return `${base}.${extension}`;
