@@ -5,12 +5,6 @@
  */
 
 /**
- * Phrasing content (text and inline elements)
- * Can include text, images, or other inline HTML elements
- */
-export type PhrasingContent = string;
-
-/**
  * Represents a navigation link or heading in a navigation list
  */
 export interface NavLink {
@@ -22,7 +16,7 @@ export interface NavLink {
     /** URL reference to a top-level content document or fragment */
     href: string;
     /** Text label for the link (non-zero-length after whitespace normalization) */
-    content: PhrasingContent;
+    content: string;
     /** Optional title attribute for alternate text rendering */
     title?: string;
     /** epub:type attribute (required for landmarks nav) */
@@ -37,7 +31,7 @@ export interface NavLink {
    */
   span?: {
     /** Text label for the heading (non-zero-length after whitespace normalization) */
-    content: PhrasingContent;
+    content: string;
     /** Optional title attribute for alternate text rendering */
     title?: string;
     /** Any other HTML attributes */
@@ -141,7 +135,7 @@ export interface LandmarksNav extends NavElement {
     /** Link element is required for landmarks */
     a: {
       href: string;
-      content: PhrasingContent;
+      content: string;
       title?: string;
       /** epub:type is REQUIRED for landmarks */
       'epub:type': string;
@@ -242,7 +236,7 @@ export interface TypedLandmarksNav extends Omit<LandmarksNav, 'ol'> {
   ol: Array<{
     a: {
       href: string;
-      content: PhrasingContent;
+      content: string;
       title?: string;
       'epub:type': RecommendedLandmarkType | string;
       [key: string]: unknown;
