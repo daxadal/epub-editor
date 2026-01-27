@@ -8,12 +8,10 @@ import { Chapter, EPUBBuilder } from '../src';
 
 function copyStyleSheets(
   sourceEPUB: EPUBBuilder,
-  addedStylesheets: Map<string, string>,
   bookNumber: number,
   mergedEPUB: EPUBBuilder,
 ) {
   // Get all stylesheets from this EPUB (except default)
-
   const stylesheets = sourceEPUB
     .getAllStylesheets()
     .filter((s) => s.id !== 'default-style');
@@ -21,32 +19,19 @@ function copyStyleSheets(
   // Add stylesheets with unique naming
   const stylesheetMap = new Map<string, string>(); // old filename -> new filename
   for (const stylesheet of stylesheets) {
-    const contentHash = Buffer.from(stylesheet.content)
-      .toString('base64')
-      .substring(0, 20);
-
-    if (!addedStylesheets.has(contentHash)) {
-      // This stylesheet hasn't been added yet
-      const uniqueFilename = `book${bookNumber}-${path.basename(stylesheet.filename)}`;
-      mergedEPUB.addStylesheet({
-        filename: uniqueFilename,
-        content: stylesheet.content,
-      });
-      addedStylesheets.set(contentHash, uniqueFilename);
-      stylesheetMap.set(stylesheet.filename, uniqueFilename);
-      console.log(`      ✓ Added stylesheet: ${uniqueFilename}`);
-    } else {
-      stylesheetMap.set(
-        stylesheet.filename,
-        addedStylesheets.get(contentHash)!,
-      );
-    }
+    // This stylesheet hasn't been added yet
+    const uniqueFilename = `book${bookNumber}-${path.basename(stylesheet.filename)}`;
+    mergedEPUB.addStylesheet({
+      filename: uniqueFilename,
+      content: stylesheet.content,
+    });
+    stylesheetMap.set(stylesheet.filename, uniqueFilename);
+    console.log(`      ✓ Added stylesheet: ${uniqueFilename}`);
   }
 }
 
 function copyImages(
   sourceEPUB: EPUBBuilder,
-  addedImages: Map<string, string>,
   bookNumber: number,
   mergedEPUB: EPUBBuilder,
 ) {
@@ -55,27 +40,20 @@ function copyImages(
   // Add images with unique naming
   const imageMap = new Map<string, string>(); // old filename -> new filename
   for (const image of images) {
-    const dataHash = image.data.toString('base64').substring(0, 20);
+    // This image hasn't been added yet
+    const originalFilename = path.basename(image.filename);
+    const ext = path.extname(originalFilename);
+    const baseName = path.basename(originalFilename, ext);
+    const uniqueFilename = `book${bookNumber}-${baseName}${ext}`;
 
-    if (!addedImages.has(dataHash)) {
-      // This image hasn't been added yet
-      const originalFilename = path.basename(image.filename);
-      const ext = path.extname(originalFilename);
-      const baseName = path.basename(originalFilename, ext);
-      const uniqueFilename = `book${bookNumber}-${baseName}${ext}`;
-
-      mergedEPUB.addImage({
-        filename: uniqueFilename,
-        data: image.data,
-        alt: image.alt,
-        isCover: false, // Don't preserve cover flags in merged book
-      });
-      addedImages.set(dataHash, uniqueFilename);
-      imageMap.set(image.filename, uniqueFilename);
-      console.log(`      ✓ Added image: ${uniqueFilename}`);
-    } else {
-      imageMap.set(image.filename, addedImages.get(dataHash)!);
-    }
+    mergedEPUB.addImage({
+      filename: uniqueFilename,
+      data: image.data,
+      alt: image.alt,
+      isCover: false, // Don't preserve cover flags in merged book
+    });
+    imageMap.set(image.filename, uniqueFilename);
+    console.log(`      ✓ Added image: ${uniqueFilename}`);
   }
   return imageMap;
 }
@@ -174,10 +152,6 @@ async function mergeExample({
 
   console.log('🔧 Merging content...');
 
-  // Track added resources to avoid duplicates
-  const addedStylesheets = new Map<string, string>(); // content hash -> new filename
-  const addedImages = new Map<string, string>(); // data hash -> new filename
-
   // Process each source EPUB
   for (let i = 0; i < sourceEPUBs.length; i++) {
     const sourceEPUB = sourceEPUBs[i];
@@ -194,15 +168,10 @@ async function mergeExample({
 
     console.log(`      ✓ Created section: ${sourceMeta.title}`);
 
-    copyStyleSheets(sourceEPUB, addedStylesheets, bookNumber, mergedEPUB);
+    copyStyleSheets(sourceEPUB, bookNumber, mergedEPUB);
 
     // Get all images from this EPUB
-    const imageMap = copyImages(
-      sourceEPUB,
-      addedImages,
-      bookNumber,
-      mergedEPUB,
-    );
+    const imageMap = copyImages(sourceEPUB, bookNumber, mergedEPUB);
 
     // Get all root chapters from this EPUB
     const rootChapters = sourceEPUB.getRootChapters();
