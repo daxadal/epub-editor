@@ -8,10 +8,13 @@ import {
   Chapter,
   ManifestItem,
   SpineItem,
-} from '../base-epub/base-epub.types';
-import { escapeXml } from '../utils/xml.utils';
+} from '../types/base-epub-types';
+import {
+  EPUBNavigationDocument,
+  NavListItem,
+} from '../types/navigation-document';
 
-import { EPUBNavigationDocument, NavListItem } from './epub3.types';
+import { escapeXml } from './xml.utils';
 
 /**
  * Generate the mimetype file content
