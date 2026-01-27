@@ -16,7 +16,7 @@ import {
   EPUBNavigationDocument,
   TocNav,
   NavListItem,
-} from './types/epub3-types';
+} from './types/navigation-document';
 import {
   generateMimetype,
   generateContainer,

@@ -9,7 +9,10 @@ import {
   ManifestItem,
   SpineItem,
 } from '../types/base-epub-types';
-import { EPUBNavigationDocument, NavListItem } from '../types/epub3-types';
+import {
+  EPUBNavigationDocument,
+  NavListItem,
+} from '../types/navigation-document';
 import { NCXDocument, NCXNavPoint } from '../types/epub2-types';
 
 /**
