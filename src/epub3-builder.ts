@@ -4,7 +4,7 @@ import JSZip from 'jszip';
 import * as fs from 'fs-extra';
 import { parseString } from 'xml2js';
 
-import { BaseEPUBBuilder } from './base-epub-builder';
+import { BaseEPUB3Builder } from './base-epub-builder';
 import {
   DublinCoreMetadata,
   ManifestItem,
@@ -43,7 +43,7 @@ const parseXml = promisify(parseString);
  * await epub.exportToFile('my-book.epub');
  * ```
  */
-export class EPUB3Builder extends BaseEPUBBuilder {
+export class EPUB3Builder extends BaseEPUB3Builder {
   /**
    * Create a new EPUB 3 builder
    */
@@ -330,14 +330,14 @@ export class EPUB3Builder extends BaseEPUBBuilder {
     const opfDir = opfPath.substring(0, opfPath.lastIndexOf('/') + 1);
 
     // Extract chapters from spine order
-    await EPUBBuilder.extractChapters(epub, zip, manifest, opfDir, spine);
+    await EPUB3Builder.extractChapters(epub, zip, manifest, opfDir, spine);
 
     // Extract images
-    await EPUBBuilder.extractImages(epub, zip, manifest, opfDir);
+    await EPUB3Builder.extractImages(epub, zip, manifest, opfDir);
   }
 
   private static async extractChapters(
-    epub: EPUBBuilder,
+    epub: EPUB3Builder,
     zip: JSZip,
     manifest: any,
     opfDir: string,
@@ -376,7 +376,7 @@ export class EPUB3Builder extends BaseEPUBBuilder {
   }
 
   private static async extractImages(
-    epub: EPUBBuilder,
+    epub: EPUB3Builder,
     zip: JSZip,
     manifest: any,
     opfDir: string,

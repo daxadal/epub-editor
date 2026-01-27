@@ -5,7 +5,7 @@
 
 import * as path from 'node:path';
 
-import { EPUBBuilder } from '../src';
+import { EPUB3Builder } from '../src';
 
 async function editExistingEPUB() {
   const args = process.argv.slice(2);
@@ -23,7 +23,7 @@ async function editExistingEPUB() {
 
   try {
     console.log(`📖 Loading EPUB from: ${inputPath}`);
-    const epub = await EPUBBuilder.parse(inputPath);
+    const epub = await EPUB3Builder.parse(inputPath);
 
     // Display current metadata
     const metadata = epub.getMetadata();
@@ -53,7 +53,7 @@ async function editExistingEPUB() {
     const bonusChapter = epub.addChapter({
       title: 'Bonus Chapter: Additional Content',
       content: `
-        <p>This is a bonus chapter added by the EPUBBuilder library!</p>
+        <p>This is a bonus chapter added by the EPUB3Builder library!</p>
         <p>This demonstrates how you can load an existing EPUB and add new content.</p>
         <h2>What You Can Do</h2>
         <ul>
@@ -77,7 +77,7 @@ async function editExistingEPUB() {
         chapters[0].id,
         `
         <hr/>
-        <p><em>Note: This content was appended using EPUBBuilder.</em></p>
+        <p><em>Note: This content was appended using EPUB3Builder.</em></p>
       `,
       );
     }
@@ -87,7 +87,7 @@ async function editExistingEPUB() {
     console.log('🔄 Updating metadata...');
     epub.setMetadata({
       description:
-        `${metadata.description || ''} Modified with EPUBBuilder.`.trim(),
+        `${metadata.description || ''} Modified with EPUB3Builder.`.trim(),
     });
 
     // Validate
