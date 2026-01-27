@@ -315,9 +315,9 @@ function generateNavList(items: NavListItem[], indent: number): string {
  */
 function escapeXml(unsafe: string): string {
   return unsafe
-    .replaceAll(/&/, '&amp;')
-    .replaceAll(/</, '&lt;')
-    .replaceAll(/>/, '&gt;')
-    .replaceAll(/"/, '&quot;')
-    .replaceAll(/'/, '&apos;');
+    .replaceAll(/&/g, '&amp;')
+    .replaceAll(/</g, '&lt;')
+    .replaceAll(/>/g, '&gt;')
+    .replaceAll(/"/g, '&quot;')
+    .replaceAll(/'/g, '&apos;');
 }
