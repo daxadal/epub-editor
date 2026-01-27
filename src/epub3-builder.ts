@@ -10,6 +10,7 @@ import {
   ManifestItem,
   SpineItem,
   ExportOptions,
+  Chapter,
 } from './types/base-epub-types';
 import {
   EPUBNavigationDocument,

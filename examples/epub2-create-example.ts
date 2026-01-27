@@ -1,11 +1,12 @@
 /**
  * EPUB 2 Creation Example
- * 
+ *
  * Demonstrates creating a blank EPUB 2 document with chapters, images, and stylesheets
  */
 
-import { EPUB2Builder } from '../src';
 import * as path from 'path';
+
+import { EPUB2Builder } from '../src';
 
 async function main() {
   console.log('Creating EPUB 2 document...\n');
@@ -136,9 +137,11 @@ async function main() {
   // Export to file
   const outputPath = path.join(__dirname, 'output-epub2.epub');
   await epub.exportToFile(outputPath);
-  
+
   console.log(`✓ EPUB 2 created successfully: ${outputPath}`);
-  console.log('\nYou can now open this file with any EPUB reader that supports EPUB 2.0.1');
+  console.log(
+    '\nYou can now open this file with any EPUB reader that supports EPUB 2.0.1',
+  );
 }
 
 main().catch(console.error);

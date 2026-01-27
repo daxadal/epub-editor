@@ -9,7 +9,7 @@ export { EPUB3Builder } from './epub3-builder';
 export { BaseEPUB3Builder } from './base-epub-builder';
 
 // Export EPUB3Builder as EPUB3Builder for backwards compatibility
-export { EPUB3Builder as EPUB3Builder } from './epub3-builder';
+export { EPUB3Builder } from './epub3-builder';
 
 // Export shared types
 export {

@@ -1,4 +1,5 @@
 import { promisify } from 'util';
+
 import JSZip from 'jszip';
 import * as fs from 'fs-extra';
 import { parseString } from 'xml2js';
@@ -272,12 +273,7 @@ export class EPUB2Builder extends BaseEPUB3Builder {
       return (chapterA?.order || 0) - (chapterB?.order || 0);
     });
 
-    return generateOPF_EPUB2(
-      this.metadata,
-      manifestItems,
-      spineItems,
-      ncxId,
-    );
+    return generateOPF_EPUB2(this.metadata, manifestItems, spineItems, ncxId);
   }
 
   /**
