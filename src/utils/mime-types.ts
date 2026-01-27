@@ -84,8 +84,8 @@ export function sanitizeFilename(filename: string): string {
   // Remove or replace invalid characters
   return filename
     .replaceAll(/[^a-zA-Z0-9._-]/g, '-')
-    .replaceAll(/^\.+/, '') // Remove leading dots
-    .replaceAll(/\.+$/, '') // Remove trailing dots
+    .replaceAll(/^\.+/g, '') // Remove leading dots
+    .replaceAll(/\.+$/g, '') // Remove trailing dots
     .toLowerCase();
 }
 
