@@ -365,7 +365,7 @@ export function generateOPF_EPUB2(
   spineItems: SpineItem[],
   ncxId: string,
 ): string {
-  const identifier = metadata.identifier || generateUUID();
+  const identifier = metadata.identifier || uuidV4();
   const language = metadata.language || 'en';
   const date = metadata.date || new Date().toISOString().split('T')[0];
 
