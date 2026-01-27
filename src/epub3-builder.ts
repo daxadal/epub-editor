@@ -28,11 +28,11 @@ import {
 const parseXml = promisify(parseString);
 
 /**
- * EPUBBuilder - Create and manipulate EPUB 3.3 files
+ * EPUB3Builder - Create and manipulate EPUB 3.3 files
  *
  * @example
  * ```typescript
- * const epub = new EPUBBuilder({
+ * const epub = new EPUB3Builder({
  *   title: 'My Book',
  *   creator: 'John Doe',
  *   language: 'en'
@@ -44,7 +44,7 @@ const parseXml = promisify(parseString);
  * await epub.exportToFile('my-book.epub');
  * ```
  */
-export class EPUBBuilder extends BaseEPUBBuilder {
+export class EPUB3Builder extends BaseEPUBBuilder {
   /**
    * Create a new EPUB 3 builder
    */
@@ -244,10 +244,10 @@ export class EPUBBuilder extends BaseEPUBBuilder {
   /**
    * Parse an existing EPUB 3 file
    */
-  public static async parse(filepath: string): Promise<EPUBBuilder> {
+  public static async parse(filepath: string): Promise<EPUB3Builder> {
     try {
       const data = await fs.readFile(filepath);
-      return await EPUBBuilder.parseBuffer(data);
+      return await EPUB3Builder.parseBuffer(data);
     } catch (error) {
       throw new Error(
         `Failed to parse EPUB file: ${error instanceof Error ? error.message : String(error)}`,
@@ -258,7 +258,7 @@ export class EPUBBuilder extends BaseEPUBBuilder {
   /**
    * Parse an EPUB 3 from a Buffer
    */
-  public static async parseBuffer(buffer: Buffer): Promise<EPUBBuilder> {
+  public static async parseBuffer(buffer: Buffer): Promise<EPUB3Builder> {
     try {
       const zip = await JSZip.loadAsync(buffer);
 
@@ -284,10 +284,10 @@ export class EPUBBuilder extends BaseEPUBBuilder {
       const opfXml = await opfFile.async('string');
       const opfData = await parseXml(opfXml);
 
-      const metadata = EPUBBuilder.extractMetadata(opfData);
-      const epub = new EPUBBuilder(metadata);
+      const metadata = EPUB3Builder.extractMetadata(opfData);
+      const epub = new EPUB3Builder(metadata);
 
-      await EPUBBuilder.extractResources(epub, zip, opfData, opfPath);
+      await EPUB3Builder.extractResources(epub, zip, opfData, opfPath);
 
       return epub;
     } catch (error) {
@@ -320,7 +320,7 @@ export class EPUBBuilder extends BaseEPUBBuilder {
   }
 
   private static async extractResources(
-    epub: EPUBBuilder,
+    epub: EPUB3Builder,
     zip: JSZip,
     opfData: any,
     opfPath: string,
@@ -365,9 +365,9 @@ export class EPUBBuilder extends BaseEPUBBuilder {
           const content = await file.async('string');
           const chapterId = epub.addChapter({
             title:
-              EPUBBuilder.extractTitleFromXHTML(content) ||
+              EPUB3Builder.extractTitleFromXHTML(content) ||
               `Chapter ${chapterIds.length + 1}`,
-            content: EPUBBuilder.extractBodyFromXHTML(content),
+            content: EPUB3Builder.extractBodyFromXHTML(content),
             linear: itemref.$?.linear !== 'no',
           });
           chapterIds.push(chapterId);
