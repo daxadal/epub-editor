@@ -4,7 +4,9 @@
  */
 
 import * as path from 'path';
+
 import * as fs from 'fs-extra';
+
 import { EPUBBuilder } from '../src';
 
 const RESOURCES_DIR = path.join(__dirname, 'resources');
@@ -76,7 +78,7 @@ describe('EPUB Editing', () => {
 
         epub.addChapter({
           title: 'New Nested Chapter',
-          parentId: parentId,
+          parentId,
           content: '<p>Nested content</p>',
         });
 
@@ -330,7 +332,8 @@ describe('EPUB Editing', () => {
 
       // Update metadata
       epub.setMetadata({
-        description: `${originalMetadata.description || ''} Modified with EPUBBuilder.`.trim(),
+        description:
+          `${originalMetadata.description || ''} Modified with EPUBBuilder.`.trim(),
         publisher: 'Test Publisher',
       });
 

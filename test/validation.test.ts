@@ -3,7 +3,9 @@
  */
 
 import * as path from 'path';
+
 import * as fs from 'fs-extra';
+
 import { EPUBBuilder } from '../src';
 
 const RESOURCES_DIR = path.join(__dirname, 'resources');
@@ -328,10 +330,7 @@ describe('EPUB Validation', () => {
       const chapters = epub.getAllChapters();
 
       if (chapters.length > 0) {
-        epub.appendToChapter(
-          chapters[0].id,
-          '<p>Appended content</p>',
-        );
+        epub.appendToChapter(chapters[0].id, '<p>Appended content</p>');
 
         const validation = epub.validate();
         expect(validation.isValid).toBe(true);
@@ -451,10 +450,7 @@ describe('EPUB Validation', () => {
 
       const chapters = epub.getAllChapters();
       if (chapters.length > 0) {
-        epub.appendToChapter(
-          chapters[0].id,
-          '<p>Appended text</p>',
-        );
+        epub.appendToChapter(chapters[0].id, '<p>Appended text</p>');
       }
 
       const validation = epub.validate();

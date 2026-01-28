@@ -4,7 +4,9 @@
  */
 
 import * as path from 'path';
+
 import * as fs from 'fs-extra';
+
 import { EPUBBuilder } from '../src';
 
 const TEMP_DIR = path.join(__dirname, 'temp');
@@ -291,7 +293,9 @@ describe('EPUB Creation', () => {
       // Should have default stylesheet + custom one
       expect(stylesheets.length).toBeGreaterThanOrEqual(2);
 
-      const customStyle = stylesheets.find((s) => s.filename === 'css/custom.css');
+      const customStyle = stylesheets.find(
+        (s) => s.filename === 'css/custom.css',
+      );
       expect(customStyle).toBeDefined();
       expect(customStyle?.content).toBe(cssContent);
     });

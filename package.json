@@ -5,8 +5,8 @@
   "main": "src/index.ts",
   "scripts": {
     "clean": "rm -rf dist node_modules package-lock.json",
-    "lint": "eslint ./src ./examples",
-    "lint:fix": "eslint ./src ./examples --fix",
+    "lint": "eslint ./src ./examples ./test",
+    "lint:fix": "eslint ./src ./examples ./test --fix",
     "prettier": "prettier --check **/*.ts",
     "prettier:fix": "prettier --write **/*.ts",
     "test": "echo \"Tests not properly implemented\"",

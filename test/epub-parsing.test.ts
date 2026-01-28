@@ -4,7 +4,9 @@
  */
 
 import * as path from 'path';
+
 import * as fs from 'fs-extra';
+
 import { EPUBBuilder } from '../src';
 
 const RESOURCES_DIR = path.join(__dirname, 'resources');

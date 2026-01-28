@@ -4,7 +4,9 @@
  */
 
 import * as path from 'path';
+
 import * as fs from 'fs-extra';
+
 import { EPUBBuilder } from '../src';
 
 const TEMP_DIR = path.join(__dirname, 'temp');
@@ -213,7 +215,8 @@ describe('EPUB Merging', () => {
         chapters: [
           {
             title: 'Chapter 1',
-            content: '<p>Content with image</p><img src="../images/image1.jpg" alt="Image 1" />',
+            content:
+              '<p>Content with image</p><img src="../images/image1.jpg" alt="Image 1" />',
           },
         ],
         images: [
@@ -232,7 +235,8 @@ describe('EPUB Merging', () => {
         chapters: [
           {
             title: 'Chapter 1',
-            content: '<p>Content with different image</p><img src="../images/image2.png" alt="Image 2" />',
+            content:
+              '<p>Content with different image</p><img src="../images/image2.png" alt="Image 2" />',
           },
         ],
         images: [
@@ -273,8 +277,14 @@ describe('EPUB Merging', () => {
       }
 
       // Add chapters
-      const section1 = mergedEpub.addChapter({ title: 'Book 1', headingLevel: 1 });
-      const section2 = mergedEpub.addChapter({ title: 'Book 2', headingLevel: 1 });
+      const section1 = mergedEpub.addChapter({
+        title: 'Book 1',
+        headingLevel: 1,
+      });
+      const section2 = mergedEpub.addChapter({
+        title: 'Book 2',
+        headingLevel: 1,
+      });
 
       epub1.getRootChapters().forEach((chapter) => {
         mergedEpub.addChapter({
@@ -480,10 +490,7 @@ describe('EPUB Merging', () => {
       const epub1 = await EPUBBuilder.parse(book1Path);
       const epub2 = await EPUBBuilder.parse(book2Path);
 
-      const titles = [
-        epub1.getMetadata().title,
-        epub2.getMetadata().title,
-      ];
+      const titles = [epub1.getMetadata().title, epub2.getMetadata().title];
 
       const mergedEpub = new EPUBBuilder({
         title: 'Complete Series',
@@ -529,7 +536,10 @@ describe('EPUB Merging', () => {
         language: 'en',
       });
 
-      const section1 = mergedEpub.addChapter({ title: 'Book 1', headingLevel: 1 });
+      const section1 = mergedEpub.addChapter({
+        title: 'Book 1',
+        headingLevel: 1,
+      });
       epub1.getRootChapters().forEach((ch) => {
         mergedEpub.addChapter({
           title: ch.title,
@@ -538,7 +548,10 @@ describe('EPUB Merging', () => {
         });
       });
 
-      const section2 = mergedEpub.addChapter({ title: 'Book 2', headingLevel: 1 });
+      const section2 = mergedEpub.addChapter({
+        title: 'Book 2',
+        headingLevel: 1,
+      });
       epub2.getRootChapters().forEach((ch) => {
         mergedEpub.addChapter({
           title: ch.title,
@@ -586,7 +599,10 @@ describe('EPUB Merging', () => {
         language: 'en',
       });
 
-      const section1 = mergedEpub.addChapter({ title: 'Book 1', headingLevel: 1 });
+      const section1 = mergedEpub.addChapter({
+        title: 'Book 1',
+        headingLevel: 1,
+      });
       epub1.getRootChapters().forEach((ch) => {
         mergedEpub.addChapter({
           title: ch.title,
@@ -595,7 +611,10 @@ describe('EPUB Merging', () => {
         });
       });
 
-      const section2 = mergedEpub.addChapter({ title: 'Book 2', headingLevel: 1 });
+      const section2 = mergedEpub.addChapter({
+        title: 'Book 2',
+        headingLevel: 1,
+      });
       epub2.getRootChapters().forEach((ch) => {
         mergedEpub.addChapter({
           title: ch.title,
