@@ -38,8 +38,11 @@ describe('EPUB Parsing', () => {
       // given
       const nonExistentPath = path.join(TEMP_DIR, 'non-existent.epub');
 
-      // when & then
-      await expect(EPUBBuilder.parse(nonExistentPath)).rejects.toThrow();
+      // when
+      const parsePromise = EPUBBuilder.parse(nonExistentPath);
+
+      //  then
+      await expect(parsePromise).rejects.toThrow();
     });
 
     it('Error is thrown when parsing invalid EPUB', async () => {
@@ -47,8 +50,11 @@ describe('EPUB Parsing', () => {
       const invalidPath = path.join(TEMP_DIR, 'invalid.epub');
       await fs.writeFile(invalidPath, 'This is not an EPUB file');
 
-      // when & then
-      await expect(EPUBBuilder.parse(invalidPath)).rejects.toThrow();
+      // when
+      const parsePromise = EPUBBuilder.parse(invalidPath);
+
+      //  then
+      await expect(parsePromise).rejects.toThrow();
     });
   });
 
