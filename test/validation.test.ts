@@ -205,7 +205,7 @@ describe('EPUB Validation', () => {
       expect(Array.isArray(validation.warnings)).toBe(true);
     });
 
-    it('EPUB with no chapters is handled gracefully in validation', () => {
+    it('EPUB with no chapters is valid, but includes a warning', () => {
       // given
       const epub = new EPUBBuilder({
         title: 'Empty Book',
@@ -216,11 +216,9 @@ describe('EPUB Validation', () => {
       const validation = epub.validate();
 
       // then
-      if (!validation.isValid) {
-        expect(validation.errors.length).toBeGreaterThan(0);
-      } else {
-        expect(Array.isArray(validation.warnings)).toBe(true);
-      }
+      expect(validation.isValid).toBe(true);
+      expect(validation.errors.length).toBe(0);
+      expect(validation.warnings.length).toBeGreaterThan(0);
     });
   });
 
