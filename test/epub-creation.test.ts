@@ -21,13 +21,17 @@ describe('EPUB Creation', () => {
   });
 
   describe('Basic EPUB Creation', () => {
-    it('should create a minimal EPUB with required metadata', async () => {
+    it('Returns a valid EPUB when the minimum requred metadata is provided', async () => {
+      // given
+
+      // when
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
         language: 'en',
       });
 
+      // then
       expect(epub).toBeDefined();
 
       const metadata = epub.getMetadata();
@@ -38,35 +42,55 @@ describe('EPUB Creation', () => {
       expect(metadata.date).toBeDefined();
     });
 
-    it('should throw error when title is missing', () => {
-      expect(() => {
+    it('Throws an error when title is missing', () => {
+      // given
+      const newEpubFunction = () => {
+        // eslint-disable-next-line no-new
         new EPUBBuilder({
           title: '',
           creator: 'Test Author',
         } as any);
-      }).toThrow();
+      };
+      // when
+
+      // then
+      expect(newEpubFunction).toThrow();
     });
 
-    it('should throw error when creator is missing', () => {
-      expect(() => {
+    it('Throws an error when creator is missing', () => {
+      // given
+      const newEpubFunction = () => {
+        // eslint-disable-next-line no-new
         new EPUBBuilder({
           title: 'Test Book',
           creator: '',
         } as any);
-      }).toThrow();
+      };
+
+      // when
+
+      // then
+      expect(newEpubFunction).toThrow();
     });
 
-    it('should set default language to "en" if not provided', () => {
+    it('Returns a valid EPUB with default language to "en" if not provided', () => {
+      // given
+
+      // when
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
 
+      // then
       const metadata = epub.getMetadata();
       expect(metadata.language).toBe('en');
     });
 
-    it('should accept custom metadata fields', () => {
+    it('Returns a valid EPUB when other Dublin Core Metadata fields are provided', () => {
+      // given
+
+      // when
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
@@ -77,6 +101,7 @@ describe('EPUB Creation', () => {
         rights: 'Copyright 2026',
       });
 
+      // then
       const metadata = epub.getMetadata();
       expect(metadata.publisher).toBe('Test Publisher');
       expect(metadata.description).toBe('A test book description');
@@ -86,17 +111,20 @@ describe('EPUB Creation', () => {
   });
 
   describe('Adding Chapters', () => {
-    it('should add a simple chapter', () => {
+    it('A new chapter is reachable after is added', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
 
+      // when
       const chapterId = epub.addChapter({
         title: 'Chapter 1',
         content: '<p>This is the first chapter.</p>',
       });
 
+      // then
       expect(chapterId).toBeDefined();
       expect(typeof chapterId).toBe('string');
 
@@ -106,12 +134,14 @@ describe('EPUB Creation', () => {
       expect(chapters[0].content).toContain('This is the first chapter.');
     });
 
-    it('should add multiple chapters', () => {
+    it('All new chapters are reachable and ordered when added', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
 
+      // when
       epub.addChapter({
         title: 'Chapter 1',
         content: '<p>Chapter 1 content</p>',
@@ -127,6 +157,7 @@ describe('EPUB Creation', () => {
         content: '<p>Chapter 3 content</p>',
       });
 
+      // then
       const chapters = epub.getRootChapters();
       expect(chapters).toHaveLength(3);
       expect(chapters[0].title).toBe('Chapter 1');
@@ -134,12 +165,14 @@ describe('EPUB Creation', () => {
       expect(chapters[2].title).toBe('Chapter 3');
     });
 
-    it('should add nested chapters with parent-child relationships', () => {
+    it('Child chapters can be reached below its parents', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
 
+      // when
       const part1 = epub.addChapter({
         title: 'Part I',
         content: '<p>Part I introduction</p>',
@@ -157,6 +190,7 @@ describe('EPUB Creation', () => {
         content: '<p>Chapter 2 content</p>',
       });
 
+      // then
       const chapters = epub.getRootChapters();
       expect(chapters).toHaveLength(1);
       expect(chapters[0].title).toBe('Part I');
@@ -165,12 +199,14 @@ describe('EPUB Creation', () => {
       expect(chapters[0].children[1].title).toBe('Chapter 2');
     });
 
-    it('should add deeply nested chapters', () => {
+    it('Multiple layers of chapter nesting are allowed and reachable', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
 
+      // when
       const part1 = epub.addChapter({
         title: 'Part I',
         content: '<p>Part I</p>',
@@ -188,22 +224,26 @@ describe('EPUB Creation', () => {
         content: '<p>Section 1.1</p>',
       });
 
+      // then
       const rootChapters = epub.getRootChapters();
       expect(rootChapters[0].children[0].children).toHaveLength(1);
       expect(rootChapters[0].children[0].children[0].title).toBe('Section 1.1');
     });
 
-    it('should add chapter without content (section heading)', () => {
+    it('Chapters without content are allowed', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
 
+      // when
       const partId = epub.addChapter({
         title: 'Part I',
         headingLevel: 1,
       });
 
+      // then
       expect(partId).toBeDefined();
 
       const chapters = epub.getRootChapters();
@@ -213,19 +253,23 @@ describe('EPUB Creation', () => {
   });
 
   describe('Adding Images', () => {
-    it('should add an image', () => {
+    it('Adding an image returns the image ID, and the image is stored in the internal info', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
 
       const imageData = Buffer.from('fake-image-data');
+
+      // when
       const imageId = epub.addImage({
         filename: 'test-image.jpg',
         data: imageData,
         alt: 'Test Image',
       });
 
+      // then
       expect(imageId).toBeDefined();
 
       const images = epub.getAllImages();
@@ -234,12 +278,14 @@ describe('EPUB Creation', () => {
       expect(images[0].alt).toBe('Test Image');
     });
 
-    it('should add multiple images', () => {
+    it('All added images can be listed after being added', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
 
+      // when
       epub.addImage({
         filename: 'image1.jpg',
         data: Buffer.from('image1'),
@@ -252,16 +298,19 @@ describe('EPUB Creation', () => {
         alt: 'Image 2',
       });
 
+      // then
       const images = epub.getAllImages();
       expect(images).toHaveLength(2);
     });
 
-    it('should set cover image', () => {
+    it('Book cover image can be added and flagged as such', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
 
+      // when
       epub.addImage({
         filename: 'cover.jpg',
         data: Buffer.from('cover-data'),
@@ -269,24 +318,30 @@ describe('EPUB Creation', () => {
         isCover: true,
       });
 
+      // then
       const images = epub.getAllImages();
       expect(images[0].isCover).toBe(true);
     });
   });
 
   describe('Adding Stylesheets', () => {
-    it('should add a custom stylesheet', () => {
+    it('Adding an stylesheet returns the stylesheet ID, and the stylesheet is stored in the internal info', () => {
+      // given
+
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
 
       const cssContent = 'body { font-family: Arial; }';
+
+      // when
       const styleId = epub.addStylesheet({
         filename: 'custom.css',
         content: cssContent,
       });
 
+      // then
       expect(styleId).toBeDefined();
 
       const stylesheets = epub.getAllStylesheets();
@@ -300,12 +355,16 @@ describe('EPUB Creation', () => {
       expect(customStyle?.content).toBe(cssContent);
     });
 
-    it('should include default stylesheet', () => {
+    it('A new ebook contains a default stylesheet', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
 
+      // when
+
+      // then
       const stylesheets = epub.getAllStylesheets();
       expect(stylesheets.length).toBeGreaterThanOrEqual(1);
 
@@ -315,7 +374,8 @@ describe('EPUB Creation', () => {
   });
 
   describe('Export to File', () => {
-    it('should export EPUB to file', async () => {
+    it('Exporting to file creates a file in the specified route', async () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Export Book',
         creator: 'Test Author',
@@ -327,8 +387,11 @@ describe('EPUB Creation', () => {
       });
 
       const outputPath = path.join(TEMP_DIR, 'test-export.epub');
+
+      // when
       await epub.exportToFile(outputPath);
 
+      // then
       const fileExists = await fs.pathExists(outputPath);
       expect(fileExists).toBe(true);
 
@@ -336,7 +399,8 @@ describe('EPUB Creation', () => {
       expect(stats.size).toBeGreaterThan(0);
     });
 
-    it('should export EPUB to buffer', async () => {
+    it('Exporting to buffer returns a buffer', async () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Buffer Book',
         creator: 'Test Author',
@@ -347,12 +411,16 @@ describe('EPUB Creation', () => {
         content: '<p>Test content</p>',
       });
 
+      // when
       const buffer = await epub.export();
+
+      // then
       expect(buffer).toBeInstanceOf(Buffer);
       expect(buffer.length).toBeGreaterThan(0);
     });
 
-    it('should create valid EPUB structure', async () => {
+    it('Validating an EPUB returns true, and exporting to file creates a file in the specified route', async () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Structural Test Book',
         creator: 'Test Author',
@@ -374,12 +442,15 @@ describe('EPUB Creation', () => {
         content: '<p>Chapter 1 content</p>',
       });
 
+      const outputPath = path.join(TEMP_DIR, 'test-structure.epub');
+
+      // when
       const validation = epub.validate();
+      await epub.exportToFile(outputPath);
+
+      // then
       expect(validation.isValid).toBe(true);
       expect(validation.errors).toHaveLength(0);
-
-      const outputPath = path.join(TEMP_DIR, 'test-structure.epub');
-      await epub.exportToFile(outputPath);
 
       const fileExists = await fs.pathExists(outputPath);
       expect(fileExists).toBe(true);
@@ -388,6 +459,7 @@ describe('EPUB Creation', () => {
 
   describe('Complex EPUB Creation', () => {
     it('should create EPUB with chapters, images, and custom styles', async () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Complete Test Book',
         creator: 'Test Author',
@@ -396,13 +468,11 @@ describe('EPUB Creation', () => {
         description: 'A complete test book',
       });
 
-      // Add custom stylesheet
       epub.addStylesheet({
         filename: 'custom-styles.css',
         content: 'p { margin: 1em 0; }',
       });
 
-      // Add cover image
       epub.addImage({
         filename: 'cover.jpg',
         data: Buffer.from('cover-image-data'),
@@ -410,14 +480,12 @@ describe('EPUB Creation', () => {
         isCover: true,
       });
 
-      // Add content image
       const imageId = epub.addImage({
         filename: 'diagram.png',
         data: Buffer.from('diagram-data'),
         alt: 'Diagram',
       });
 
-      // Add chapters
       epub.addChapter({
         title: 'Introduction',
         content: '<p>Welcome to the book!</p>',
@@ -448,20 +516,22 @@ describe('EPUB Creation', () => {
         content: '<p>Thank you for reading!</p>',
       });
 
-      // Validate
-      const validation = epub.validate();
-      expect(validation.isValid).toBe(true);
-
-      // Export
       const outputPath = path.join(TEMP_DIR, 'complete-book.epub');
+
+      const rootChapters = epub.getRootChapters();
+      const allChapters = epub.getAllChapters();
+
+      // when
+      const validation = epub.validate();
       await epub.exportToFile(outputPath);
 
+      // then
+      expect(validation.isValid).toBe(true);
       const fileExists = await fs.pathExists(outputPath);
       expect(fileExists).toBe(true);
 
-      // Verify structure
-      const rootChapters = epub.getRootChapters();
       expect(rootChapters).toHaveLength(3); // intro, part1, conclusion
+      expect(allChapters).toHaveLength(5); // intro, part1, chap1, chap2, conclusion
       expect(epub.getAllImages()).toHaveLength(2);
       expect(epub.getAllStylesheets().length).toBeGreaterThanOrEqual(2);
     });

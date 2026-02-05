@@ -23,15 +23,18 @@ describe('EPUB Editing', () => {
   });
 
   describe('Add Chapters to Existing EPUB', () => {
-    it('should add a new chapter to parsed EPUB', async () => {
+    it('A new chapter is accesible when added to parsed EPUB', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
       const originalChapterCount = epub.getAllChapters().length;
 
+      // when
       const newChapterId = epub.addChapter({
         title: 'New Chapter',
         content: '<p>This is a newly added chapter.</p>',
       });
 
+      // then
       expect(newChapterId).toBeDefined();
 
       const updatedChapterCount = epub.getAllChapters().length;
@@ -45,10 +48,12 @@ describe('EPUB Editing', () => {
       expect(newChapter?.title).toBe('New Chapter');
     });
 
-    it('should add multiple new chapters', async () => {
+    it('The new chapters are accesible when multiple ones are added to parsed EPUB', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
       const originalChapterCount = epub.getAllChapters().length;
 
+      // when
       epub.addChapter({
         title: 'Bonus Chapter 1',
         content: '<p>First bonus chapter</p>',
@@ -64,119 +69,131 @@ describe('EPUB Editing', () => {
         content: '<p>Third bonus chapter</p>',
       });
 
+      // then
       const updatedChapterCount = epub.getAllChapters().length;
       expect(updatedChapterCount).toBe(originalChapterCount + 3);
     });
 
-    it('should add nested chapter to existing parent', async () => {
+    it('The new chapter is present as child when added to a parent', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
       const rootChapters = epub.getRootChapters();
 
-      if (rootChapters.length > 0) {
-        const parentId = rootChapters[0].id;
-        const originalChildCount = rootChapters[0].children.length;
+      const parentId = rootChapters[0].id;
+      const originalChildCount = rootChapters[0].children.length;
 
-        epub.addChapter({
-          title: 'New Nested Chapter',
-          parentId,
-          content: '<p>Nested content</p>',
-        });
+      // when
+      epub.addChapter({
+        title: 'New Nested Chapter',
+        parentId,
+        content: '<p>Nested content</p>',
+      });
 
-        const updatedRootChapters = epub.getRootChapters();
-        const updatedParent = updatedRootChapters[0];
-        expect(updatedParent.children.length).toBe(originalChildCount + 1);
-      }
+      // then
+      const updatedRootChapters = epub.getRootChapters();
+      const updatedParent = updatedRootChapters[0];
 
-      // Test passes even if no root chapters
-      expect(true).toBe(true);
+      expect(updatedParent.children.length).toBe(originalChildCount + 1);
     });
   });
 
   describe('Append Content to Chapters', () => {
-    it('should append content to existing chapter', async () => {
+    it('New content is accessible when appended to a chapter', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
       const chapters = epub.getAllChapters();
 
-      if (chapters.length > 0) {
-        const targetChapter = chapters[0];
-        const originalContent = targetChapter.content;
+      const targetChapter = chapters[0];
+      const originalContent = targetChapter.content;
 
-        const appendedText = '<hr/><p>This content was appended.</p>';
-        epub.appendToChapter(targetChapter.id, appendedText);
+      const appendedText = '<hr/><p>This content was appended.</p>';
 
-        const updatedChapter = epub.getChapter(targetChapter.id);
-        expect(updatedChapter?.content).toContain(originalContent);
-        expect(updatedChapter?.content).toContain(appendedText);
-        expect(updatedChapter?.content.indexOf(appendedText)).toBeGreaterThan(
-          updatedChapter?.content.indexOf(originalContent) || 0,
-        );
-      }
+      // when
+      epub.appendToChapter(targetChapter.id, appendedText);
 
-      expect(true).toBe(true);
+      // then
+      const updatedChapter = epub.getChapter(targetChapter.id);
+      expect(updatedChapter?.content).toContain(originalContent);
+      expect(updatedChapter?.content).toContain(appendedText);
+      expect(updatedChapter?.content.indexOf(appendedText)).toBeGreaterThan(
+        updatedChapter?.content.indexOf(originalContent) || 0,
+      );
     });
 
-    it('should append HTML content correctly', async () => {
+    it('New content is accessible when appended to a chapter', async () => {
+      // given
+
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
       const chapters = epub.getAllChapters();
 
-      if (chapters.length > 0) {
-        const chapterId = chapters[0].id;
-        const htmlContent = `
+      const chapterId = chapters[0].id;
+      const htmlContent = `
           <section>
             <h2>Additional Section</h2>
             <p>This is additional content.</p>
           </section>
         `;
 
-        epub.appendToChapter(chapterId, htmlContent);
+      // when
+      epub.appendToChapter(chapterId, htmlContent);
+      // then
+      const updatedChapter = epub.getChapter(chapterId);
 
-        const updatedChapter = epub.getChapter(chapterId);
-        expect(updatedChapter?.content).toContain('Additional Section');
-        expect(updatedChapter?.content).toContain('This is additional content');
-      }
-
-      expect(true).toBe(true);
+      expect(updatedChapter?.content).toContain('Additional Section');
+      expect(updatedChapter?.content).toContain('This is additional content');
     });
   });
 
   describe('Update Metadata', () => {
-    it('should update title', async () => {
+    it('The new title is accessible when updated', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
 
+      // when
       epub.setMetadata({
         title: 'Updated Title',
       });
 
+      // then
       const metadata = epub.getMetadata();
       expect(metadata.title).toBe('Updated Title');
     });
 
-    it('should update description', async () => {
+    it('The new description is accessible when updated', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
 
       const newDescription = 'This is an updated description.';
+
+      // when
       epub.setMetadata({
         description: newDescription,
       });
 
+      // then
       const metadata = epub.getMetadata();
       expect(metadata.description).toBe(newDescription);
     });
 
-    it('should update publisher', async () => {
+    it('The new publisher is accessible when updated', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
 
+      // when
       epub.setMetadata({
         publisher: 'New Publisher',
       });
 
+      // then
       const metadata = epub.getMetadata();
       expect(metadata.publisher).toBe('New Publisher');
     });
 
-    it('should update multiple metadata fields', async () => {
+    it('All new metadata is accessible when updated', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
 
+      // when
       epub.setMetadata({
         description: 'New description',
         publisher: 'Updated Publisher',
@@ -184,6 +201,7 @@ describe('EPUB Editing', () => {
         rights: 'Copyright 2026',
       });
 
+      // then
       const metadata = epub.getMetadata();
       expect(metadata.description).toBe('New description');
       expect(metadata.publisher).toBe('Updated Publisher');
@@ -191,14 +209,17 @@ describe('EPUB Editing', () => {
       expect(metadata.rights).toBe('Copyright 2026');
     });
 
-    it('should preserve unchanged metadata fields', async () => {
+    it('All old metadata is preserved if unchanged', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
       const originalMetadata = epub.getMetadata();
 
+      // when
       epub.setMetadata({
         description: 'New description only',
       });
 
+      // then
       const updatedMetadata = epub.getMetadata();
       expect(updatedMetadata.title).toBe(originalMetadata.title);
       expect(updatedMetadata.creator).toBe(originalMetadata.creator);
@@ -208,25 +229,31 @@ describe('EPUB Editing', () => {
   });
 
   describe('Add Images to Existing EPUB', () => {
-    it('should add image to parsed EPUB', async () => {
+    it('A new image must be accesible if added', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
       const originalImageCount = epub.getAllImages().length;
 
       const imageData = Buffer.from('new-image-data');
+
+      // when
       epub.addImage({
         filename: 'new-image.jpg',
         data: imageData,
         alt: 'New Image',
       });
 
+      // then
       const updatedImageCount = epub.getAllImages().length;
       expect(updatedImageCount).toBe(originalImageCount + 1);
     });
 
-    it('should add multiple images', async () => {
+    it('All new images must be accesible if added', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
       const originalImageCount = epub.getAllImages().length;
 
+      // when
       epub.addImage({
         filename: 'image1.jpg',
         data: Buffer.from('image1'),
@@ -239,31 +266,35 @@ describe('EPUB Editing', () => {
         alt: 'Image 2',
       });
 
+      // then
       const updatedImageCount = epub.getAllImages().length;
       expect(updatedImageCount).toBe(originalImageCount + 2);
     });
   });
 
   describe('Add Stylesheets to Existing EPUB', () => {
-    it('should add stylesheet to parsed EPUB', async () => {
+    it('A new stylesheet must be accesible if added', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
       const originalStylesheetCount = epub.getAllStylesheets().length;
 
+      // when
       epub.addStylesheet({
         filename: 'new-styles.css',
         content: 'body { background: #fff; }',
       });
 
+      // then
       const updatedStylesheetCount = epub.getAllStylesheets().length;
       expect(updatedStylesheetCount).toBe(originalStylesheetCount + 1);
     });
   });
 
   describe('Export Modified EPUB', () => {
-    it('should export modified EPUB to file', async () => {
+    it('Exporting to file creates a file in the specified route', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
 
-      // Make modifications
       epub.addChapter({
         title: 'Bonus Chapter',
         content: '<p>Bonus content</p>',
@@ -274,8 +305,11 @@ describe('EPUB Editing', () => {
       });
 
       const outputPath = path.join(TEMP_DIR, 'modified.epub');
+
+      // when
       await epub.exportToFile(outputPath);
 
+      // then
       const fileExists = await fs.pathExists(outputPath);
       expect(fileExists).toBe(true);
 
@@ -283,7 +317,8 @@ describe('EPUB Editing', () => {
       expect(stats.size).toBeGreaterThan(0);
     });
 
-    it('should validate modified EPUB before export', async () => {
+    it('Validating an EPUB returns true', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
 
       epub.addChapter({
@@ -291,30 +326,32 @@ describe('EPUB Editing', () => {
         content: '<p>New content</p>',
       });
 
+      // when
       const validation = epub.validate();
+
+      // then
       expect(validation.isValid).toBe(true);
       expect(validation.errors).toHaveLength(0);
     });
 
-    it('should preserve original content after modifications', async () => {
+    it('The modified EPUb preserves the original content that was not modified', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
       const originalTitle = epub.getMetadata().title;
       const originalChapterCount = epub.getAllChapters().length;
 
-      // Add new content
       epub.addChapter({
         title: 'Additional Chapter',
         content: '<p>Additional content</p>',
       });
 
-      // Export
       const outputPath = path.join(TEMP_DIR, 'modified-preserve.epub');
       await epub.exportToFile(outputPath);
 
-      // Parse the modified EPUB
+      // when
       const modifiedEpub = await EPUBBuilder.parse(outputPath);
 
-      // Check that original content is preserved
+      // then
       expect(modifiedEpub.getMetadata().title).toBe(originalTitle);
       expect(modifiedEpub.getAllChapters().length).toBe(
         originalChapterCount + 1,
@@ -324,20 +361,19 @@ describe('EPUB Editing', () => {
 
   describe('Complex Editing Workflow', () => {
     it('should perform multiple editing operations', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
 
       const originalMetadata = epub.getMetadata();
       const originalChapterCount = epub.getAllChapters().length;
       const originalImageCount = epub.getAllImages().length;
 
-      // Update metadata
       epub.setMetadata({
         description:
           `${originalMetadata.description || ''} Modified with EPUBBuilder.`.trim(),
         publisher: 'Test Publisher',
       });
 
-      // Add new chapter
       epub.addChapter({
         title: 'Appendix: Additional Resources',
         content: `
@@ -350,38 +386,34 @@ describe('EPUB Editing', () => {
         `,
       });
 
-      // Append to first chapter
       const chapters = epub.getAllChapters();
-      if (chapters.length > 0) {
-        epub.appendToChapter(
-          chapters[0].id,
-          '<hr/><p><em>Note: This book has been modified.</em></p>',
-        );
-      }
+      epub.appendToChapter(
+        chapters[0].id,
+        '<hr/><p><em>Note: This book has been modified.</em></p>',
+      );
 
-      // Add image
       epub.addImage({
         filename: 'appendix-diagram.png',
         data: Buffer.from('diagram-data'),
         alt: 'Appendix Diagram',
       });
 
-      // Add custom stylesheet
       epub.addStylesheet({
         filename: 'custom.css',
         content: '.note { font-style: italic; }',
       });
 
-      // Validate
+      // when
       const validation = epub.validate();
-      expect(validation.isValid).toBe(true);
 
-      // Export
       const outputPath = path.join(TEMP_DIR, 'complex-edit.epub');
       await epub.exportToFile(outputPath);
 
-      // Parse and verify
       const modifiedEpub = await EPUBBuilder.parse(outputPath);
+
+      // then
+      expect(validation.isValid).toBe(true);
+
       expect(modifiedEpub.getAllChapters().length).toBe(
         originalChapterCount + 1,
       );
