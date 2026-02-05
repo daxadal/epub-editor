@@ -181,8 +181,7 @@ describe('EPUB Merging', () => {
         language: 'en',
       });
 
-      for (let i = 0; i < sourceEPUBs.length; i++) {
-        const source = sourceEPUBs[i];
+      for (const source of sourceEPUBs) {
         const sectionId = mergedEpub.addChapter({
           title: source.getMetadata().title,
           headingLevel: 1,
