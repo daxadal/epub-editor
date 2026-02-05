@@ -3,7 +3,7 @@
  * Based on examples/edit-example.ts
  */
 
-import * as path from 'path';
+import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
 
