@@ -7,7 +7,7 @@ import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
 
-import { EPUBBuilder } from '../src';
+import { EPUB3Builder } from '../src';
 
 const RESOURCES_DIR = path.join(__dirname, 'resources');
 const TEMP_DIR = path.join(__dirname, 'temp');
@@ -25,7 +25,7 @@ describe('EPUB Editing', () => {
   describe('Add Chapters to Existing EPUB', () => {
     it('A new chapter is accesible when added to parsed EPUB', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const originalChapterCount = epub.getAllChapters().length;
 
       // when
@@ -50,7 +50,7 @@ describe('EPUB Editing', () => {
 
     it('The new chapters are accesible when multiple ones are added to parsed EPUB', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const originalChapterCount = epub.getAllChapters().length;
 
       // when
@@ -76,7 +76,7 @@ describe('EPUB Editing', () => {
 
     it('The new chapter is present as child when added to a parent', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const rootChapters = epub.getRootChapters();
 
       const parentId = rootChapters[0].id;
@@ -100,7 +100,7 @@ describe('EPUB Editing', () => {
   describe('Append Content to Chapters', () => {
     it('New content is accessible when appended to a chapter', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const chapters = epub.getAllChapters();
 
       const targetChapter = chapters[0];
@@ -123,7 +123,7 @@ describe('EPUB Editing', () => {
     it('New content is accessible when appended to a chapter', async () => {
       // given
 
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const chapters = epub.getAllChapters();
 
       const chapterId = chapters[0].id;
@@ -147,7 +147,7 @@ describe('EPUB Editing', () => {
   describe('Update Metadata', () => {
     it('The new title is accessible when updated', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       epub.setMetadata({
@@ -161,7 +161,7 @@ describe('EPUB Editing', () => {
 
     it('The new description is accessible when updated', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       const newDescription = 'This is an updated description.';
 
@@ -177,7 +177,7 @@ describe('EPUB Editing', () => {
 
     it('The new publisher is accessible when updated', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       epub.setMetadata({
@@ -191,7 +191,7 @@ describe('EPUB Editing', () => {
 
     it('All new metadata is accessible when updated', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       epub.setMetadata({
@@ -211,7 +211,7 @@ describe('EPUB Editing', () => {
 
     it('All old metadata is preserved if unchanged', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const originalMetadata = epub.getMetadata();
 
       // when
@@ -231,7 +231,7 @@ describe('EPUB Editing', () => {
   describe('Add Images to Existing EPUB', () => {
     it('A new image must be accesible if added', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const originalImageCount = epub.getAllImages().length;
 
       const imageData = Buffer.from('new-image-data');
@@ -250,7 +250,7 @@ describe('EPUB Editing', () => {
 
     it('All new images must be accesible if added', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const originalImageCount = epub.getAllImages().length;
 
       // when
@@ -275,7 +275,7 @@ describe('EPUB Editing', () => {
   describe('Add Stylesheets to Existing EPUB', () => {
     it('A new stylesheet must be accesible if added', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const originalStylesheetCount = epub.getAllStylesheets().length;
 
       // when
@@ -293,7 +293,7 @@ describe('EPUB Editing', () => {
   describe('Export Modified EPUB', () => {
     it('Exporting to file creates a file in the specified route', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       epub.addChapter({
         title: 'Bonus Chapter',
@@ -301,7 +301,7 @@ describe('EPUB Editing', () => {
       });
 
       epub.setMetadata({
-        description: 'Modified with EPUBBuilder',
+        description: 'Modified with EPUB3Builder',
       });
 
       const outputPath = path.join(TEMP_DIR, 'modified.epub');
@@ -319,7 +319,7 @@ describe('EPUB Editing', () => {
 
     it('Validating an EPUB returns true', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       epub.addChapter({
         title: 'New Chapter',
@@ -336,7 +336,7 @@ describe('EPUB Editing', () => {
 
     it('The modified EPUb preserves the original content that was not modified', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const originalTitle = epub.getMetadata().title;
       const originalChapterCount = epub.getAllChapters().length;
 
@@ -349,7 +349,7 @@ describe('EPUB Editing', () => {
       await epub.exportToFile(outputPath);
 
       // when
-      const modifiedEpub = await EPUBBuilder.parse(outputPath);
+      const modifiedEpub = await EPUB3Builder.parse(outputPath);
 
       // then
       expect(modifiedEpub.getMetadata().title).toBe(originalTitle);
@@ -362,7 +362,7 @@ describe('EPUB Editing', () => {
   describe('Complex Editing Workflow', () => {
     it('should perform multiple editing operations', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       const originalMetadata = epub.getMetadata();
       const originalChapterCount = epub.getAllChapters().length;
@@ -370,7 +370,7 @@ describe('EPUB Editing', () => {
 
       epub.setMetadata({
         description:
-          `${originalMetadata.description || ''} Modified with EPUBBuilder.`.trim(),
+          `${originalMetadata.description || ''} Modified with EPUB3Builder.`.trim(),
         publisher: 'Test Publisher',
       });
 
@@ -409,7 +409,7 @@ describe('EPUB Editing', () => {
       const outputPath = path.join(TEMP_DIR, 'complex-edit.epub');
       await epub.exportToFile(outputPath);
 
-      const modifiedEpub = await EPUBBuilder.parse(outputPath);
+      const modifiedEpub = await EPUB3Builder.parse(outputPath);
 
       // then
       expect(validation.isValid).toBe(true);
@@ -419,7 +419,7 @@ describe('EPUB Editing', () => {
       );
       expect(modifiedEpub.getAllImages().length).toBe(originalImageCount + 1);
       expect(modifiedEpub.getMetadata().description).toContain(
-        'Modified with EPUBBuilder',
+        'Modified with EPUB3Builder',
       );
     });
   });

@@ -7,7 +7,7 @@ import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
 
-import { EPUBBuilder } from '../src';
+import { EPUB3Builder } from '../src';
 
 const RESOURCES_DIR = path.join(__dirname, 'resources');
 const TEMP_DIR = path.join(__dirname, 'temp');
@@ -27,11 +27,11 @@ describe('EPUB Parsing', () => {
       // given
 
       // when
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // then
       expect(epub).toBeDefined();
-      expect(epub).toBeInstanceOf(EPUBBuilder);
+      expect(epub).toBeInstanceOf(EPUB3Builder);
     });
 
     it('Error is thrown when parsing non-existent file', async () => {
@@ -39,7 +39,7 @@ describe('EPUB Parsing', () => {
       const nonExistentPath = path.join(TEMP_DIR, 'non-existent.epub');
 
       // when
-      const parsePromise = EPUBBuilder.parse(nonExistentPath);
+      const parsePromise = EPUB3Builder.parse(nonExistentPath);
 
       //  then
       await expect(parsePromise).rejects.toThrow();
@@ -51,7 +51,7 @@ describe('EPUB Parsing', () => {
       await fs.writeFile(invalidPath, 'This is not an EPUB file');
 
       // when
-      const parsePromise = EPUBBuilder.parse(invalidPath);
+      const parsePromise = EPUB3Builder.parse(invalidPath);
 
       //  then
       await expect(parsePromise).rejects.toThrow();
@@ -61,7 +61,7 @@ describe('EPUB Parsing', () => {
   describe('Extract Metadata', () => {
     it('Metadata is extracted correctly from parsed EPUB', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const metadata = epub.getMetadata();
@@ -79,7 +79,7 @@ describe('EPUB Parsing', () => {
 
     it('Title is extracted from parsed EPUB', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const metadata = epub.getMetadata();
@@ -90,7 +90,7 @@ describe('EPUB Parsing', () => {
 
     it('Creator/author is extracted from parsed EPUB', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const metadata = epub.getMetadata();
@@ -101,7 +101,7 @@ describe('EPUB Parsing', () => {
 
     it('Language is extracted from parsed EPUB', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const metadata = epub.getMetadata();
@@ -112,7 +112,7 @@ describe('EPUB Parsing', () => {
 
     it('Optional metadata fields are accessible after parsing', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const metadata = epub.getMetadata();
@@ -128,7 +128,7 @@ describe('EPUB Parsing', () => {
   describe('Extract Chapters', () => {
     it('Root chapters are extracted from parsed EPUB', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const chapters = epub.getRootChapters();
@@ -141,7 +141,7 @@ describe('EPUB Parsing', () => {
 
     it('All chapters are extracted from parsed EPUB', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const allChapters = epub.getAllChapters();
@@ -154,7 +154,7 @@ describe('EPUB Parsing', () => {
 
     it('Chapter metadata is extracted with correct properties', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const chapters = epub.getRootChapters();
@@ -171,7 +171,7 @@ describe('EPUB Parsing', () => {
 
     it('Chapter hierarchy is preserved after parsing', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const rootChapters = epub.getRootChapters();
@@ -195,7 +195,7 @@ describe('EPUB Parsing', () => {
 
     it('Chapter content is extracted successfully', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const chapters = epub.getRootChapters();
@@ -211,7 +211,7 @@ describe('EPUB Parsing', () => {
 
     it('Chapter is retrieved by ID successfully', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const chapters = epub.getRootChapters();
       const firstChapterId = chapters[0].id;
 
@@ -228,7 +228,7 @@ describe('EPUB Parsing', () => {
   describe('Extract Images', () => {
     it('Images are extracted if present in EPUB', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const images = epub.getAllImages();
@@ -240,7 +240,7 @@ describe('EPUB Parsing', () => {
 
     it('Image metadata is extracted correctly when images exist', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const images = epub.getAllImages();
@@ -261,7 +261,7 @@ describe('EPUB Parsing', () => {
   describe('Extract Stylesheets', () => {
     it('Stylesheets are extracted from parsed EPUB', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const stylesheets = epub.getAllStylesheets();
@@ -274,7 +274,7 @@ describe('EPUB Parsing', () => {
 
     it('Stylesheet metadata is extracted correctly', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
 
       // when
       const stylesheets = epub.getAllStylesheets();
@@ -292,7 +292,7 @@ describe('EPUB Parsing', () => {
   describe('Round-trip Test', () => {
     it('EPUB is parsed and re-exported successfully in round-trip', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const originalMetadata = epub.getMetadata();
 
       // when
@@ -302,7 +302,7 @@ describe('EPUB Parsing', () => {
       const fileExists = await fs.pathExists(outputPath);
       const stats = await fs.stat(outputPath);
 
-      const reparsedEpub = await EPUBBuilder.parse(outputPath);
+      const reparsedEpub = await EPUB3Builder.parse(outputPath);
       const reparsedMetadata = reparsedEpub.getMetadata();
 
       // then
@@ -315,14 +315,14 @@ describe('EPUB Parsing', () => {
 
     it('Chapter count is preserved in round-trip', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const originalChapterCount = epub.getAllChapters().length;
 
       // when
       const outputPath = path.join(TEMP_DIR, 'roundtrip-chapters.epub');
       await epub.exportToFile(outputPath);
 
-      const reparsedEpub = await EPUBBuilder.parse(outputPath);
+      const reparsedEpub = await EPUB3Builder.parse(outputPath);
       const reparsedChapterCount = reparsedEpub.getAllChapters().length;
 
       // then
@@ -331,14 +331,14 @@ describe('EPUB Parsing', () => {
 
     it('Chapter structure is preserved in round-trip', async () => {
       // given
-      const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+      const epub = await EPUB3Builder.parse(SIMPLE_GUIDE_PATH);
       const originalRootChapters = epub.getRootChapters();
 
       // when
       const outputPath = path.join(TEMP_DIR, 'roundtrip-structure.epub');
       await epub.exportToFile(outputPath);
 
-      const reparsedEpub = await EPUBBuilder.parse(outputPath);
+      const reparsedEpub = await EPUB3Builder.parse(outputPath);
       const reparsedRootChapters = reparsedEpub.getRootChapters();
 
       // then
@@ -360,12 +360,12 @@ describe('EPUB Parsing', () => {
       await fs.writeFile(tempPath, fileBuffer);
 
       // when
-      const epub = await EPUBBuilder.parse(tempPath);
+      const epub = await EPUB3Builder.parse(tempPath);
       const metadata = epub.getMetadata();
 
       // then
       expect(epub).toBeDefined();
-      expect(epub).toBeInstanceOf(EPUBBuilder);
+      expect(epub).toBeInstanceOf(EPUB3Builder);
       expect(metadata.title).toBe('A Simple Guide');
     });
   });
