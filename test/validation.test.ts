@@ -22,7 +22,8 @@ describe('EPUB Validation', () => {
   });
 
   describe('Valid EPUB', () => {
-    it('should validate a properly constructed EPUB', () => {
+    it('Properly constructed EPUB passes validation', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Valid Book',
         creator: 'Test Author',
@@ -34,20 +35,28 @@ describe('EPUB Validation', () => {
         content: '<p>Valid content</p>',
       });
 
+      // when
       const validation = epub.validate();
+
+      // then
       expect(validation.isValid).toBe(true);
       expect(validation.errors).toHaveLength(0);
     });
 
-    it('should validate parsed EPUB', async () => {
+    it('Parsed EPUB passes validation', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+
+      // when
       const validation = epub.validate();
 
+      // then
       expect(validation.isValid).toBe(true);
       expect(validation.errors).toHaveLength(0);
     });
 
-    it('should validate EPUB with nested chapters', () => {
+    it('EPUB with nested chapters passes validation', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Nested Book',
         creator: 'Test Author',
@@ -70,12 +79,16 @@ describe('EPUB Validation', () => {
         content: '<p>Chapter 2 content</p>',
       });
 
+      // when
       const validation = epub.validate();
+
+      // then
       expect(validation.isValid).toBe(true);
       expect(validation.errors).toHaveLength(0);
     });
 
-    it('should validate EPUB with images', () => {
+    it('EPUB with images passes validation', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Book with Images',
         creator: 'Test Author',
@@ -92,12 +105,16 @@ describe('EPUB Validation', () => {
         alt: 'Test Image',
       });
 
+      // when
       const validation = epub.validate();
+
+      // then
       expect(validation.isValid).toBe(true);
       expect(validation.errors).toHaveLength(0);
     });
 
-    it('should validate EPUB with custom stylesheets', () => {
+    it('EPUB with custom stylesheets passes validation', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Book with Styles',
         creator: 'Test Author',
@@ -113,14 +130,18 @@ describe('EPUB Validation', () => {
         content: 'body { margin: 0; }',
       });
 
+      // when
       const validation = epub.validate();
+
+      // then
       expect(validation.isValid).toBe(true);
       expect(validation.errors).toHaveLength(0);
     });
   });
 
   describe('Validation Result Structure', () => {
-    it('should return validation result with required fields', () => {
+    it('Validation result contains required fields isValid, errors, and warnings', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
@@ -131,8 +152,10 @@ describe('EPUB Validation', () => {
         content: '<p>Content</p>',
       });
 
+      // when
       const validation = epub.validate();
 
+      // then
       expect(validation).toHaveProperty('isValid');
       expect(validation).toHaveProperty('errors');
       expect(validation).toHaveProperty('warnings');
@@ -142,7 +165,8 @@ describe('EPUB Validation', () => {
       expect(Array.isArray(validation.warnings)).toBe(true);
     });
 
-    it('should have empty errors array for valid EPUB', () => {
+    it('Valid EPUB returns empty errors array', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
@@ -153,13 +177,17 @@ describe('EPUB Validation', () => {
         content: '<p>Content</p>',
       });
 
+      // when
       const validation = epub.validate();
+
+      // then
       expect(validation.errors).toEqual([]);
     });
   });
 
   describe('Validation Warnings', () => {
-    it('should check for warnings in validation result', () => {
+    it('Validation result includes warnings array', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
@@ -170,52 +198,60 @@ describe('EPUB Validation', () => {
         content: '<p>Content</p>',
       });
 
+      // when
       const validation = epub.validate();
 
+      // then
       expect(Array.isArray(validation.warnings)).toBe(true);
-      // Warnings may or may not be present, but should be an array
     });
 
-    it('should handle EPUB with no chapters gracefully', () => {
+    it('EPUB with no chapters is handled gracefully in validation', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Empty Book',
         creator: 'Test Author',
       });
 
+      // when
       const validation = epub.validate();
 
-      // Should either be invalid or have warnings about no chapters
+      // then
       if (!validation.isValid) {
         expect(validation.errors.length).toBeGreaterThan(0);
       } else {
-        // If it's valid, might have warnings
         expect(Array.isArray(validation.warnings)).toBe(true);
       }
     });
   });
 
   describe('Metadata Validation', () => {
-    it('should validate required metadata fields are present', () => {
+    it('Required metadata fields are present in validation', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
 
+      // when
       const metadata = epub.getMetadata();
+      const validation = epub.validate();
 
+      // then
       expect(metadata.title).toBeDefined();
       expect(metadata.creator).toBeDefined();
       expect(metadata.language).toBeDefined();
       expect(metadata.identifier).toBeDefined();
-
-      const validation = epub.validate();
       expect(validation.isValid).toBe(true);
     });
 
-    it('should have valid metadata after parsing', async () => {
+    it('Parsed EPUB has valid metadata', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+
+      // when
       const metadata = epub.getMetadata();
 
+      // then
       expect(metadata.title).toBeDefined();
       expect(metadata.title.length).toBeGreaterThan(0);
       expect(metadata.creator).toBeDefined();
@@ -227,7 +263,8 @@ describe('EPUB Validation', () => {
   });
 
   describe('Chapter Structure Validation', () => {
-    it('should validate chapter hierarchy', () => {
+    it('Chapter hierarchy is validated correctly', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Hierarchical Book',
         creator: 'Test Author',
@@ -250,16 +287,19 @@ describe('EPUB Validation', () => {
         content: '<p>Section 1.1</p>',
       });
 
+      // when
       const validation = epub.validate();
-      expect(validation.isValid).toBe(true);
-
       const rootChapters = epub.getRootChapters();
+
+      // then
+      expect(validation.isValid).toBe(true);
       expect(rootChapters).toHaveLength(1);
       expect(rootChapters[0].children).toHaveLength(1);
       expect(rootChapters[0].children[0].children).toHaveLength(1);
     });
 
-    it('should validate chapter without content (section heading)', () => {
+    it('Chapter without content (section heading) passes validation', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Book with Sections',
         creator: 'Test Author',
@@ -276,63 +316,74 @@ describe('EPUB Validation', () => {
         content: '<p>Content here</p>',
       });
 
+      // when
       const validation = epub.validate();
+
+      // then
       expect(validation.isValid).toBe(true);
     });
   });
 
   describe('Validation After Modifications', () => {
-    it('should remain valid after adding chapters', async () => {
+    it('EPUB remains valid after adding chapters', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
-
-      // Initial validation
       let validation = epub.validate();
       expect(validation.isValid).toBe(true);
 
-      // Add new chapter
+      // when
       epub.addChapter({
         title: 'New Chapter',
         content: '<p>New content</p>',
       });
-
-      // Validate again
       validation = epub.validate();
+
+      // then
       expect(validation.isValid).toBe(true);
     });
 
-    it('should remain valid after updating metadata', async () => {
+    it('EPUB remains valid after updating metadata', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
 
+      // when
       epub.setMetadata({
         description: 'Updated description',
         publisher: 'New Publisher',
       });
-
       const validation = epub.validate();
+
+      // then
       expect(validation.isValid).toBe(true);
     });
 
-    it('should remain valid after adding images', async () => {
+    it('EPUB remains valid after adding images', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
 
+      // when
       epub.addImage({
         filename: 'new-image.jpg',
         data: Buffer.from('image-data'),
         alt: 'New Image',
       });
-
       const validation = epub.validate();
+
+      // then
       expect(validation.isValid).toBe(true);
     });
 
-    it('should remain valid after appending to chapter', async () => {
+    it('EPUB remains valid after appending to chapter', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
       const chapters = epub.getAllChapters();
 
+      // when
       if (chapters.length > 0) {
         epub.appendToChapter(chapters[0].id, '<p>Appended content</p>');
-
         const validation = epub.validate();
+
+        // then
         expect(validation.isValid).toBe(true);
       }
 
@@ -341,7 +392,8 @@ describe('EPUB Validation', () => {
   });
 
   describe('Complex EPUB Validation', () => {
-    it('should validate complex EPUB with multiple features', () => {
+    it('Complex EPUB with multiple features passes validation', () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Complex Book',
         creator: 'Test Author',
@@ -352,13 +404,11 @@ describe('EPUB Validation', () => {
         rights: 'Copyright 2026',
       });
 
-      // Add custom stylesheet
       epub.addStylesheet({
         filename: 'custom.css',
         content: 'p { margin: 1em 0; }',
       });
 
-      // Add cover image
       epub.addImage({
         filename: 'cover.jpg',
         data: Buffer.from('cover-data'),
@@ -366,14 +416,12 @@ describe('EPUB Validation', () => {
         isCover: true,
       });
 
-      // Add content image
       epub.addImage({
         filename: 'diagram.png',
         data: Buffer.from('diagram-data'),
         alt: 'Diagram',
       });
 
-      // Add complex chapter structure
       epub.addChapter({
         title: 'Introduction',
         content: '<p>Introduction text</p>',
@@ -418,15 +466,19 @@ describe('EPUB Validation', () => {
         content: '<p>Conclusion text</p>',
       });
 
+      // when
       const validation = epub.validate();
+
+      // then
       expect(validation.isValid).toBe(true);
       expect(validation.errors).toHaveLength(0);
     });
 
-    it('should validate complex parsed and modified EPUB', async () => {
+    it('Complex parsed and modified EPUB passes validation', async () => {
+      // given
       const epub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
 
-      // Perform multiple modifications
+      // when
       epub.setMetadata({
         description: 'Modified description',
         publisher: 'Modified Publisher',
@@ -454,13 +506,16 @@ describe('EPUB Validation', () => {
       }
 
       const validation = epub.validate();
+
+      // then
       expect(validation.isValid).toBe(true);
       expect(validation.errors).toHaveLength(0);
     });
   });
 
   describe('Export and Validate', () => {
-    it('should export only valid EPUBs', async () => {
+    it('Exported EPUB is validated successfully after parsing', async () => {
+      // given
       const epub = new EPUBBuilder({
         title: 'Export Validation Test',
         creator: 'Test Author',
@@ -474,15 +529,16 @@ describe('EPUB Validation', () => {
       const validation = epub.validate();
       expect(validation.isValid).toBe(true);
 
+      // when
       const outputPath = path.join(TEMP_DIR, 'validated-export.epub');
       await epub.exportToFile(outputPath);
 
       const fileExists = await fs.pathExists(outputPath);
-      expect(fileExists).toBe(true);
-
-      // Parse and validate the exported file
       const parsedEpub = await EPUBBuilder.parse(outputPath);
       const parsedValidation = parsedEpub.validate();
+
+      // then
+      expect(fileExists).toBe(true);
       expect(parsedValidation.isValid).toBe(true);
     });
   });
