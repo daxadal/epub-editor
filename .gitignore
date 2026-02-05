@@ -125,5 +125,5 @@ test/*.epub
 globalConfig.json
 
 .DS_Store
-examples/*.epub
-resources/
+/examples/*.epub
+/resources/

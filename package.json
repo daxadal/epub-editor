@@ -5,11 +5,11 @@
   "main": "src/index.ts",
   "scripts": {
     "clean": "rm -rf dist node_modules package-lock.json",
-    "lint": "eslint ./src ./examples",
-    "lint:fix": "eslint ./src ./examples --fix",
+    "lint": "eslint ./src ./examples ./test",
+    "lint:fix": "eslint ./src ./examples ./test --fix",
     "prettier": "prettier --check **/*.ts",
     "prettier:fix": "prettier --write **/*.ts",
-    "test": "echo \"Tests not properly implemented\"",
+    "test": "jest --runInBand",
     "tsc": "rm -rf dist && tsc --project tsconfig.compile.json"
   },
   "dependencies": {
@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
+    "@types/jest": "^30.0.0",
     "@types/xml2js": "^0.4.14",
     "@typescript-eslint/eslint-plugin": "^8.53.1",
     "@typescript-eslint/parser": "^8.53.1",

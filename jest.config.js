@@ -8,4 +8,7 @@ module.exports = {
   },
   testTimeout: 10000,
   testEnvironment: "node",
+  transformIgnorePatterns: [
+    "node_modules/(?!(uuid)/)",
+  ],
 };
