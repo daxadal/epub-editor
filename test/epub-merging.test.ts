@@ -11,6 +11,51 @@ import { EPUBBuilder } from '../src';
 
 const TEMP_DIR = path.join(__dirname, 'temp');
 
+/**
+ * Helper function to create a simple test EPUB
+ */
+async function createTestEPUB(options: {
+  filename: string;
+  title: string;
+  creator: string;
+  chapters: Array<{ title: string; content: string }>;
+  images?: Array<{ filename: string; data: Buffer; alt: string }>;
+  stylesheets?: Array<{ filename: string; content: string }>;
+}): Promise<string> {
+  const epub = new EPUBBuilder({
+    title: options.title,
+    creator: options.creator,
+    language: 'en',
+  });
+
+  // Add chapters
+  for (const chapter of options.chapters) {
+    epub.addChapter({
+      title: chapter.title,
+      content: chapter.content,
+    });
+  }
+
+  // Add images if provided
+  if (options.images) {
+    for (const image of options.images) {
+      epub.addImage(image);
+    }
+  }
+
+  // Add stylesheets if provided
+  if (options.stylesheets) {
+    for (const stylesheet of options.stylesheets) {
+      epub.addStylesheet(stylesheet);
+    }
+  }
+
+  const outputPath = path.join(TEMP_DIR, options.filename);
+  await epub.exportToFile(outputPath);
+
+  return outputPath;
+}
+
 describe('EPUB Merging', () => {
   beforeAll(async () => {
     await fs.ensureDir(TEMP_DIR);
@@ -19,51 +64,6 @@ describe('EPUB Merging', () => {
   afterAll(async () => {
     await fs.remove(TEMP_DIR);
   });
-
-  /**
-   * Helper function to create a simple test EPUB
-   */
-  async function createTestEPUB(options: {
-    filename: string;
-    title: string;
-    creator: string;
-    chapters: Array<{ title: string; content: string }>;
-    images?: Array<{ filename: string; data: Buffer; alt: string }>;
-    stylesheets?: Array<{ filename: string; content: string }>;
-  }): Promise<string> {
-    const epub = new EPUBBuilder({
-      title: options.title,
-      creator: options.creator,
-      language: 'en',
-    });
-
-    // Add chapters
-    for (const chapter of options.chapters) {
-      epub.addChapter({
-        title: chapter.title,
-        content: chapter.content,
-      });
-    }
-
-    // Add images if provided
-    if (options.images) {
-      for (const image of options.images) {
-        epub.addImage(image);
-      }
-    }
-
-    // Add stylesheets if provided
-    if (options.stylesheets) {
-      for (const stylesheet of options.stylesheets) {
-        epub.addStylesheet(stylesheet);
-      }
-    }
-
-    const outputPath = path.join(TEMP_DIR, options.filename);
-    await epub.exportToFile(outputPath);
-
-    return outputPath;
-  }
 
   describe('Basic Merging', () => {
     it('Two EPUBs are merged with all chapters preserved', async () => {
