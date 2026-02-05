@@ -44,13 +44,12 @@ describe('EPUB Creation', () => {
 
     it('Throws an error when title is missing', () => {
       // given
-      const newEpubFunction = () => {
-        // eslint-disable-next-line no-new
+      const newEpubFunction = () =>
         new EPUBBuilder({
           title: '',
           creator: 'Test Author',
         } as any);
-      };
+
       // when
 
       // then
@@ -59,13 +58,11 @@ describe('EPUB Creation', () => {
 
     it('Throws an error when creator is missing', () => {
       // given
-      const newEpubFunction = () => {
-        // eslint-disable-next-line no-new
+      const newEpubFunction = () =>
         new EPUBBuilder({
           title: 'Test Book',
           creator: '',
         } as any);
-      };
 
       // when
 
