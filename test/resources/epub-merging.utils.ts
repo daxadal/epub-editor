@@ -26,7 +26,7 @@ function addAllChapters(
 /**
  * Helper function to create a simple test EPUB
  */
-export function getTestEpub(
+export function createTestEPUB(
   EPUBBuilder: typeof EPUB2Builder | typeof EPUB3Builder,
   options: {
     filename: string;

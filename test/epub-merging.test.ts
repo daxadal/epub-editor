@@ -9,7 +9,7 @@ import * as fs from 'fs-extra';
 
 import { EPUB2Builder, EPUB3Builder } from '../src';
 
-import { getTestEpub } from './resources/epub-merging.utils';
+import { createTestEPUB } from './resources/epub-merging.utils';
 
 export const TEMP_DIR = path.join(__dirname, 'temp');
 
@@ -28,7 +28,7 @@ describe.each([
   describe('Basic Merging', () => {
     it('Two EPUBs are merged with all chapters preserved', async () => {
       // given
-      const epub1 = getTestEpub(EPUBBuilder, {
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'book1.epub',
         title: 'Book 1',
         creator: 'Author A',
@@ -38,7 +38,7 @@ describe.each([
         ],
       });
 
-      const epub2 = getTestEpub(EPUBBuilder, {
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'book2.epub',
         title: 'Book 2',
         creator: 'Author A',
@@ -104,21 +104,21 @@ describe.each([
 
     it('Three EPUBs are merged into a single book', async () => {
       // given
-      const epub1 = getTestEpub(EPUBBuilder, {
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'trilogy-1.epub',
         title: 'Trilogy: Part 1',
         creator: 'Author B',
         chapters: [{ title: 'Chapter 1', content: '<p>Part 1 content</p>' }],
       });
 
-      const epub2 = getTestEpub(EPUBBuilder, {
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'trilogy-2.epub',
         title: 'Trilogy: Part 2',
         creator: 'Author B',
         chapters: [{ title: 'Chapter 1', content: '<p>Part 2 content</p>' }],
       });
 
-      const epub3 = getTestEpub(EPUBBuilder, {
+      const epub3 = createTestEPUB(EPUBBuilder, {
         filename: 'trilogy-3.epub',
         title: 'Trilogy: Part 3',
         creator: 'Author B',
@@ -159,7 +159,7 @@ describe.each([
   describe('Merge with Images', () => {
     it('EPUBs with images are merged with unique image filenames', async () => {
       // given
-      const epub1 = getTestEpub(EPUBBuilder, {
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'book-with-image-1.epub',
         title: 'Book with Image 1',
         creator: 'Author C',
@@ -179,7 +179,7 @@ describe.each([
         ],
       });
 
-      const epub2 = getTestEpub(EPUBBuilder, {
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'book-with-image-2.epub',
         title: 'Book with Image 2',
         creator: 'Author C',
@@ -256,7 +256,7 @@ describe.each([
 
     it('Duplicate images are renamed to avoid conflicts when merging', async () => {
       // given
-      const epub1 = getTestEpub(EPUBBuilder, {
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'dup-image-1.epub',
         title: 'Book 1',
         creator: 'Author D',
@@ -270,7 +270,7 @@ describe.each([
         ],
       });
 
-      const epub2 = getTestEpub(EPUBBuilder, {
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'dup-image-2.epub',
         title: 'Book 2',
         creator: 'Author D',
@@ -322,7 +322,7 @@ describe.each([
   describe('Merge with Stylesheets', () => {
     it('EPUBs with custom stylesheets are merged successfully', async () => {
       // given
-      const epub1 = getTestEpub(EPUBBuilder, {
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'book-style-1.epub',
         title: 'Book with Style 1',
         creator: 'Author E',
@@ -335,7 +335,7 @@ describe.each([
         ],
       });
 
-      const epub2 = getTestEpub(EPUBBuilder, {
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'book-style-2.epub',
         title: 'Book with Style 2',
         creator: 'Author E',
@@ -384,14 +384,14 @@ describe.each([
   describe('Merge Metadata', () => {
     it('Author metadata is combined from multiple books', async () => {
       // given
-      const epub1 = getTestEpub(EPUBBuilder, {
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'author-book-1.epub',
         title: 'Book 1',
         creator: 'Author A',
         chapters: [{ title: 'Chapter 1', content: '<p>Content</p>' }],
       });
 
-      const epub2 = getTestEpub(EPUBBuilder, {
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'author-book-2.epub',
         title: 'Book 2',
         creator: 'Author B',
@@ -418,14 +418,14 @@ describe.each([
 
     it('Descriptive metadata is created for merged book', async () => {
       // given
-      const epub1 = getTestEpub(EPUBBuilder, {
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'series-1.epub',
         title: 'Series: Part 1',
         creator: 'Series Author',
         chapters: [{ title: 'Chapter 1', content: '<p>Content</p>' }],
       });
 
-      const epub2 = getTestEpub(EPUBBuilder, {
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'series-2.epub',
         title: 'Series: Part 2',
         creator: 'Series Author',
@@ -452,7 +452,7 @@ describe.each([
   describe('Export Merged EPUB', () => {
     it('Merged EPUB is exported successfully with valid structure', async () => {
       // given
-      const epub1 = getTestEpub(EPUBBuilder, {
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'export-merge-1.epub',
         title: 'Export Book 1',
         creator: 'Author F',
@@ -462,7 +462,7 @@ describe.each([
         ],
       });
 
-      const epub2 = getTestEpub(EPUBBuilder, {
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'export-merge-2.epub',
         title: 'Export Book 2',
         creator: 'Author F',
@@ -520,14 +520,14 @@ describe.each([
 
     it('Merged EPUB is validated before export', async () => {
       // given
-      const epub1 = getTestEpub(EPUBBuilder, {
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'validate-merge-1.epub',
         title: 'Validate Book 1',
         creator: 'Author G',
         chapters: [{ title: 'Chapter 1', content: '<p>Content 1</p>' }],
       });
 
-      const epub2 = getTestEpub(EPUBBuilder, {
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'validate-merge-2.epub',
         title: 'Validate Book 2',
         creator: 'Author G',
