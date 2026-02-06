@@ -6,32 +6,83 @@
 import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
+import { v4 } from 'uuid';
+import { mocked } from 'jest-mock';
 
 import { EPUB2Builder, EPUB3Builder } from '../src';
+
+import { UUIDMock } from './resources/uuid.mock';
+import { editExistingEPUB } from './resources/edit-example.utils';
 
 const RESOURCES_DIR = path.join(__dirname, 'resources');
 const TEMP_DIR = path.join(__dirname, 'temp');
 const SIMPLE_GUIDE_2_PATH = path.join(RESOURCES_DIR, 'simple-guide-2.epub');
 const SIMPLE_GUIDE_3_PATH = path.join(RESOURCES_DIR, 'simple-guide-3.epub');
+const MODIFIED_GUIDE_2_PATH = path.join(
+  RESOURCES_DIR,
+  'simple-guide-2-modified.epub',
+);
+const MODIFIED_GUIDE_3_PATH = path.join(
+  RESOURCES_DIR,
+  'simple-guide-3-modified.epub',
+);
+
+jest.mock('uuid', () => ({
+  v4: jest.fn(),
+}));
+
+jest
+  .useFakeTimers({
+    now: 0,
+    doNotFake: [
+      'hrtime',
+      'nextTick',
+      'performance',
+      'queueMicrotask',
+      'requestAnimationFrame',
+      'cancelAnimationFrame',
+      'requestIdleCallback',
+      'cancelIdleCallback',
+      'setImmediate',
+      'clearImmediate',
+      'setInterval',
+      'clearInterval',
+      'setTimeout',
+      'clearTimeout',
+    ],
+  })
+  .setSystemTime(new Date('1970-01-01T00:00:00Z'));
+
+const mockedUuidV4 = mocked(v4);
 
 describe.each([
   {
     version: 2,
     EPUBBuilder: EPUB2Builder,
     SIMPLE_GUIDE_PATH: SIMPLE_GUIDE_2_PATH,
+    MODIFIED_PATH: MODIFIED_GUIDE_2_PATH,
   },
   {
     version: 3,
     EPUBBuilder: EPUB3Builder,
     SIMPLE_GUIDE_PATH: SIMPLE_GUIDE_3_PATH,
+    MODIFIED_PATH: MODIFIED_GUIDE_3_PATH,
   },
-])('EPUB $version Editing', ({ EPUBBuilder, SIMPLE_GUIDE_PATH }) => {
+])('EPUB $version Editing', ({ EPUBBuilder, SIMPLE_GUIDE_PATH, MODIFIED_PATH }) => {
+  const uuidMockClass = new UUIDMock();
+
   beforeAll(async () => {
     await fs.ensureDir(TEMP_DIR);
+    mockedUuidV4.mockImplementation(() => uuidMockClass.v4());
   });
 
   afterAll(async () => {
     await fs.remove(TEMP_DIR);
+    mockedUuidV4.mockRestore();
+  });
+
+  afterEach(() => {
+    uuidMockClass.reset();
   });
 
   describe('Add Chapters to Existing EPUB', () => {
@@ -433,6 +484,23 @@ describe.each([
       expect(modifiedEpub.getMetadata().description).toContain(
         'Modified with EPUB3Builder',
       );
+    });
+  });
+
+  describe('Compare to reference files', () => {
+    it('The modified book must match the reference', async () => {
+      // given
+      const referenceBuffer = await fs.readFile(MODIFIED_PATH);
+      const originalEpub = await EPUBBuilder.parse(SIMPLE_GUIDE_PATH);
+
+      // when
+      const modifiedEpub = editExistingEPUB(originalEpub);
+      const createdBuffer = await modifiedEpub.export();
+
+      // then
+      expect(createdBuffer).toBeInstanceOf(Buffer);
+      expect(createdBuffer.length).toBeGreaterThan(0);
+      expect(createdBuffer.equals(referenceBuffer)).toBe(true);
     });
   });
 });
