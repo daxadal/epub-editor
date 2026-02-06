@@ -23,6 +23,28 @@ jest.mock('uuid', () => ({
   v4: jest.fn(),
 }));
 
+jest
+  .useFakeTimers({
+    now: 0,
+    doNotFake: [
+      'hrtime',
+      'nextTick',
+      'performance',
+      'queueMicrotask',
+      'requestAnimationFrame',
+      'cancelAnimationFrame',
+      'requestIdleCallback',
+      'cancelIdleCallback',
+      'setImmediate',
+      'clearImmediate',
+      'setInterval',
+      'clearInterval',
+      'setTimeout',
+      'clearTimeout',
+    ],
+  })
+  .setSystemTime(new Date('1970-01-01T00:00:00Z'));
+
 const mockedUuidV4 = mocked(v4);
 
 describe.each([
