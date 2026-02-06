@@ -60,6 +60,7 @@ describe.each([
   },
 ])('EPUB $version Creation', ({ EPUBBuilder, SIMPLE_GUIDE_PATH }) => {
   const uuidMockClass = new UUIDMock();
+
   beforeAll(async () => {
     await fs.ensureDir(TEMP_DIR);
     mockedUuidV4.mockImplementation(() => uuidMockClass.v4());
@@ -67,6 +68,7 @@ describe.each([
 
   afterAll(async () => {
     await fs.remove(TEMP_DIR);
+    mockedUuidV4.mockRestore();
   });
 
   afterEach(() => {
@@ -591,8 +593,9 @@ describe.each([
     it('The simple book created must match the reference', async () => {
       // given
       const referenceBuffer = await fs.readFile(SIMPLE_GUIDE_PATH);
-      const epub = createSimpleBook(EPUBBuilder);
+
       // when
+      const epub = createSimpleBook(EPUBBuilder);
       const createdBuffer = await epub.export();
 
       // then
