@@ -1,14 +1,17 @@
 /**
  * Simple example demonstrating EPUBBuilder usage
- * Run with: npx ts-node examples/simple-example.ts
+ * Run with: npx ts-node examples/simple-example.ts [--epub2]
  */
 
 import * as path from 'node:path';
 
-import { EPUBBuilder } from '../src';
+import { EPUB2Builder, EPUB3Builder } from '../src';
 
 async function createSimpleBook() {
-  console.log('📚 Creating EPUB...');
+  const isEpub2 = process.argv.includes('--epub2');
+  console.log(`📚 Creating EPUB ${isEpub2 ? 2 : 3}...`);
+
+  const EPUBBuilder = isEpub2 ? EPUB2Builder : EPUB3Builder;
 
   // Create a new EPUB
   const epub = new EPUBBuilder({
@@ -99,7 +102,10 @@ async function createSimpleBook() {
   }
 
   // Export
-  const outputPath = path.join(__dirname, 'simple-guide.epub');
+  const outputPath = path.join(
+    __dirname,
+    isEpub2 ? 'simple-guide-2.epub' : 'simple-guide-3.epub',
+  );
   console.log('📦 Exporting...');
 
   await epub.exportToFile(outputPath);

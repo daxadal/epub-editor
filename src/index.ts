@@ -1,11 +1,13 @@
 /**
- * EPUB Builder - Create and manipulate EPUB 3.3 files
+ * EPUB Builder - Create and manipulate EPUB 2 and EPUB 3 files
  *
  * @module epub-builder
  */
 
-export { EPUBBuilder } from './epub-builder';
+export { EPUB2Builder } from './epub2/epub2.builder';
+export { EPUB3Builder } from './epub3/epub3.builder';
 
+// Export shared types
 export {
   DublinCoreMetadata,
   Chapter,
@@ -18,9 +20,12 @@ export {
   ValidationResult,
   ManifestItem,
   SpineItem,
-  EPUBStructure,
-} from './types/epub-builder-types';
+} from './base-epub/base-epub.types';
 
+// Export EPUB 2 specific types
+export { NCXDocument, NCXNavPoint } from './epub2/epub2.types';
+
+// Export EPUB 3 specific types
 export {
   EPUBNavigationDocument,
   TocNav,
@@ -30,4 +35,4 @@ export {
   NavListItem,
   NavElement,
   RecommendedLandmarkType,
-} from './types/navigation-document';
+} from './epub3/epub3.types';

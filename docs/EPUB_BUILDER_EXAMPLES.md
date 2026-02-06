@@ -1,6 +1,6 @@
 # EPUB Builder Examples
 
-Comprehensive examples for using the EPUBBuilder class to create and manipulate EPUB 3.3 files.
+Comprehensive examples for using the EPUB3Builder class to create and manipulate EPUB 3.3 files.
 
 ## Table of Contents
 
@@ -18,10 +18,10 @@ Comprehensive examples for using the EPUBBuilder class to create and manipulate 
 ### Creating a Simple EPUB
 
 ```typescript
-import { EPUBBuilder } from './src';
+import { EPUB3Builder } from './src';
 
 // Create a new EPUB
-const epub = new EPUBBuilder({
+const epub = new EPUB3Builder({
   title: 'My First Book',
   creator: 'John Doe',
   language: 'en',
@@ -45,7 +45,7 @@ await epub.exportToFile('my-first-book.epub');
 ### Adding Multiple Chapters
 
 ```typescript
-const epub = new EPUBBuilder({
+const epub = new EPUB3Builder({
   title: 'Complete Guide',
   creator: 'Jane Smith',
 });
@@ -103,7 +103,7 @@ epub.addChapter({
 ### Creating a Hierarchical Structure
 
 ```typescript
-const epub = new EPUBBuilder({
+const epub = new EPUB3Builder({
   title: 'Comprehensive Guide',
   creator: 'Author Name',
 });
@@ -175,7 +175,7 @@ Table of Contents
 ```typescript
 import * as fs from 'fs-extra';
 
-const epub = new EPUBBuilder({
+const epub = new EPUB3Builder({
   title: 'Photo Book',
   creator: 'Photographer',
 });
@@ -228,7 +228,7 @@ epub.addImage({
 ### Adding Custom CSS
 
 ```typescript
-const epub = new EPUBBuilder({
+const epub = new EPUB3Builder({
   title: 'Styled Book',
   creator: 'Designer',
 });
@@ -284,7 +284,7 @@ epub.addChapter({
 ### Complete Metadata Example
 
 ```typescript
-const epub = new EPUBBuilder({
+const epub = new EPUB3Builder({
   title: 'The Complete Guide to Everything',
   creator: 'John Doe',
   language: 'en',
@@ -315,7 +315,7 @@ console.log(`Author: ${metadata.creator}`);
 
 ```typescript
 // Parse existing EPUB
-const epub = await EPUBBuilder.parse('existing-book.epub');
+const epub = await EPUB3Builder.parse('existing-book.epub');
 
 // Get metadata
 const metadata = epub.getMetadata();
@@ -347,7 +347,7 @@ await epub.exportToFile('modified-book.epub');
 import * as fs from 'fs-extra';
 
 const buffer = await fs.readFile('book.epub');
-const epub = await EPUBBuilder.parseBuffer(buffer);
+const epub = await EPUB3Builder.parseBuffer(buffer);
 
 // Work with the parsed EPUB
 const metadata = epub.getMetadata();
@@ -359,12 +359,12 @@ console.log(metadata);
 ### Creating a Full-Featured Book
 
 ```typescript
-import { EPUBBuilder } from './src';
+import { EPUB3Builder } from './src';
 import * as fs from 'fs-extra';
 
 async function createBook() {
   // Initialize EPUB with metadata
-  const epub = new EPUBBuilder({
+  const epub = new EPUB3Builder({
     title: 'The Art of Programming',
     creator: 'Ada Lovelace',
     language: 'en',
@@ -554,7 +554,7 @@ createBook().catch(console.error);
 ```typescript
 async function safeEPUBCreation() {
   try {
-    const epub = new EPUBBuilder({
+    const epub = new EPUB3Builder({
       title: 'My Book',
       creator: 'Author',
     });
@@ -588,7 +588,7 @@ async function safeEPUBCreation() {
 ### Validate and Inspect
 
 ```typescript
-const epub = new EPUBBuilder({
+const epub = new EPUB3Builder({
   title: 'Test Book',
   creator: 'Tester',
 });

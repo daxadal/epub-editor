@@ -1,17 +1,22 @@
 /**
  * Example demonstrating parsing and editing an existing EPUB
- * Run with: npx ts-node examples/edit-example.ts <path-to-epub>
+ * Run with: npx ts-node examples/edit-example.ts <path-to-epub> [--epub2]
  */
 
 import * as path from 'node:path';
 
-import { EPUBBuilder } from '../src';
+import { EPUB2Builder, EPUB3Builder } from '../src';
 
 async function editExistingEPUB() {
   const args = process.argv.slice(2);
 
+  const isEpub2 = process.argv.includes('--epub2');
+  const EPUBBuilder = isEpub2 ? EPUB2Builder : EPUB3Builder;
+
   if (args.length === 0) {
-    console.error('Usage: npx ts-node examples/edit-example.ts <path-to-epub>');
+    console.error(
+      'Usage: npx ts-node examples/edit-example.ts <path-to-epub> [--epub2]',
+    );
     console.error('');
     console.error(
       'This example loads an existing EPUB, adds a new chapter, and saves it.',

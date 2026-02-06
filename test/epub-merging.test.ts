@@ -7,56 +7,16 @@ import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
 
-import { EPUBBuilder } from '../src';
+import { EPUB2Builder, EPUB3Builder } from '../src';
 
-const TEMP_DIR = path.join(__dirname, 'temp');
+import { addAllChapters, createTestEPUB } from './resources/epub-merging.utils';
 
-/**
- * Helper function to create a simple test EPUB
- */
-async function createTestEPUB(options: {
-  filename: string;
-  title: string;
-  creator: string;
-  chapters: Array<{ title: string; content: string }>;
-  images?: Array<{ filename: string; data: Buffer; alt: string }>;
-  stylesheets?: Array<{ filename: string; content: string }>;
-}): Promise<string> {
-  const epub = new EPUBBuilder({
-    title: options.title,
-    creator: options.creator,
-    language: 'en',
-  });
+export const TEMP_DIR = path.join(__dirname, 'temp');
 
-  // Add chapters
-  for (const chapter of options.chapters) {
-    epub.addChapter({
-      title: chapter.title,
-      content: chapter.content,
-    });
-  }
-
-  // Add images if provided
-  if (options.images) {
-    for (const image of options.images) {
-      epub.addImage(image);
-    }
-  }
-
-  // Add stylesheets if provided
-  if (options.stylesheets) {
-    for (const stylesheet of options.stylesheets) {
-      epub.addStylesheet(stylesheet);
-    }
-  }
-
-  const outputPath = path.join(TEMP_DIR, options.filename);
-  await epub.exportToFile(outputPath);
-
-  return outputPath;
-}
-
-describe('EPUB Merging', () => {
+describe.each([
+  { version: 2, EPUBBuilder: EPUB2Builder },
+  { version: 3, EPUBBuilder: EPUB3Builder },
+])('EPUB $version Merging', ({ EPUBBuilder }) => {
   beforeAll(async () => {
     await fs.ensureDir(TEMP_DIR);
   });
@@ -68,7 +28,7 @@ describe('EPUB Merging', () => {
   describe('Basic Merging', () => {
     it('Two EPUBs are merged with all chapters preserved', async () => {
       // given
-      const book1Path = await createTestEPUB({
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'book1.epub',
         title: 'Book 1',
         creator: 'Author A',
@@ -78,7 +38,7 @@ describe('EPUB Merging', () => {
         ],
       });
 
-      const book2Path = await createTestEPUB({
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'book2.epub',
         title: 'Book 2',
         creator: 'Author A',
@@ -87,9 +47,6 @@ describe('EPUB Merging', () => {
           { title: 'Chapter 2', content: '<p>Book 2, Chapter 2</p>' },
         ],
       });
-
-      const epub1 = await EPUBBuilder.parse(book1Path);
-      const epub2 = await EPUBBuilder.parse(book2Path);
 
       // when
       const mergedEpub = new EPUBBuilder({
@@ -147,32 +104,28 @@ describe('EPUB Merging', () => {
 
     it('Three EPUBs are merged into a single book', async () => {
       // given
-      const book1Path = await createTestEPUB({
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'trilogy-1.epub',
         title: 'Trilogy: Part 1',
         creator: 'Author B',
         chapters: [{ title: 'Chapter 1', content: '<p>Part 1 content</p>' }],
       });
 
-      const book2Path = await createTestEPUB({
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'trilogy-2.epub',
         title: 'Trilogy: Part 2',
         creator: 'Author B',
         chapters: [{ title: 'Chapter 1', content: '<p>Part 2 content</p>' }],
       });
 
-      const book3Path = await createTestEPUB({
+      const epub3 = createTestEPUB(EPUBBuilder, {
         filename: 'trilogy-3.epub',
         title: 'Trilogy: Part 3',
         creator: 'Author B',
         chapters: [{ title: 'Chapter 1', content: '<p>Part 3 content</p>' }],
       });
 
-      const sourceEPUBs = await Promise.all([
-        EPUBBuilder.parse(book1Path),
-        EPUBBuilder.parse(book2Path),
-        EPUBBuilder.parse(book3Path),
-      ]);
+      const sourceEPUBs = [epub1, epub2, epub3];
 
       // when
       const mergedEpub = new EPUBBuilder({
@@ -201,12 +154,116 @@ describe('EPUB Merging', () => {
       const rootChapters = mergedEpub.getRootChapters();
       expect(rootChapters).toHaveLength(3);
     });
+
+    it('Chapter children are preserved while merging', async () => {
+      // given
+      const epub1 = createTestEPUB(EPUBBuilder, {
+        filename: 'book1.epub',
+        title: 'Book 1',
+        creator: 'Author A',
+        chapters: [
+          {
+            title: 'Chapter 1',
+            content: '<p>Book 1, Chapter 1</p>',
+            children: [
+              {
+                title: 'Section 1.1',
+                content: '<p>Book 1, Chapter 1, Section 1</p>',
+              },
+              {
+                title: 'Section 1.2',
+                content: '<p>Book 1, Chapter 1, Section 2</p>',
+              },
+            ],
+          },
+          {
+            title: 'Chapter 2',
+            content: '<p>Book 1, Chapter 2</p>',
+            children: [
+              {
+                title: 'Section 2.1',
+                content: '<p>Book 1, Chapter 2, Section 1</p>',
+                children: [
+                  {
+                    title: 'Subsection 2.1.1',
+                    content:
+                      '<p>Book 1, Chapter 2, Section 1, Subsection 1</p>',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      const epub2 = createTestEPUB(EPUBBuilder, {
+        filename: 'book2.epub',
+        title: 'Book 2',
+        creator: 'Author A',
+        chapters: [
+          { title: 'Chapter 1', content: '<p>Book 2, Chapter 1</p>' },
+          { title: 'Chapter 2', content: '<p>Book 2, Chapter 2</p>' },
+        ],
+      });
+
+      // when
+      const mergedEpub = new EPUBBuilder({
+        title: 'Complete Series',
+        creator: 'Author A',
+        language: 'en',
+        description: 'Books 1 and 2 combined',
+      });
+
+      const book1Section = mergedEpub.addChapter({
+        title: 'Book 1',
+        headingLevel: 1,
+      });
+
+      const book1Chapters = epub1.getRootChapters();
+      addAllChapters(mergedEpub, book1Chapters, book1Section);
+
+      const book2Section = mergedEpub.addChapter({
+        title: 'Book 2',
+        headingLevel: 1,
+      });
+
+      const book2Chapters = epub2.getRootChapters();
+      addAllChapters(mergedEpub, book2Chapters, book2Section);
+
+      const outputPath = path.join(TEMP_DIR, 'merged-basic.epub');
+      await mergedEpub.exportToFile(outputPath);
+
+      // then
+      const validation = mergedEpub.validate();
+      expect(validation.isValid).toBe(true);
+
+      const fileExists = await fs.pathExists(outputPath);
+      expect(fileExists).toBe(true);
+
+      const rootChapters = mergedEpub.getRootChapters();
+      expect(rootChapters).toHaveLength(2);
+      expect(rootChapters[0].title).toBe('Book 1');
+      expect(rootChapters[1].title).toBe('Book 2');
+      expect(rootChapters[0].children).toHaveLength(2);
+      expect(rootChapters[0].children[0].title).toBe('Chapter 1');
+      expect(rootChapters[0].children[0].children).toHaveLength(2);
+      expect(rootChapters[0].children[0].children[0].title).toBe('Section 1.1');
+      expect(rootChapters[0].children[0].children[1].title).toBe('Section 1.2');
+      expect(rootChapters[0].children[1].title).toBe('Chapter 2');
+      expect(rootChapters[0].children[1].children).toHaveLength(1);
+      expect(rootChapters[0].children[1].children[0].title).toBe('Section 2.1');
+      expect(rootChapters[0].children[1].children[0].children).toHaveLength(1);
+      expect(rootChapters[0].children[1].children[0].children[0].title).toBe(
+        'Subsection 2.1.1',
+      );
+      expect(rootChapters[1].children).toHaveLength(2);
+    });
   });
 
   describe('Merge with Images', () => {
     it('EPUBs with images are merged with unique image filenames', async () => {
       // given
-      const book1Path = await createTestEPUB({
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'book-with-image-1.epub',
         title: 'Book with Image 1',
         creator: 'Author C',
@@ -226,7 +283,7 @@ describe('EPUB Merging', () => {
         ],
       });
 
-      const book2Path = await createTestEPUB({
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'book-with-image-2.epub',
         title: 'Book with Image 2',
         creator: 'Author C',
@@ -245,9 +302,6 @@ describe('EPUB Merging', () => {
           },
         ],
       });
-
-      const epub1 = await EPUBBuilder.parse(book1Path);
-      const epub2 = await EPUBBuilder.parse(book2Path);
 
       // when
       const mergedEpub = new EPUBBuilder({
@@ -306,7 +360,7 @@ describe('EPUB Merging', () => {
 
     it('Duplicate images are renamed to avoid conflicts when merging', async () => {
       // given
-      const book1Path = await createTestEPUB({
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'dup-image-1.epub',
         title: 'Book 1',
         creator: 'Author D',
@@ -320,7 +374,7 @@ describe('EPUB Merging', () => {
         ],
       });
 
-      const book2Path = await createTestEPUB({
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'dup-image-2.epub',
         title: 'Book 2',
         creator: 'Author D',
@@ -333,9 +387,6 @@ describe('EPUB Merging', () => {
           },
         ],
       });
-
-      const epub1 = await EPUBBuilder.parse(book1Path);
-      const epub2 = await EPUBBuilder.parse(book2Path);
 
       // when
       const mergedEpub = new EPUBBuilder({
@@ -375,7 +426,7 @@ describe('EPUB Merging', () => {
   describe('Merge with Stylesheets', () => {
     it('EPUBs with custom stylesheets are merged successfully', async () => {
       // given
-      const book1Path = await createTestEPUB({
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'book-style-1.epub',
         title: 'Book with Style 1',
         creator: 'Author E',
@@ -388,7 +439,7 @@ describe('EPUB Merging', () => {
         ],
       });
 
-      const book2Path = await createTestEPUB({
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'book-style-2.epub',
         title: 'Book with Style 2',
         creator: 'Author E',
@@ -400,9 +451,6 @@ describe('EPUB Merging', () => {
           },
         ],
       });
-
-      const epub1 = await EPUBBuilder.parse(book1Path);
-      const epub2 = await EPUBBuilder.parse(book2Path);
 
       // when
       const mergedEpub = new EPUBBuilder({
@@ -440,22 +488,19 @@ describe('EPUB Merging', () => {
   describe('Merge Metadata', () => {
     it('Author metadata is combined from multiple books', async () => {
       // given
-      const book1Path = await createTestEPUB({
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'author-book-1.epub',
         title: 'Book 1',
         creator: 'Author A',
         chapters: [{ title: 'Chapter 1', content: '<p>Content</p>' }],
       });
 
-      const book2Path = await createTestEPUB({
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'author-book-2.epub',
         title: 'Book 2',
         creator: 'Author B',
         chapters: [{ title: 'Chapter 1', content: '<p>Content</p>' }],
       });
-
-      const epub1 = await EPUBBuilder.parse(book1Path);
-      const epub2 = await EPUBBuilder.parse(book2Path);
 
       const authors = new Set<string>();
       authors.add(epub1.getMetadata().creator);
@@ -477,22 +522,19 @@ describe('EPUB Merging', () => {
 
     it('Descriptive metadata is created for merged book', async () => {
       // given
-      const book1Path = await createTestEPUB({
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'series-1.epub',
         title: 'Series: Part 1',
         creator: 'Series Author',
         chapters: [{ title: 'Chapter 1', content: '<p>Content</p>' }],
       });
 
-      const book2Path = await createTestEPUB({
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'series-2.epub',
         title: 'Series: Part 2',
         creator: 'Series Author',
         chapters: [{ title: 'Chapter 1', content: '<p>Content</p>' }],
       });
-
-      const epub1 = await EPUBBuilder.parse(book1Path);
-      const epub2 = await EPUBBuilder.parse(book2Path);
 
       const titles = [epub1.getMetadata().title, epub2.getMetadata().title];
 
@@ -514,7 +556,7 @@ describe('EPUB Merging', () => {
   describe('Export Merged EPUB', () => {
     it('Merged EPUB is exported successfully with valid structure', async () => {
       // given
-      const book1Path = await createTestEPUB({
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'export-merge-1.epub',
         title: 'Export Book 1',
         creator: 'Author F',
@@ -524,7 +566,7 @@ describe('EPUB Merging', () => {
         ],
       });
 
-      const book2Path = await createTestEPUB({
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'export-merge-2.epub',
         title: 'Export Book 2',
         creator: 'Author F',
@@ -533,9 +575,6 @@ describe('EPUB Merging', () => {
           { title: 'Chapter 2', content: '<p>Book 2 more content</p>' },
         ],
       });
-
-      const epub1 = await EPUBBuilder.parse(book1Path);
-      const epub2 = await EPUBBuilder.parse(book2Path);
 
       const mergedEpub = new EPUBBuilder({
         title: 'Merged Export Test',
@@ -585,22 +624,19 @@ describe('EPUB Merging', () => {
 
     it('Merged EPUB is validated before export', async () => {
       // given
-      const book1Path = await createTestEPUB({
+      const epub1 = createTestEPUB(EPUBBuilder, {
         filename: 'validate-merge-1.epub',
         title: 'Validate Book 1',
         creator: 'Author G',
         chapters: [{ title: 'Chapter 1', content: '<p>Content 1</p>' }],
       });
 
-      const book2Path = await createTestEPUB({
+      const epub2 = createTestEPUB(EPUBBuilder, {
         filename: 'validate-merge-2.epub',
         title: 'Validate Book 2',
         creator: 'Author G',
         chapters: [{ title: 'Chapter 1', content: '<p>Content 2</p>' }],
       });
-
-      const epub1 = await EPUBBuilder.parse(book1Path);
-      const epub2 = await EPUBBuilder.parse(book2Path);
 
       const mergedEpub = new EPUBBuilder({
         title: 'Merged Validation Test',

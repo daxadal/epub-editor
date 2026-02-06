@@ -4,12 +4,12 @@ import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
 
-import { Chapter, EPUBBuilder } from '../src';
+import { Chapter, EPUB2Builder, EPUB3Builder } from '../src';
 
 function copyStyleSheets(
-  sourceEPUB: EPUBBuilder,
+  sourceEPUB: EPUB2Builder | EPUB3Builder,
   bookNumber: number,
-  mergedEPUB: EPUBBuilder,
+  mergedEPUB: EPUB2Builder | EPUB3Builder,
 ): Map<string, string> {
   // Get all stylesheets from this EPUB (except default)
   const stylesheets = sourceEPUB
@@ -32,9 +32,9 @@ function copyStyleSheets(
 }
 
 function copyImages(
-  sourceEPUB: EPUBBuilder,
+  sourceEPUB: EPUB2Builder | EPUB3Builder,
   bookNumber: number,
-  mergedEPUB: EPUBBuilder,
+  mergedEPUB: EPUB2Builder | EPUB3Builder,
 ): Map<string, string> {
   const images = sourceEPUB.getAllImages();
 
@@ -59,61 +59,78 @@ function copyImages(
   return imageMap;
 }
 
-function copyChapter(
-  chapter: Chapter,
+function copyAllChapters(
+  rootChapters: Chapter[],
   stylesheetMap: Map<string, string>,
   imageMap: Map<string, string>,
-  mergedEPUB: EPUBBuilder,
+  mergedEPUB: EPUB2Builder | EPUB3Builder,
   sectionId: string,
 ) {
-  // Update content to reflect new image and stylesheet paths
-  let updatedContent = chapter.content;
+  // Add all chapters as children of the section
+  let chapterCount = 0;
+  for (const chapter of rootChapters) {
+    // Update content to reflect new image and stylesheet paths
+    let updatedContent = chapter.content;
 
-  // Update stylesheet references in content
-  stylesheetMap.forEach((newFilename, oldFilename) => {
-    const oldPath = oldFilename;
-    const newPath = `styles/${newFilename}`;
+    // Update stylesheet references in content
+    stylesheetMap.forEach((newFilename, oldFilename) => {
+      const oldPath = oldFilename;
+      const newPath = `styles/${newFilename}`;
 
-    // Handle various possible path formats
-    const patterns = [
-      new RegExp(String.raw`src=["']\.\./${oldPath}["']`, 'g'),
-      new RegExp(String.raw`src=["']${oldPath}["']`, 'g'),
-      new RegExp(String.raw`src=["']\.\./${path.basename(oldPath)}["']`, 'g'),
-      new RegExp(String.raw`src=["']${path.basename(oldPath)}["']`, 'g'),
-    ];
+      // Handle various possible path formats
+      const patterns = [
+        new RegExp(String.raw`src=["']\.\./${oldPath}["']`, 'g'),
+        new RegExp(String.raw`src=["']${oldPath}["']`, 'g'),
+        new RegExp(String.raw`src=["']\.\./${path.basename(oldPath)}["']`, 'g'),
+        new RegExp(String.raw`src=["']${path.basename(oldPath)}["']`, 'g'),
+      ];
 
-    patterns.forEach((pattern) => {
-      updatedContent = updatedContent.replace(pattern, `src="../${newPath}"`);
+      patterns.forEach((pattern) => {
+        updatedContent = updatedContent.replace(pattern, `src="../${newPath}"`);
+      });
     });
-  });
 
-  // Update image references in content
-  imageMap.forEach((newFilename, oldFilename) => {
-    const oldPath = oldFilename;
-    const newPath = `images/${newFilename}`;
+    // Update image references in content
+    imageMap.forEach((newFilename, oldFilename) => {
+      const oldPath = oldFilename;
+      const newPath = `images/${newFilename}`;
 
-    // Handle various possible path formats
-    const patterns = [
-      new RegExp(String.raw`src=["']\.\./${oldPath}["']`, 'g'),
-      new RegExp(String.raw`src=["']${oldPath}["']`, 'g'),
-      new RegExp(String.raw`src=["']\.\./${path.basename(oldPath)}["']`, 'g'),
-      new RegExp(String.raw`src=["']${path.basename(oldPath)}["']`, 'g'),
-    ];
+      // Handle various possible path formats
+      const patterns = [
+        new RegExp(String.raw`src=["']\.\./${oldPath}["']`, 'g'),
+        new RegExp(String.raw`src=["']${oldPath}["']`, 'g'),
+        new RegExp(String.raw`src=["']\.\./${path.basename(oldPath)}["']`, 'g'),
+        new RegExp(String.raw`src=["']${path.basename(oldPath)}["']`, 'g'),
+      ];
 
-    patterns.forEach((pattern) => {
-      updatedContent = updatedContent.replace(pattern, `src="../${newPath}"`);
+      patterns.forEach((pattern) => {
+        updatedContent = updatedContent.replace(pattern, `src="../${newPath}"`);
+      });
     });
-  });
 
-  mergedEPUB.addChapter({
-    title: chapter.title,
-    content: updatedContent,
-    parentId: sectionId,
-    headingLevel: chapter.headingLevel,
-    linear: chapter.linear,
-  });
+    mergedEPUB.addChapter({
+      title: chapter.title,
+      content: updatedContent,
+      parentId: sectionId,
+      headingLevel: chapter.headingLevel,
+      linear: chapter.linear,
+    });
+
+    chapterCount++;
+
+    if (chapter.children && chapter.children.length > 0) {
+      const childrenCount = copyAllChapters(
+        chapter.children,
+        stylesheetMap,
+        imageMap,
+        mergedEPUB,
+        sectionId,
+      );
+      chapterCount += childrenCount;
+    }
+  }
+  return chapterCount;
 }
-
 /**
  * Merge the series EPUBs into one combined EPUB
  * Run with: npx ts-node examples/merge-example.ts
@@ -127,6 +144,8 @@ async function mergeExample({
   outputFile: string;
   sourceFiles: string[];
 }) {
+  const isEpub2 = process.argv.includes('--epub2');
+  const EPUBBuilder = isEpub2 ? EPUB2Builder : EPUB3Builder;
   console.log(`📚 Merging "${seriesName}" series...\n`);
 
   const basePath = path.join(__dirname, '..');
@@ -194,12 +213,13 @@ async function mergeExample({
     // Get all root chapters from this EPUB
     const rootChapters = sourceEPUB.getRootChapters();
 
-    // Add all chapters as children of the section
-    let chapterCount = 0;
-    for (const chapter of rootChapters) {
-      copyChapter(chapter, stylesheetMap, imageMap, mergedEPUB, sectionId);
-      chapterCount++;
-    }
+    const chapterCount = copyAllChapters(
+      rootChapters,
+      stylesheetMap,
+      imageMap,
+      mergedEPUB,
+      sectionId,
+    );
 
     console.log(`      ✓ Added ${chapterCount} chapters`);
   }

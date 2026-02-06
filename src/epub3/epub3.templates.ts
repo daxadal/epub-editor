@@ -1,5 +1,5 @@
 /**
- * EPUB 3.3 Templates and Document Generators
+ * EPUB 2 and EPUB 3 Templates and Document Generators
  */
 import { v4 as uuidV4 } from 'uuid';
 
@@ -8,11 +8,10 @@ import {
   Chapter,
   ManifestItem,
   SpineItem,
-} from '../types/epub-builder-types';
-import {
-  EPUBNavigationDocument,
-  NavListItem,
-} from '../types/navigation-document';
+} from '../base-epub/base-epub.types';
+import { escapeXml } from '../utils/xml.utils';
+
+import { EPUBNavigationDocument, NavListItem } from './epub3.types';
 
 /**
  * Generate the mimetype file content
@@ -308,16 +307,4 @@ function generateNavList(items: NavListItem[], indent: number): string {
   xml += `\n${indentStr}</ol>`;
 
   return xml;
-}
-
-/**
- * Escape XML special characters
- */
-function escapeXml(unsafe: string): string {
-  return unsafe
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&apos;');
 }

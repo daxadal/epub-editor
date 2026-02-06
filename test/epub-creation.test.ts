@@ -6,18 +6,73 @@
 import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
+import { mocked } from 'jest-mock';
+import { v4 } from 'uuid';
 
-import { EPUBBuilder } from '../src';
+import { EPUB2Builder, EPUB3Builder } from '../src';
 
+import { createSimpleBook } from './resources/simple-guide.utils';
+import { UUIDMock } from './resources/uuid.mock';
+
+const RESOURCES_DIR = path.join(__dirname, 'resources');
 const TEMP_DIR = path.join(__dirname, 'temp');
+const SIMPLE_GUIDE_2_PATH = path.join(RESOURCES_DIR, 'simple-guide-2.epub');
+const SIMPLE_GUIDE_3_PATH = path.join(RESOURCES_DIR, 'simple-guide-3.epub');
 
-describe('EPUB Creation', () => {
+jest.mock('uuid', () => ({
+  v4: jest.fn(),
+}));
+
+jest
+  .useFakeTimers({
+    now: 0,
+    doNotFake: [
+      'hrtime',
+      'nextTick',
+      'performance',
+      'queueMicrotask',
+      'requestAnimationFrame',
+      'cancelAnimationFrame',
+      'requestIdleCallback',
+      'cancelIdleCallback',
+      'setImmediate',
+      'clearImmediate',
+      'setInterval',
+      'clearInterval',
+      'setTimeout',
+      'clearTimeout',
+    ],
+  })
+  .setSystemTime(new Date('1970-01-01T00:00:00Z'));
+
+const mockedUuidV4 = mocked(v4);
+
+describe.each([
+  {
+    version: 2,
+    EPUBBuilder: EPUB2Builder,
+    SIMPLE_GUIDE_PATH: SIMPLE_GUIDE_2_PATH,
+  },
+  {
+    version: 3,
+    EPUBBuilder: EPUB3Builder,
+    SIMPLE_GUIDE_PATH: SIMPLE_GUIDE_3_PATH,
+  },
+])('EPUB $version Creation', ({ EPUBBuilder, SIMPLE_GUIDE_PATH }) => {
+  const uuidMockClass = new UUIDMock();
+
   beforeAll(async () => {
     await fs.ensureDir(TEMP_DIR);
+    mockedUuidV4.mockImplementation(() => uuidMockClass.v4());
   });
 
   afterAll(async () => {
     await fs.remove(TEMP_DIR);
+    mockedUuidV4.mockRestore();
+  });
+
+  afterEach(() => {
+    uuidMockClass.reset();
   });
 
   describe('Basic EPUB Creation', () => {
@@ -531,6 +586,22 @@ describe('EPUB Creation', () => {
       expect(allChapters).toHaveLength(5); // intro, part1, chap1, chap2, conclusion
       expect(epub.getAllImages()).toHaveLength(2);
       expect(epub.getAllStylesheets().length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  describe('Compare to reference files', () => {
+    it('The simple book created must match the reference', async () => {
+      // given
+      const referenceBuffer = await fs.readFile(SIMPLE_GUIDE_PATH);
+
+      // when
+      const epub = createSimpleBook(EPUBBuilder);
+      const createdBuffer = await epub.export();
+
+      // then
+      expect(createdBuffer).toBeInstanceOf(Buffer);
+      expect(createdBuffer.length).toBeGreaterThan(0);
+      expect(createdBuffer.equals(referenceBuffer)).toBe(true);
     });
   });
 });
