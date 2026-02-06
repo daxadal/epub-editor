@@ -10,12 +10,21 @@ import { EPUB2Builder, EPUB3Builder } from '../src';
 
 const RESOURCES_DIR = path.join(__dirname, 'resources');
 const TEMP_DIR = path.join(__dirname, 'temp');
-const SIMPLE_GUIDE_PATH = path.join(RESOURCES_DIR, 'simple-guide.epub');
+const SIMPLE_GUIDE_2_PATH = path.join(RESOURCES_DIR, 'simple-guide-2.epub');
+const SIMPLE_GUIDE_3_PATH = path.join(RESOURCES_DIR, 'simple-guide-3.epub');
 
 describe.each([
-  { version: 2, EPUBBuilder: EPUB2Builder },
-  { version: 3, EPUBBuilder: EPUB3Builder },
-])('EPUB $version Validation', ({ EPUBBuilder }) => {
+  {
+    version: 2,
+    EPUBBuilder: EPUB2Builder,
+    SIMPLE_GUIDE_PATH: SIMPLE_GUIDE_2_PATH,
+  },
+  {
+    version: 3,
+    EPUBBuilder: EPUB3Builder,
+    SIMPLE_GUIDE_PATH: SIMPLE_GUIDE_3_PATH,
+  },
+])('EPUB $version Validation', ({ EPUBBuilder, SIMPLE_GUIDE_PATH }) => {
   beforeAll(async () => {
     await fs.ensureDir(TEMP_DIR);
   });
