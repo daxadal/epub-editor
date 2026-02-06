@@ -7,7 +7,7 @@ import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
 
-import { EPUB3Builder } from '../../src';
+import { EPUB3Builder } from '../src';
 
 const RESOURCES_DIR = path.join(__dirname, 'resources');
 const TEMP_DIR = path.join(__dirname, 'temp');
