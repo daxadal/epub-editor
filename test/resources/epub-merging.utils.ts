@@ -6,7 +6,7 @@ type SimpleChapter = {
   children?: SimpleChapter[];
 };
 
-function addAllChapters(
+export function addAllChapters(
   epub: EPUB2Builder | EPUB3Builder,
   chapters: Array<SimpleChapter>,
   parentId?: string,

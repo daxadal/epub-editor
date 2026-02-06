@@ -9,7 +9,7 @@ import * as fs from 'fs-extra';
 
 import { EPUB2Builder, EPUB3Builder } from '../src';
 
-import { createTestEPUB } from './resources/epub-merging.utils';
+import { addAllChapters, createTestEPUB } from './resources/epub-merging.utils';
 
 export const TEMP_DIR = path.join(__dirname, 'temp');
 
@@ -153,6 +153,110 @@ describe.each([
       // then
       const rootChapters = mergedEpub.getRootChapters();
       expect(rootChapters).toHaveLength(3);
+    });
+
+    it('Chapter children are preserved while merging', async () => {
+      // given
+      const epub1 = createTestEPUB(EPUBBuilder, {
+        filename: 'book1.epub',
+        title: 'Book 1',
+        creator: 'Author A',
+        chapters: [
+          {
+            title: 'Chapter 1',
+            content: '<p>Book 1, Chapter 1</p>',
+            children: [
+              {
+                title: 'Section 1.1',
+                content: '<p>Book 1, Chapter 1, Section 1</p>',
+              },
+              {
+                title: 'Section 1.2',
+                content: '<p>Book 1, Chapter 1, Section 2</p>',
+              },
+            ],
+          },
+          {
+            title: 'Chapter 2',
+            content: '<p>Book 1, Chapter 2</p>',
+            children: [
+              {
+                title: 'Section 2.1',
+                content: '<p>Book 1, Chapter 2, Section 1</p>',
+                children: [
+                  {
+                    title: 'Subsection 2.1.1',
+                    content:
+                      '<p>Book 1, Chapter 2, Section 1, Subsection 1</p>',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      const epub2 = createTestEPUB(EPUBBuilder, {
+        filename: 'book2.epub',
+        title: 'Book 2',
+        creator: 'Author A',
+        chapters: [
+          { title: 'Chapter 1', content: '<p>Book 2, Chapter 1</p>' },
+          { title: 'Chapter 2', content: '<p>Book 2, Chapter 2</p>' },
+        ],
+      });
+
+      // when
+      const mergedEpub = new EPUBBuilder({
+        title: 'Complete Series',
+        creator: 'Author A',
+        language: 'en',
+        description: 'Books 1 and 2 combined',
+      });
+
+      const book1Section = mergedEpub.addChapter({
+        title: 'Book 1',
+        headingLevel: 1,
+      });
+
+      const book1Chapters = epub1.getRootChapters();
+      addAllChapters(mergedEpub, book1Chapters, book1Section);
+
+      const book2Section = mergedEpub.addChapter({
+        title: 'Book 2',
+        headingLevel: 1,
+      });
+
+      const book2Chapters = epub2.getRootChapters();
+      addAllChapters(mergedEpub, book2Chapters, book2Section);
+
+      const outputPath = path.join(TEMP_DIR, 'merged-basic.epub');
+      await mergedEpub.exportToFile(outputPath);
+
+      // then
+      const validation = mergedEpub.validate();
+      expect(validation.isValid).toBe(true);
+
+      const fileExists = await fs.pathExists(outputPath);
+      expect(fileExists).toBe(true);
+
+      const rootChapters = mergedEpub.getRootChapters();
+      expect(rootChapters).toHaveLength(2);
+      expect(rootChapters[0].title).toBe('Book 1');
+      expect(rootChapters[1].title).toBe('Book 2');
+      expect(rootChapters[0].children).toHaveLength(2);
+      expect(rootChapters[0].children[0].title).toBe('Chapter 1');
+      expect(rootChapters[0].children[0].children).toHaveLength(2);
+      expect(rootChapters[0].children[0].children[0].title).toBe('Section 1.1');
+      expect(rootChapters[0].children[0].children[1].title).toBe('Section 1.2');
+      expect(rootChapters[0].children[1].title).toBe('Chapter 2');
+      expect(rootChapters[0].children[1].children).toHaveLength(1);
+      expect(rootChapters[0].children[1].children[0].title).toBe('Section 2.1');
+      expect(rootChapters[0].children[1].children[0].children).toHaveLength(1);
+      expect(rootChapters[0].children[1].children[0].children[0].title).toBe(
+        'Subsection 2.1.1',
+      );
+      expect(rootChapters[1].children).toHaveLength(2);
     });
   });
 
