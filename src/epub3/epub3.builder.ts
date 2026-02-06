@@ -4,7 +4,7 @@ import JSZip from 'jszip';
 import * as fs from 'fs-extra';
 import { parseString } from 'xml2js';
 
-import { BaseEPUB3Builder } from '../base-epub/base-epub.builder';
+import { BaseEPUBBuilder } from '../base-epub/base-epub.builder';
 import {
   DublinCoreMetadata,
   ManifestItem,
@@ -41,7 +41,7 @@ const parseXml = promisify(parseString);
  * await epub.exportToFile('my-book.epub');
  * ```
  */
-export class EPUB3Builder extends BaseEPUB3Builder {
+export class EPUB3Builder extends BaseEPUBBuilder {
   /**
    * Create a new EPUB 3 builder
    */

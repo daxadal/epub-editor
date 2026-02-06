@@ -22,7 +22,7 @@ import {
  * Abstract base class for EPUB builders
  * Provides shared functionality for EPUB 2 and EPUB 3 builders
  */
-export abstract class BaseEPUB3Builder {
+export abstract class BaseEPUBBuilder {
   protected metadata: DublinCoreMetadata;
   protected readonly chapters: Map<string, Chapter>;
   protected readonly images: Map<string, ImageResource>;
@@ -344,4 +344,14 @@ export abstract class BaseEPUB3Builder {
    */
   public abstract export(options?: any): Promise<Buffer>;
   public abstract exportToFile(filepath: string, options?: any): Promise<void>;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static async parse(_filepath: string): Promise<BaseEPUBBuilder> {
+    throw new Error('Not implemented');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static async parseBuffer(_buffer: Buffer): Promise<BaseEPUBBuilder> {
+    throw new Error('Not implemented');
+  }
 }

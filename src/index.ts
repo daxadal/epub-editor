@@ -6,7 +6,6 @@
 
 export { EPUB2Builder } from './epub2/epub2.builder';
 export { EPUB3Builder } from './epub3/epub3.builder';
-export { BaseEPUB3Builder } from './base-epub/base-epub.builder';
 
 // Export shared types
 export {
