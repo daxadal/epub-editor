@@ -6,15 +6,24 @@
 import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
+import { mocked } from 'jest-mock';
+import { v4 } from 'uuid';
 
 import { EPUB2Builder, EPUB3Builder } from '../src';
 
 import { createSimpleBook } from './resources/simple-guide.utils';
+import { UUIDMock } from './resources/uuid.mock';
 
 const RESOURCES_DIR = path.join(__dirname, 'resources');
 const TEMP_DIR = path.join(__dirname, 'temp');
 const SIMPLE_GUIDE_2_PATH = path.join(RESOURCES_DIR, 'simple-guide-2.epub');
 const SIMPLE_GUIDE_3_PATH = path.join(RESOURCES_DIR, 'simple-guide-3.epub');
+
+jest.mock('uuid', () => ({
+  v4: jest.fn(),
+}));
+
+const mockedUuidV4 = mocked(v4);
 
 describe.each([
   {
@@ -28,12 +37,18 @@ describe.each([
     SIMPLE_GUIDE_PATH: SIMPLE_GUIDE_3_PATH,
   },
 ])('EPUB $version Creation', ({ EPUBBuilder, SIMPLE_GUIDE_PATH }) => {
+  const uuidMockClass = new UUIDMock();
   beforeAll(async () => {
     await fs.ensureDir(TEMP_DIR);
+    mockedUuidV4.mockImplementation(() => uuidMockClass.v4());
   });
 
   afterAll(async () => {
     await fs.remove(TEMP_DIR);
+  });
+
+  afterEach(() => {
+    uuidMockClass.reset();
   });
 
   describe('Basic EPUB Creation', () => {
