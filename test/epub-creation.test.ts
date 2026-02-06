@@ -9,12 +9,25 @@ import * as fs from 'fs-extra';
 
 import { EPUB2Builder, EPUB3Builder } from '../src';
 
+import { createSimpleBook } from './resources/simple-guide.utils';
+
+const RESOURCES_DIR = path.join(__dirname, 'resources');
 const TEMP_DIR = path.join(__dirname, 'temp');
+const SIMPLE_GUIDE_2_PATH = path.join(RESOURCES_DIR, 'simple-guide-2.epub');
+const SIMPLE_GUIDE_3_PATH = path.join(RESOURCES_DIR, 'simple-guide-3.epub');
 
 describe.each([
-  { version: 2, EPUBBuilder: EPUB2Builder },
-  { version: 3, EPUBBuilder: EPUB3Builder },
-])('EPUB $version Creation', ({ EPUBBuilder }) => {
+  {
+    version: 2,
+    EPUBBuilder: EPUB2Builder,
+    SIMPLE_GUIDE_PATH: SIMPLE_GUIDE_2_PATH,
+  },
+  {
+    version: 3,
+    EPUBBuilder: EPUB3Builder,
+    SIMPLE_GUIDE_PATH: SIMPLE_GUIDE_3_PATH,
+  },
+])('EPUB $version Creation', ({ EPUBBuilder, SIMPLE_GUIDE_PATH }) => {
   beforeAll(async () => {
     await fs.ensureDir(TEMP_DIR);
   });
@@ -534,6 +547,21 @@ describe.each([
       expect(allChapters).toHaveLength(5); // intro, part1, chap1, chap2, conclusion
       expect(epub.getAllImages()).toHaveLength(2);
       expect(epub.getAllStylesheets().length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  describe('Compare to reference files', () => {
+    it('The simple book created must match the reference', async () => {
+      // given
+      const referenceBuffer = await fs.readFile(SIMPLE_GUIDE_PATH);
+      const epub = createSimpleBook(EPUBBuilder);
+      // when
+      const createdBuffer = await epub.export();
+
+      // then
+      expect(createdBuffer).toBeInstanceOf(Buffer);
+      expect(createdBuffer.length).toBeGreaterThan(0);
+      expect(createdBuffer.equals(referenceBuffer)).toBe(true);
     });
   });
 });

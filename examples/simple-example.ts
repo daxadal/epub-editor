@@ -102,7 +102,10 @@ async function createSimpleBook() {
   }
 
   // Export
-  const outputPath = path.join(__dirname, 'simple-guide.epub');
+  const outputPath = path.join(
+    __dirname,
+    isEpub2 ? 'simple-guide-2.epub' : 'simple-guide-3.epub',
+  );
   console.log('📦 Exporting...');
 
   await epub.exportToFile(outputPath);
