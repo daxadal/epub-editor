@@ -29,7 +29,7 @@ function addAllChapters(
 /**
  * Helper function to create a simple test EPUB
  */
-function getTestEpub(
+export function getTestEpub(
   EPUBBuilder: typeof EPUB2Builder | typeof EPUB3Builder,
   options: {
     filename: string;
