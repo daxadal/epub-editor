@@ -1,7 +1,4 @@
-import * as path from 'node:path';
-
 import { EPUB2Builder, EPUB3Builder } from '../../src';
-import { TEMP_DIR } from '../epub-merging.test';
 
 type SimpleChapter = {
   title: string;
@@ -63,23 +60,4 @@ export function getTestEpub(
     }
   }
   return epub;
-}
-
-export async function createTestEPUB(
-  EPUBBuilder: typeof EPUB2Builder | typeof EPUB3Builder,
-  options: {
-    filename: string;
-    title: string;
-    creator: string;
-    chapters: Array<SimpleChapter>;
-    images?: Array<{ filename: string; data: Buffer; alt: string }>;
-    stylesheets?: Array<{ filename: string; content: string }>;
-  },
-): Promise<string> {
-  const epub = getTestEpub(EPUBBuilder, options);
-
-  const outputPath = path.join(TEMP_DIR, options.filename);
-  await epub.exportToFile(outputPath);
-
-  return outputPath;
 }
