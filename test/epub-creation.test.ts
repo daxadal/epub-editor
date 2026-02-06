@@ -7,11 +7,14 @@ import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
 
-import { EPUB3Builder } from '../src';
+import { EPUB2Builder, EPUB3Builder } from '../src';
 
 const TEMP_DIR = path.join(__dirname, 'temp');
 
-describe('EPUB Creation', () => {
+describe.each([
+  { version: 2, EPUBBuilder: EPUB2Builder },
+  { version: 3, EPUBBuilder: EPUB3Builder },
+])('EPUB $version Creation', ({ EPUBBuilder }) => {
   beforeAll(async () => {
     await fs.ensureDir(TEMP_DIR);
   });
@@ -25,7 +28,7 @@ describe('EPUB Creation', () => {
       // given
 
       // when
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
         language: 'en',
@@ -45,7 +48,7 @@ describe('EPUB Creation', () => {
     it('Throws an error when title is missing', () => {
       // given
       const newEpubFunction = () =>
-        new EPUB3Builder({
+        new EPUBBuilder({
           title: '',
           creator: 'Test Author',
         } as any);
@@ -59,7 +62,7 @@ describe('EPUB Creation', () => {
     it('Throws an error when creator is missing', () => {
       // given
       const newEpubFunction = () =>
-        new EPUB3Builder({
+        new EPUBBuilder({
           title: 'Test Book',
           creator: '',
         } as any);
@@ -74,7 +77,7 @@ describe('EPUB Creation', () => {
       // given
 
       // when
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
@@ -88,7 +91,7 @@ describe('EPUB Creation', () => {
       // given
 
       // when
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
         language: 'es',
@@ -110,7 +113,7 @@ describe('EPUB Creation', () => {
   describe('Adding Chapters', () => {
     it('A new chapter is reachable after is added', () => {
       // given
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
@@ -133,7 +136,7 @@ describe('EPUB Creation', () => {
 
     it('All new chapters are reachable and ordered when added', () => {
       // given
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
@@ -164,7 +167,7 @@ describe('EPUB Creation', () => {
 
     it('Child chapters can be reached below its parents', () => {
       // given
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
@@ -198,7 +201,7 @@ describe('EPUB Creation', () => {
 
     it('Multiple layers of chapter nesting are allowed and reachable', () => {
       // given
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
@@ -229,7 +232,7 @@ describe('EPUB Creation', () => {
 
     it('Chapters without content are allowed', () => {
       // given
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
@@ -252,7 +255,7 @@ describe('EPUB Creation', () => {
   describe('Adding Images', () => {
     it('Adding an image returns the image ID, and the image is stored in the internal info', () => {
       // given
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
@@ -277,7 +280,7 @@ describe('EPUB Creation', () => {
 
     it('All added images can be listed after being added', () => {
       // given
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
@@ -302,7 +305,7 @@ describe('EPUB Creation', () => {
 
     it('Book cover image can be added and flagged as such', () => {
       // given
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
@@ -325,7 +328,7 @@ describe('EPUB Creation', () => {
     it('Adding an stylesheet returns the stylesheet ID, and the stylesheet is stored in the internal info', () => {
       // given
 
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
@@ -354,7 +357,7 @@ describe('EPUB Creation', () => {
 
     it('A new ebook contains a default stylesheet', () => {
       // given
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Book',
         creator: 'Test Author',
       });
@@ -373,7 +376,7 @@ describe('EPUB Creation', () => {
   describe('Export to File', () => {
     it('Exporting to file creates a file in the specified route', async () => {
       // given
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Export Book',
         creator: 'Test Author',
       });
@@ -398,7 +401,7 @@ describe('EPUB Creation', () => {
 
     it('Exporting to buffer returns a buffer', async () => {
       // given
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Test Buffer Book',
         creator: 'Test Author',
       });
@@ -418,7 +421,7 @@ describe('EPUB Creation', () => {
 
     it('Validating an EPUB returns true, and exporting to file creates a file in the specified route', async () => {
       // given
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Structural Test Book',
         creator: 'Test Author',
       });
@@ -457,7 +460,7 @@ describe('EPUB Creation', () => {
   describe('Complex EPUB Creation', () => {
     it('should create EPUB with chapters, images, and custom styles', async () => {
       // given
-      const epub = new EPUB3Builder({
+      const epub = new EPUBBuilder({
         title: 'Complete Test Book',
         creator: 'Test Author',
         language: 'en',
