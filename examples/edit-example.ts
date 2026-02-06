@@ -1,17 +1,22 @@
 /**
  * Example demonstrating parsing and editing an existing EPUB
- * Run with: npx ts-node examples/edit-example.ts <path-to-epub>
+ * Run with: npx ts-node examples/edit-example.ts <path-to-epub> [--epub2]
  */
 
 import * as path from 'node:path';
 
-import { EPUB3Builder } from '../src';
+import { EPUB2Builder, EPUB3Builder } from '../src';
 
 async function editExistingEPUB() {
   const args = process.argv.slice(2);
 
+  const isEpub2 = process.argv.includes('--epub2');
+  const EPUBBuilder = isEpub2 ? EPUB2Builder : EPUB3Builder;
+
   if (args.length === 0) {
-    console.error('Usage: npx ts-node examples/edit-example.ts <path-to-epub>');
+    console.error(
+      'Usage: npx ts-node examples/edit-example.ts <path-to-epub> [--epub2]',
+    );
     console.error('');
     console.error(
       'This example loads an existing EPUB, adds a new chapter, and saves it.',
@@ -23,7 +28,7 @@ async function editExistingEPUB() {
 
   try {
     console.log(`📖 Loading EPUB from: ${inputPath}`);
-    const epub = await EPUB3Builder.parse(inputPath);
+    const epub = await EPUBBuilder.parse(inputPath);
 
     // Display current metadata
     const metadata = epub.getMetadata();
@@ -53,7 +58,7 @@ async function editExistingEPUB() {
     const bonusChapter = epub.addChapter({
       title: 'Bonus Chapter: Additional Content',
       content: `
-        <p>This is a bonus chapter added by the EPUB3Builder library!</p>
+        <p>This is a bonus chapter added by the EPUBBuilder library!</p>
         <p>This demonstrates how you can load an existing EPUB and add new content.</p>
         <h2>What You Can Do</h2>
         <ul>
@@ -77,7 +82,7 @@ async function editExistingEPUB() {
         chapters[0].id,
         `
         <hr/>
-        <p><em>Note: This content was appended using EPUB3Builder.</em></p>
+        <p><em>Note: This content was appended using EPUBBuilder.</em></p>
       `,
       );
     }
@@ -87,7 +92,7 @@ async function editExistingEPUB() {
     console.log('🔄 Updating metadata...');
     epub.setMetadata({
       description:
-        `${metadata.description || ''} Modified with EPUB3Builder.`.trim(),
+        `${metadata.description || ''} Modified with EPUBBuilder.`.trim(),
     });
 
     // Validate

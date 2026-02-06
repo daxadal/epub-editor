@@ -1,22 +1,25 @@
 /**
- * Simple example demonstrating EPUB3Builder usage
- * Run with: npx ts-node examples/simple-example.ts
+ * Simple example demonstrating EPUBBuilder usage
+ * Run with: npx ts-node examples/simple-example.ts [--epub2]
  */
 
 import * as path from 'node:path';
 
-import { EPUB3Builder } from '../src';
+import { EPUB2Builder, EPUB3Builder } from '../src';
 
 async function createSimpleBook() {
-  console.log('📚 Creating EPUB...');
+  const isEpub2 = process.argv.includes('--epub2');
+  console.log(`📚 Creating EPUB ${isEpub2 ? 2 : 3}...`);
+
+  const EPUBBuilder = isEpub2 ? EPUB2Builder : EPUB3Builder;
 
   // Create a new EPUB
-  const epub = new EPUB3Builder({
+  const epub = new EPUBBuilder({
     title: 'A Simple Guide',
     creator: 'Example Author',
     language: 'en',
     publisher: 'Example Press',
-    description: 'A simple example book created with EPUB3Builder',
+    description: 'A simple example book created with EPUBBuilder',
   });
 
   // Add chapters
@@ -26,7 +29,7 @@ async function createSimpleBook() {
     title: 'Introduction',
     content: `
       <p>Welcome to this simple guide!</p>
-      <p>This book demonstrates the EPUB3Builder library.</p>
+      <p>This book demonstrates the EPUBBuilder library.</p>
     `,
   });
 
