@@ -117,6 +117,17 @@ function copyAllChapters(
     });
 
     chapterCount++;
+
+    if (chapter.children && chapter.children.length > 0) {
+      const childrenCount = copyAllChapters(
+        chapter.children,
+        stylesheetMap,
+        imageMap,
+        mergedEPUB,
+        sectionId,
+      );
+      chapterCount += childrenCount;
+    }
   }
   return chapterCount;
 }
