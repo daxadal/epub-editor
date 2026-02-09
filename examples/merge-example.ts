@@ -281,13 +281,12 @@ async function mergeExample({
 
 // Run the merge
 mergeExample({
-  seriesName: 'Kits Out For Temeria',
-  outputFile: 'resources/kits-out-of-temeria.epub',
+  seriesName: 'Re Merged Series',
+  outputFile: 'resources/re-merged.epub',
   sourceFiles: [
-    'resources/Kits Out Of Temeria/1 - companions.epub',
-    'resources/Kits Out Of Temeria/2 - acquisition.epub',
-    'resources/Kits Out Of Temeria/3 - interlude for naming.epub',
-    'resources/Kits Out Of Temeria/4 - vision test.epub',
+    'examples/simple-guide-3.epub',
+    'examples/simple-guide-3.epub',
+    'examples/simple-guide-3.epub',
   ],
 }).catch((error) => {
   console.error('\n❌ Error merging EPUBs:', error);
