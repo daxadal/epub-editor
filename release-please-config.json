@@ -1,0 +1,12 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "bump-minor-pre-major": false,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": true,
+      "prerelease": true,
+      "include-v-in-tag": false
+    }
+  }
+}
