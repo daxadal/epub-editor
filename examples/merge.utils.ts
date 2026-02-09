@@ -41,6 +41,7 @@ export function copyStyleSheets(
   }
   return stylesheetMap;
 }
+
 export function copyImages(
   sourceEPUB: EPUB2Builder | EPUB3Builder,
   addedImages: Map<string, string>,
@@ -76,6 +77,50 @@ export function copyImages(
   }
   return imageMap;
 }
+
+function updateSinglePath(
+  updatedContent: string,
+  oldPath: string,
+  newPath: string,
+) {
+  // Handle various possible path formats
+  const patterns = [
+    new RegExp(String.raw`src=["']\.\./${oldPath}["']`, 'g'),
+    new RegExp(String.raw`src=["']${oldPath}["']`, 'g'),
+    new RegExp(String.raw`src=["']\.\./${path.basename(oldPath)}["']`, 'g'),
+    new RegExp(String.raw`src=["']${path.basename(oldPath)}["']`, 'g'),
+  ];
+
+  patterns.forEach((pattern) => {
+    updatedContent = updatedContent.replace(pattern, `src="../${newPath}"`);
+  });
+  return updatedContent;
+}
+
+function replacePathsWithMaps(
+  updatedContent: string,
+  stylesheetMap: Map<string, string>,
+  imageMap: Map<string, string>,
+) {
+  stylesheetMap.forEach((newFilename, oldFilename) => {
+    updatedContent = updateSinglePath(
+      updatedContent,
+      oldFilename,
+      `styles/${newFilename}`,
+    );
+  });
+
+  // Update image references in content
+  imageMap.forEach((newFilename, oldFilename) => {
+    updatedContent = updateSinglePath(
+      updatedContent,
+      oldFilename,
+      `images/${newFilename}`,
+    );
+  });
+  return updatedContent;
+}
+
 export function copyAllChapters(
   rootChapters: Chapter[],
   stylesheetMap: Map<string, string>,
@@ -87,43 +132,11 @@ export function copyAllChapters(
   let chapterCount = 0;
   for (const chapter of rootChapters) {
     // Update content to reflect new image and stylesheet paths
-    let updatedContent = chapter.content;
-
-    // Update stylesheet references in content
-    stylesheetMap.forEach((newFilename, oldFilename) => {
-      const oldPath = oldFilename;
-      const newPath = `styles/${newFilename}`;
-
-      // Handle various possible path formats
-      const patterns = [
-        new RegExp(String.raw`src=["']\.\./${oldPath}["']`, 'g'),
-        new RegExp(String.raw`src=["']${oldPath}["']`, 'g'),
-        new RegExp(String.raw`src=["']\.\./${path.basename(oldPath)}["']`, 'g'),
-        new RegExp(String.raw`src=["']${path.basename(oldPath)}["']`, 'g'),
-      ];
-
-      patterns.forEach((pattern) => {
-        updatedContent = updatedContent.replace(pattern, `src="../${newPath}"`);
-      });
-    });
-
-    // Update image references in content
-    imageMap.forEach((newFilename, oldFilename) => {
-      const oldPath = oldFilename;
-      const newPath = `images/${newFilename}`;
-
-      // Handle various possible path formats
-      const patterns = [
-        new RegExp(String.raw`src=["']\.\./${oldPath}["']`, 'g'),
-        new RegExp(String.raw`src=["']${oldPath}["']`, 'g'),
-        new RegExp(String.raw`src=["']\.\./${path.basename(oldPath)}["']`, 'g'),
-        new RegExp(String.raw`src=["']${path.basename(oldPath)}["']`, 'g'),
-      ];
-
-      patterns.forEach((pattern) => {
-        updatedContent = updatedContent.replace(pattern, `src="../${newPath}"`);
-      });
-    });
+    const updatedContent = replacePathsWithMaps(
+      chapter.content,
+      stylesheetMap,
+      imageMap,
+    );
 
     mergedEPUB.addChapter({
       title: chapter.title,
