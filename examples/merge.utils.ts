@@ -1,8 +1,12 @@
 /* eslint-disable security/detect-non-literal-regexp */
 
 import * as path from 'node:path';
+import { createHash } from 'node:crypto';
 
 import { EPUB2Builder, EPUB3Builder, Chapter } from '../src';
+
+const hash = (content: string | Buffer) =>
+  createHash('sha1').update(content).digest('base64');
 
 export function copyStyleSheets(
   sourceEPUB: EPUB2Builder | EPUB3Builder,
@@ -18,9 +22,7 @@ export function copyStyleSheets(
   // Add stylesheets with unique naming
   const stylesheetMap = new Map<string, string>(); // old filename -> new filename
   for (const stylesheet of stylesheets) {
-    const contentHash = Buffer.from(stylesheet.content)
-      .toString('base64')
-      .substring(0, 20);
+    const contentHash = hash(stylesheet.content);
 
     if (!addedStylesheets.has(contentHash)) {
       // This stylesheet hasn't been added yet
@@ -53,7 +55,7 @@ export function copyImages(
   // Add images with unique naming
   const imageMap = new Map<string, string>(); // old filename -> new filename
   for (const image of images) {
-    const dataHash = image.data.toString('base64').substring(0, 20);
+    const dataHash = hash(image.data);
 
     if (!addedImages.has(dataHash)) {
       // This image hasn't been added yet
