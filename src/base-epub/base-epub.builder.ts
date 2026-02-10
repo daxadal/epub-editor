@@ -12,8 +12,8 @@ import {
   sanitizeFilename,
 } from '../utils/mime-types';
 import { DEFAULT_CSS } from '../utils/default-styles';
-import { getAllReplacements, hash } from '../../examples/merge.utils';
 
+import { getAllReplacements, hash } from './base-epub.merge-utils';
 import {
   AddChapterOptions,
   AddImageOptions,

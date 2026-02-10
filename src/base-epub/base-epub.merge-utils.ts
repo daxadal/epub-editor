@@ -3,13 +3,10 @@
 import * as path from 'node:path';
 import { createHash } from 'node:crypto';
 
+import { Replacement } from './base-epub.types';
+
 export const hash = (content: string | Buffer) =>
   createHash('sha1').update(content).digest('base64');
-
-export type Replacement = {
-  pattern: RegExp;
-  replacement: string;
-};
 
 function getSingleReplacement(oldPath: string, newPath: string): Replacement[] {
   // Handle various possible path formats
