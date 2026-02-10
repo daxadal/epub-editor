@@ -80,11 +80,12 @@ export function copyImages(
   return imageMap;
 }
 
-function updateSinglePath(
-  updatedContent: string,
-  oldPath: string,
-  newPath: string,
-) {
+type Replacement = {
+  pattern: RegExp;
+  replacement: string;
+};
+
+function getSingleReplacement(oldPath: string, newPath: string): Replacement[] {
   // Handle various possible path formats
   const patterns = [
     new RegExp(String.raw`src=["']\.\./${oldPath}["']`, 'g'),
@@ -93,34 +94,34 @@ function updateSinglePath(
     new RegExp(String.raw`src=["']${path.basename(oldPath)}["']`, 'g'),
   ];
 
-  patterns.forEach((pattern) => {
-    updatedContent = updatedContent.replace(pattern, `src="../${newPath}"`);
-  });
-  return updatedContent;
+  const replacement = `src="../${newPath}"`;
+
+  return patterns.map((pattern) => ({ pattern, replacement }));
 }
 
-function replacePathsWithMaps(
-  updatedContent: string,
+function getAllReplacements(
   stylesheetMap: Map<string, string>,
   imageMap: Map<string, string>,
-) {
+): Replacement[] {
+  const allReplacements: Replacement[] = [];
   stylesheetMap.forEach((newFilename, oldFilename) => {
-    updatedContent = updateSinglePath(
-      updatedContent,
+    const replacements = getSingleReplacement(
       oldFilename,
       `styles/${newFilename}`,
     );
+    allReplacements.push(...replacements);
   });
 
   // Update image references in content
   imageMap.forEach((newFilename, oldFilename) => {
-    updatedContent = updateSinglePath(
-      updatedContent,
+    const replacements = getSingleReplacement(
       oldFilename,
       `images/${newFilename}`,
     );
+    allReplacements.push(...replacements);
   });
-  return updatedContent;
+
+  return allReplacements;
 }
 
 export function copyAllChapters(
@@ -133,12 +134,13 @@ export function copyAllChapters(
   // Add all chapters as children of the section
   let chapterCount = 0;
   for (const chapter of rootChapters) {
+    const allReplacements = getAllReplacements(stylesheetMap, imageMap);
+
     // Update content to reflect new image and stylesheet paths
-    const updatedContent = replacePathsWithMaps(
-      chapter.content,
-      stylesheetMap,
-      imageMap,
-    );
+    let updatedContent = chapter.content;
+    for (const { pattern, replacement } of allReplacements) {
+      updatedContent = updatedContent.replace(pattern, replacement);
+    }
 
     mergedEPUB.addChapter({
       title: chapter.title,
