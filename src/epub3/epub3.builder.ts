@@ -42,9 +42,7 @@ export class EPUB3Builder extends BaseEPUBBuilder {
   /**
    * Create a new EPUB 3 builder
    */
-  constructor(
-    metadata: Partial<DublinCoreMetadata> & { title: string; creator: string },
-  ) {
+  constructor(metadata: DublinCoreMetadata) {
     super(metadata);
   }
 

@@ -38,9 +38,7 @@ export abstract class BaseEPUBBuilder {
   protected rootChapterIds: string[];
   protected chapterCounter: number;
 
-  constructor(
-    metadata: Partial<DublinCoreMetadata> & { title: string; creator: string },
-  ) {
+  constructor(metadata: DublinCoreMetadata) {
     if (!metadata.title) {
       throw new Error('Title is required');
     }
