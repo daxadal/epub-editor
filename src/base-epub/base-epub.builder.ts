@@ -528,7 +528,7 @@ export abstract class BaseEPUBBuilder {
     const h1Match = /<h1[^>]*>([^<]+)<\/h1>/i.exec(xhtml);
     if (h1Match) return h1Match[1];
 
-    const h2Match = /<h2 class="heading"[^>]*>([^<]+)<\/h2>/i.exec(xhtml);
+    const h2Match = /<h2[^>]*>([^<]+)<\/h2>/i.exec(xhtml);
     if (h2Match) return h2Match[1];
 
     return null;

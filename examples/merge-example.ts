@@ -31,7 +31,7 @@ async function mergeExample({
     sourceFiles.map(async (file) => {
       const fullPath = path.join(basePath, file);
       console.log(`   Loading: ${file}`);
-      return await EPUBBuilder.parse(fullPath);
+      return await EPUBBuilder.parse(fullPath, { ignoreHeadTitle: true });
     }),
   );
   console.log('✅ All EPUBs loaded successfully\n');
@@ -148,8 +148,7 @@ mergeExample({
   outputFile: 'resources/re-merged.epub',
   sourceFiles: [
     'examples/simple-guide-3.epub',
-    'examples/simple-guide-3.epub',
-    'examples/simple-guide-3.epub',
+    'resources/Diaries_from_an.epub',
   ],
 }).catch((error) => {
   console.error('\n❌ Error merging EPUBs:', error);
