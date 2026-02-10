@@ -391,7 +391,7 @@ export abstract class BaseEPUBBuilder {
 
   // #endregion Export
 
-  // #region Parse
+  // #region Parse - Public methods
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public static async parse(_filepath: string): Promise<BaseEPUBBuilder> {
@@ -402,6 +402,10 @@ export abstract class BaseEPUBBuilder {
   public static async parseBuffer(_buffer: Buffer): Promise<BaseEPUBBuilder> {
     throw new Error('Not implemented');
   }
+
+  // #endregion Parse - Public methods
+
+  // #region Parse - Protected helper methods
 
   protected static async parseEpubZip(
     buffer: Buffer<ArrayBufferLike>,
@@ -454,5 +458,36 @@ export abstract class BaseEPUBBuilder {
     return metadata;
   }
 
-  // #endregion Parse
+  protected async extractImages(zip: JSZip, manifest: any, opfDir: string) {
+    for (const item of manifest) {
+      const mimeType = item.$?.['media-type'];
+      if (mimeType?.startsWith('image/')) {
+        const href = item.$.href;
+        const filePath = opfDir + href;
+        const file = zip.file(filePath);
+
+        if (file) {
+          const data = await file.async('nodebuffer');
+          const filename = href.split('/').pop() || 'image';
+          this.addImage({
+            filename,
+            data,
+            isCover: item.$?.properties?.includes('cover-image'),
+          });
+        }
+      }
+    }
+  }
+
+  protected static extractTitleFromXHTML(xhtml: string): string | null {
+    const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
+    if (titleMatch) return titleMatch[1];
+
+    const h1Match = /<h1[^>]*>([^<]+)<\/h1>/i.exec(xhtml);
+    if (h1Match) return h1Match[1];
+
+    return null;
+  }
+
+  // #endregion Parse - Protected helper methods
 }

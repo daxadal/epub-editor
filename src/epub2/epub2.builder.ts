@@ -347,36 +347,6 @@ export class EPUB2Builder extends BaseEPUBBuilder {
     }
   }
 
-  private async extractImages(zip: JSZip, manifest: any, opfDir: string) {
-    for (const item of manifest) {
-      const mimeType = item.$?.['media-type'];
-      if (mimeType?.startsWith('image/')) {
-        const href = item.$.href;
-        const filePath = opfDir + href;
-        const file = zip.file(filePath);
-
-        if (file) {
-          const data = await file.async('nodebuffer');
-          const filename = href.split('/').pop() || 'image';
-          this.addImage({
-            filename,
-            data,
-          });
-        }
-      }
-    }
-  }
-
-  private static extractTitleFromXHTML(xhtml: string): string | null {
-    const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
-    if (titleMatch) return titleMatch[1];
-
-    const h1Match = /<h1[^>]*>([^<]+)<\/h1>/i.exec(xhtml);
-    if (h1Match) return h1Match[1];
-
-    return null;
-  }
-
   private static extractBodyFromXHTML(xhtml: string): string {
     const bodyMatch = /<body[^>]*>([\s\S]*?)<\/body>/i.exec(xhtml);
     if (bodyMatch) {
