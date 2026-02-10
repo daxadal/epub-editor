@@ -257,7 +257,7 @@ export class EPUB3Builder extends BaseEPUBBuilder {
    */
   public static async parseBuffer(buffer: Buffer): Promise<EPUB3Builder> {
     try {
-      const zip = await JSZip.loadAsync(buffer);
+      const zip = await EPUB3Builder.unzip(buffer);
 
       const containerFile = zip.file('META-INF/container.xml');
       if (!containerFile) {
