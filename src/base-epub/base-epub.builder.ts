@@ -1,4 +1,5 @@
 import { promisify } from 'node:util';
+import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
 import { v4 as uuidV4 } from 'uuid';
@@ -26,6 +27,9 @@ import {
 } from './base-epub.types';
 
 const parseXml = promisify(parseString);
+
+const MAX_FILES = 10000;
+const MAX_SIZE = 1000000000; // 1 GB
 
 /**
  * Abstract base class for EPUB builders
@@ -419,10 +423,42 @@ export abstract class BaseEPUBBuilder {
 
   // #region Parse - Protected helper methods
 
+  protected static async unzip(buffer: Buffer<ArrayBufferLike>): Promise<any> {
+    let fileCount = 0;
+    let totalSize = 0;
+
+    const targetDirectory = path.join(__dirname, 'archive_tmp');
+
+    return await JSZip.loadAsync(buffer).then(function (zip) {
+      zip.forEach(function (_, zipEntry) {
+        fileCount++;
+        if (fileCount > MAX_FILES) {
+          throw new Error('Reached max. number of files');
+        }
+
+        // Prevent ZipSlip path traversal (S6096)
+        const resolvedPath = path.join(targetDirectory, zipEntry.name);
+        if (!resolvedPath.startsWith(targetDirectory)) {
+          throw new Error('Path traversal detected');
+        }
+
+        const file = zip.file(zipEntry.name);
+        if (file) {
+          file.async('nodebuffer').then(function (content) {
+            totalSize += content.length;
+            if (totalSize > MAX_SIZE) {
+              throw new Error('Reached max. size');
+            }
+          });
+        }
+      });
+    });
+  }
+
   protected static async parseEpubZip(
     buffer: Buffer<ArrayBufferLike>,
   ): Promise<{ zip: JSZip; opfData: unknown; opfPath: any }> {
-    const zip = await JSZip.loadAsync(buffer);
+    const zip = await BaseEPUBBuilder.unzip(buffer);
 
     const containerFile = zip.file('META-INF/container.xml');
     if (!containerFile) {
