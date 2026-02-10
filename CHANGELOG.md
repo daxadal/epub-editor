@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/daxadal/epub-editor/compare/v1.0.0...v1.1.0) (2026-02-10)
+
+
+### Features
+
+* code reorganization and cleanup ([#8](https://github.com/daxadal/epub-editor/issues/8)) ([5e45859](https://github.com/daxadal/epub-editor/commit/5e45859907da26d1fb28ec36b8c630e9551a6911))
+* safe unzip ([#6](https://github.com/daxadal/epub-editor/issues/6)) ([306fda9](https://github.com/daxadal/epub-editor/commit/306fda9440035b8bb06f14f07757474ee130db2b))
+
 ## 1.0.0 (2026-02-06)
 
 
