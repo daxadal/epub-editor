@@ -1,4 +1,5 @@
 import { v4 as uuidV4 } from 'uuid';
+import JSZip from 'jszip';
 
 import {
   getMimeType,
@@ -344,6 +345,10 @@ export abstract class BaseEPUBBuilder {
    */
   public abstract export(options?: any): Promise<Buffer>;
   public abstract exportToFile(filepath: string, options?: any): Promise<void>;
+
+  protected static async unzip(buffer: Buffer<ArrayBufferLike>): Promise<any> {
+    return await JSZip.loadAsync(buffer);
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public static async parse(_filepath: string): Promise<BaseEPUBBuilder> {
