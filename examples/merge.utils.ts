@@ -142,7 +142,7 @@ export function copyAllChapters(
       updatedContent = updatedContent.replace(pattern, replacement);
     }
 
-    mergedEPUB.addChapter({
+    const mergedChapterId = mergedEPUB.addChapter({
       title: chapter.title,
       content: updatedContent,
       parentId: sectionId,
@@ -158,7 +158,7 @@ export function copyAllChapters(
         stylesheetMap,
         imageMap,
         mergedEPUB,
-        sectionId,
+        mergedChapterId,
       );
       chapterCount += childrenCount;
     }
