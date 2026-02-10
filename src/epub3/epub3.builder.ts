@@ -226,10 +226,13 @@ export class EPUB3Builder extends BaseEPUBBuilder {
   /**
    * Parse an existing EPUB 3 file
    */
-  public static async parse(filepath: string): Promise<EPUB3Builder> {
+  public static async parse(
+    filepath: string,
+    options?: EPUBOptions,
+  ): Promise<EPUB3Builder> {
     try {
       const data = await fs.readFile(filepath);
-      return await EPUB3Builder.parseBuffer(data);
+      return await EPUB3Builder.parseBuffer(data, options);
     } catch (error) {
       throw new Error(
         `Failed to parse EPUB file: ${error instanceof Error ? error.message : String(error)}`,
@@ -240,12 +243,15 @@ export class EPUB3Builder extends BaseEPUBBuilder {
   /**
    * Parse an EPUB 3 from a Buffer
    */
-  public static async parseBuffer(buffer: Buffer): Promise<EPUB3Builder> {
+  public static async parseBuffer(
+    buffer: Buffer,
+    options?: EPUBOptions,
+  ): Promise<EPUB3Builder> {
     try {
       const { opfData, zip, opfPath } = await EPUB3Builder.parseEpubZip(buffer);
 
       const metadata = EPUB3Builder.extractMetadata(opfData);
-      const epub = new EPUB3Builder(metadata);
+      const epub = new EPUB3Builder(metadata, options);
 
       await epub.extractResources(zip, opfData, opfPath);
 

@@ -397,13 +397,21 @@ export abstract class BaseEPUBBuilder {
 
   // #region Parse - Public methods
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static async parse(_filepath: string): Promise<BaseEPUBBuilder> {
+  public static async parse(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _filepath: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _options?: EPUBOptions,
+  ): Promise<BaseEPUBBuilder> {
     throw new Error('Not implemented');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static async parseBuffer(_buffer: Buffer): Promise<BaseEPUBBuilder> {
+  public static async parseBuffer(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _buffer: Buffer,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _options?: EPUBOptions,
+  ): Promise<BaseEPUBBuilder> {
     throw new Error('Not implemented');
   }
 
