@@ -258,29 +258,12 @@ export class EPUB3Builder extends BaseEPUBBuilder {
     }
   }
 
-  private async extractResources(
-    zip: JSZip,
-    opfData: any,
-    opfPath: string,
-  ): Promise<void> {
-    const manifest = opfData?.package?.manifest?.[0]?.item || [];
-    const spine = opfData?.package?.spine?.[0]?.itemref || [];
-
-    const opfDir = opfPath.substring(0, opfPath.lastIndexOf('/') + 1);
-
-    // Extract chapters from spine order
-    await this.extractChapters(zip, manifest, opfDir, spine);
-
-    // Extract images
-    await this.extractImages(zip, manifest, opfDir);
-  }
-
-  private async extractChapters(
+  protected async extractChapters(
     zip: JSZip,
     manifest: any,
     opfDir: string,
     spine: any,
-  ) {
+  ): Promise<void> {
     const chapterIds: string[] = [];
     for (const itemref of spine) {
       const idref = itemref.$?.idref;

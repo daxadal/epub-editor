@@ -458,7 +458,35 @@ export abstract class BaseEPUBBuilder {
     return metadata;
   }
 
-  protected async extractImages(zip: JSZip, manifest: any, opfDir: string) {
+  protected async extractResources(
+    zip: JSZip,
+    opfData: any,
+    opfPath: string,
+  ): Promise<void> {
+    const manifest = opfData?.package?.manifest?.[0]?.item || [];
+    const spine = opfData?.package?.spine?.[0]?.itemref || [];
+
+    const opfDir = opfPath.substring(0, opfPath.lastIndexOf('/') + 1);
+
+    // Extract chapters from spine order
+    await this.extractChapters(zip, manifest, opfDir, spine);
+
+    // Extract images
+    await this.extractImages(zip, manifest, opfDir);
+  }
+
+  protected abstract extractChapters(
+    zip: JSZip,
+    manifest: any,
+    opfDir: string,
+    spine: any,
+  ): Promise<void>;
+
+  protected async extractImages(
+    zip: JSZip,
+    manifest: any,
+    opfDir: string,
+  ): Promise<void> {
     for (const item of manifest) {
       const mimeType = item.$?.['media-type'];
       if (mimeType?.startsWith('image/')) {
