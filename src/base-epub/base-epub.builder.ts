@@ -452,6 +452,7 @@ export abstract class BaseEPUBBuilder {
           });
         }
       });
+      return zip;
     });
   }
 
