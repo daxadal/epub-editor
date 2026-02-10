@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/daxadal/epub-editor/compare/v1.1.0...v1.1.1) (2026-02-10)
+
+
+### Bug Fixes
+
+* fix ZIP parsing ([#10](https://github.com/daxadal/epub-editor/issues/10)) ([d0f23f1](https://github.com/daxadal/epub-editor/commit/d0f23f10c71db9c671f65c84d3835d1a75fd8943))
+
 ## [1.1.0](https://github.com/daxadal/epub-editor/compare/v1.0.0...v1.1.0) (2026-02-10)
 
 
