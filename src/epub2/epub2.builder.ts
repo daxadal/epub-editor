@@ -4,22 +4,23 @@ import * as fs from 'fs-extra';
 import { BaseEPUBBuilder } from '../base-epub/base-epub.builder';
 import { EPUB3Builder } from '../epub3/epub3.builder';
 import {
-  DublinCoreMetadata,
   Chapter,
+  DublinCoreMetadata,
+  EPUBOptions,
+  ExportOptions,
   ManifestItem,
   SpineItem,
-  ExportOptions,
 } from '../base-epub/base-epub.types';
 import {
-  generateMimetype,
   generateContainer,
+  generateMimetype,
 } from '../base-epub/base-epub.templates';
 
 import { NCXDocument, NCXNavPoint } from './epub2.types';
 import {
   generateChapterXHTML,
-  generateOPF,
   generateNCX,
+  generateOPF,
 } from './epub2.templates';
 
 /**
@@ -43,8 +44,8 @@ export class EPUB2Builder extends BaseEPUBBuilder {
   /**
    * Create a new EPUB 2 builder
    */
-  constructor(metadata: DublinCoreMetadata) {
-    super(metadata);
+  constructor(metadata: DublinCoreMetadata, options?: EPUBOptions) {
+    super(metadata, options);
   }
 
   /**

@@ -13,15 +13,16 @@ import {
 import { DEFAULT_CSS } from '../utils/default-styles';
 
 import {
-  DublinCoreMetadata,
-  Chapter,
-  ImageResource,
-  StylesheetResource,
   AddChapterOptions,
   AddImageOptions,
   AddStylesheetOptions,
-  ValidationResult,
+  Chapter,
+  DublinCoreMetadata,
+  EPUBOptions,
   ExportOptions,
+  ImageResource,
+  StylesheetResource,
+  ValidationResult,
 } from './base-epub.types';
 
 const parseXml = promisify(parseString);
@@ -37,8 +38,9 @@ export abstract class BaseEPUBBuilder {
   protected readonly stylesheets: Map<string, StylesheetResource>;
   protected rootChapterIds: string[];
   protected chapterCounter: number;
+  protected includeDefStyleSheet: boolean;
 
-  constructor(metadata: DublinCoreMetadata) {
+  constructor(metadata: DublinCoreMetadata, options: EPUBOptions = {}) {
     if (!metadata.title) {
       throw new Error('Title is required');
     }
@@ -61,7 +63,9 @@ export abstract class BaseEPUBBuilder {
     this.rootChapterIds = [];
     this.chapterCounter = 0;
 
-    this.addDefaultStylesheet();
+    this.includeDefStyleSheet = options.addDefaultStylesheet ?? true;
+
+    if (this.includeDefStyleSheet) this.addDefaultStylesheet();
   }
 
   // #region Metadata Getters/Setters

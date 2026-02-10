@@ -2,6 +2,10 @@
  * Shared types for both EPUB 2 and EPUB 3 builders
  */
 
+export interface EPUBOptions {
+  addDefaultStylesheet?: boolean;
+}
+
 /**
  * Dublin Core metadata fields for EPUB
  * @see https://www.dublincore.org/specifications/dublin-core/dcmi-terms/

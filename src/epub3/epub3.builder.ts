@@ -3,22 +3,23 @@ import JSZip from 'jszip';
 
 import { BaseEPUBBuilder } from '../base-epub/base-epub.builder';
 import {
+  Chapter,
   DublinCoreMetadata,
+  EPUBOptions,
+  ExportOptions,
   ManifestItem,
   SpineItem,
-  ExportOptions,
-  Chapter,
 } from '../base-epub/base-epub.types';
 import {
-  generateMimetype,
   generateContainer,
+  generateMimetype,
 } from '../base-epub/base-epub.templates';
 
-import { EPUBNavigationDocument, TocNav, NavListItem } from './epub3.types';
+import { EPUBNavigationDocument, NavListItem, TocNav } from './epub3.types';
 import {
   generateChapterXHTML,
-  generateOPF,
   generateNavigationDocument,
+  generateOPF,
 } from './epub3.templates';
 
 /**
@@ -42,8 +43,8 @@ export class EPUB3Builder extends BaseEPUBBuilder {
   /**
    * Create a new EPUB 3 builder
    */
-  constructor(metadata: DublinCoreMetadata) {
-    super(metadata);
+  constructor(metadata: DublinCoreMetadata, options?: EPUBOptions) {
+    super(metadata, options);
   }
 
   /**
