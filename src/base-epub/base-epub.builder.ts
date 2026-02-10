@@ -1,5 +1,9 @@
-import { v4 as uuidV4 } from 'uuid';
+import { promisify } from 'node:util';
+
 import * as fs from 'fs-extra';
+import { v4 as uuidV4 } from 'uuid';
+import JSZip from 'jszip';
+import { parseString } from 'xml2js';
 
 import {
   getMimeType,
@@ -19,6 +23,8 @@ import {
   ValidationResult,
   ExportOptions,
 } from './base-epub.types';
+
+const parseXml = promisify(parseString);
 
 /**
  * Abstract base class for EPUB builders
@@ -395,6 +401,57 @@ export abstract class BaseEPUBBuilder {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public static async parseBuffer(_buffer: Buffer): Promise<BaseEPUBBuilder> {
     throw new Error('Not implemented');
+  }
+
+  protected static async parseEpubZip(
+    buffer: Buffer<ArrayBufferLike>,
+  ): Promise<{ zip: JSZip; opfData: unknown; opfPath: any }> {
+    const zip = await JSZip.loadAsync(buffer);
+
+    const containerFile = zip.file('META-INF/container.xml');
+    if (!containerFile) {
+      throw new Error('Invalid EPUB: META-INF/container.xml not found');
+    }
+
+    const containerXml = await containerFile.async('string');
+    const container: any = await parseXml(containerXml);
+    const opfPath =
+      container?.container?.rootfiles?.[0]?.rootfile?.[0]?.$?.['full-path'];
+
+    if (!opfPath) {
+      throw new Error('Invalid EPUB: OPF path not found in container.xml');
+    }
+
+    const opfFile = zip.file(opfPath);
+    if (!opfFile) {
+      throw new Error(`Invalid EPUB: OPF file not found at ${opfPath}`);
+    }
+
+    const opfXml = await opfFile.async('string');
+    const opfData = await parseXml(opfXml);
+    return { zip, opfData, opfPath };
+  }
+
+  protected static extractMetadata(opfData: any): DublinCoreMetadata {
+    const meta = opfData?.package?.metadata?.[0];
+
+    const parseMetaField = (fieldName: string) =>
+      meta?.[fieldName]?.[0]?._ ?? meta?.[fieldName]?.[0] ?? undefined;
+
+    const metadata = {
+      title: parseMetaField('dc:title') ?? 'Untitled',
+      creator: parseMetaField('dc:creator') ?? 'Unknown',
+      language: parseMetaField('dc:language') ?? 'en',
+      identifier: parseMetaField('dc:identifier'),
+      date: parseMetaField('dc:date'),
+      publisher: parseMetaField('dc:publisher'),
+      description: parseMetaField('dc:description'),
+      subject: meta?.['dc:subject'],
+      rights: parseMetaField('dc:rights'),
+      contributor: parseMetaField('dc:contributor'),
+    };
+
+    return metadata;
   }
 
   // #endregion Parse

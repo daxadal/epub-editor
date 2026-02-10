@@ -1,8 +1,5 @@
-import { promisify } from 'node:util';
-
 import JSZip from 'jszip';
 import * as fs from 'fs-extra';
-import { parseString } from 'xml2js';
 
 import { BaseEPUBBuilder } from '../base-epub/base-epub.builder';
 import { EPUB3Builder } from '../epub3/epub3.builder';
@@ -24,8 +21,6 @@ import {
   generateOPF,
   generateNCX,
 } from './epub2.templates';
-
-const parseXml = promisify(parseString);
 
 /**
  * EPUB2Builder - Create and manipulate EPUB 2.0.1 files
@@ -286,29 +281,7 @@ export class EPUB2Builder extends BaseEPUBBuilder {
    */
   public static async parseBuffer(buffer: Buffer): Promise<EPUB2Builder> {
     try {
-      const zip = await JSZip.loadAsync(buffer);
-
-      const containerFile = zip.file('META-INF/container.xml');
-      if (!containerFile) {
-        throw new Error('Invalid EPUB: META-INF/container.xml not found');
-      }
-
-      const containerXml = await containerFile.async('string');
-      const container: any = await parseXml(containerXml);
-      const opfPath =
-        container?.container?.rootfiles?.[0]?.rootfile?.[0]?.$?.['full-path'];
-
-      if (!opfPath) {
-        throw new Error('Invalid EPUB: OPF path not found in container.xml');
-      }
-
-      const opfFile = zip.file(opfPath);
-      if (!opfFile) {
-        throw new Error(`Invalid EPUB: OPF file not found at ${opfPath}`);
-      }
-
-      const opfXml = await opfFile.async('string');
-      const opfData = await parseXml(opfXml);
+      const { opfData, zip, opfPath } = await EPUB2Builder.parseEpubZip(buffer);
 
       const metadata = EPUB2Builder.extractMetadata(opfData);
       const epub = new EPUB2Builder(metadata);
@@ -321,37 +294,6 @@ export class EPUB2Builder extends BaseEPUBBuilder {
         `Failed to parse EPUB buffer: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
-  }
-
-  private static extractMetadata(opfData: any): DublinCoreMetadata {
-    const meta = opfData?.package?.metadata?.[0];
-
-    const parseMetaField = (fieldName: string) =>
-      meta?.[fieldName]?.[0]?._ ?? meta?.[fieldName]?.[0];
-
-    const title = parseMetaField('dc:title') ?? 'Untitled';
-    const creator = parseMetaField('dc:creator') ?? 'Unknown';
-    const language = parseMetaField('dc:language') ?? 'en';
-    const identifier = parseMetaField('dc:identifier');
-    const date = parseMetaField('dc:date');
-    const publisher = parseMetaField('dc:publisher');
-    const description = parseMetaField('dc:description');
-    const subject = meta?.['dc:subject'];
-    const rights = parseMetaField('dc:rights');
-    const contributor = parseMetaField('dc:contributor');
-
-    return {
-      title,
-      creator,
-      language,
-      identifier,
-      date,
-      publisher,
-      description,
-      subject,
-      rights,
-      contributor,
-    };
   }
 
   private static async extractResources(

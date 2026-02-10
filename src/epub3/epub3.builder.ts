@@ -248,29 +248,7 @@ export class EPUB3Builder extends BaseEPUBBuilder {
    */
   public static async parseBuffer(buffer: Buffer): Promise<EPUB3Builder> {
     try {
-      const zip = await JSZip.loadAsync(buffer);
-
-      const containerFile = zip.file('META-INF/container.xml');
-      if (!containerFile) {
-        throw new Error('Invalid EPUB: META-INF/container.xml not found');
-      }
-
-      const containerXml = await containerFile.async('string');
-      const container: any = await parseXml(containerXml);
-      const opfPath =
-        container?.container?.rootfiles?.[0]?.rootfile?.[0]?.$?.['full-path'];
-
-      if (!opfPath) {
-        throw new Error('Invalid EPUB: OPF path not found in container.xml');
-      }
-
-      const opfFile = zip.file(opfPath);
-      if (!opfFile) {
-        throw new Error(`Invalid EPUB: OPF file not found at ${opfPath}`);
-      }
-
-      const opfXml = await opfFile.async('string');
-      const opfData = await parseXml(opfXml);
+      const { opfData, zip, opfPath } = await EPUB3Builder.parseEpubZip(buffer);
 
       const metadata = EPUB3Builder.extractMetadata(opfData);
       const epub = new EPUB3Builder(metadata);
@@ -283,28 +261,6 @@ export class EPUB3Builder extends BaseEPUBBuilder {
         `Failed to parse EPUB buffer: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
-  }
-
-  private static extractMetadata(opfData: any): DublinCoreMetadata {
-    const meta = opfData?.package?.metadata?.[0];
-
-    const parseMetaField = (fieldName: string) =>
-      meta?.[fieldName]?.[0]?._ ?? meta?.[fieldName]?.[0] ?? undefined;
-
-    const metadata = {
-      title: parseMetaField('dc:title') ?? 'Untitled',
-      creator: parseMetaField('dc:creator') ?? 'Unknown',
-      language: parseMetaField('dc:language') ?? 'en',
-      identifier: parseMetaField('dc:identifier'),
-      date: parseMetaField('dc:date'),
-      publisher: parseMetaField('dc:publisher'),
-      description: parseMetaField('dc:description'),
-      subject: meta?.['dc:subject'],
-      rights: parseMetaField('dc:rights'),
-      contributor: parseMetaField('dc:contributor'),
-    };
-
-    return metadata;
   }
 
   private static async extractResources(
