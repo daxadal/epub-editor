@@ -423,36 +423,40 @@ export abstract class BaseEPUBBuilder {
 
   // #region Parse - Protected helper methods
 
-  protected static async unzip(buffer: Buffer<ArrayBufferLike>): Promise<any> {
+  protected static async unzip(
+    buffer: Buffer<ArrayBufferLike>,
+  ): Promise<JSZip> {
     let fileCount = 0;
     let totalSize = 0;
 
     const targetDirectory = path.join(__dirname, 'archive_tmp');
 
-    return await JSZip.loadAsync(buffer).then(function (zip) {
-      zip.forEach(function (_, zipEntry) {
-        fileCount++;
-        if (fileCount > MAX_FILES) {
-          throw new Error('Reached max. number of files');
-        }
+    const zip = await JSZip.loadAsync(buffer);
 
-        // Prevent ZipSlip path traversal (S6096)
-        const resolvedPath = path.join(targetDirectory, zipEntry.name);
-        if (!resolvedPath.startsWith(targetDirectory)) {
-          throw new Error('Path traversal detected');
-        }
+    zip.forEach(function (_, zipEntry) {
+      fileCount++;
+      if (fileCount > MAX_FILES) {
+        throw new Error('Reached max. number of files');
+      }
 
-        const file = zip.file(zipEntry.name);
-        if (file) {
-          file.async('nodebuffer').then(function (content) {
-            totalSize += content.length;
-            if (totalSize > MAX_SIZE) {
-              throw new Error('Reached max. size');
-            }
-          });
-        }
-      });
+      // Prevent ZipSlip path traversal (S6096)
+      const resolvedPath = path.join(targetDirectory, zipEntry.name);
+      if (!resolvedPath.startsWith(targetDirectory)) {
+        throw new Error('Path traversal detected');
+      }
+
+      const file = zip.file(zipEntry.name);
+      if (file) {
+        file.async('nodebuffer').then(function (content) {
+          totalSize += content.length;
+          if (totalSize > MAX_SIZE) {
+            throw new Error('Reached max. size');
+          }
+        });
+      }
     });
+
+    return zip;
   }
 
   protected static async parseEpubZip(
