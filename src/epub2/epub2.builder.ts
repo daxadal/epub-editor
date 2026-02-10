@@ -1,28 +1,27 @@
-import { promisify } from 'node:util';
-
 import JSZip from 'jszip';
 import * as fs from 'fs-extra';
-import { parseString } from 'xml2js';
 
 import { BaseEPUBBuilder } from '../base-epub/base-epub.builder';
 import { EPUB3Builder } from '../epub3/epub3.builder';
 import {
-  DublinCoreMetadata,
   Chapter,
+  DublinCoreMetadata,
+  EPUBOptions,
+  ExportOptions,
   ManifestItem,
   SpineItem,
-  ExportOptions,
 } from '../base-epub/base-epub.types';
-import { generateMimetype, generateContainer } from '../epub3/epub3.templates';
+import {
+  generateContainer,
+  generateMimetype,
+} from '../base-epub/base-epub.templates';
 
 import { NCXDocument, NCXNavPoint } from './epub2.types';
 import {
   generateChapterXHTML,
-  generateOPF,
   generateNCX,
+  generateOPF,
 } from './epub2.templates';
-
-const parseXml = promisify(parseString);
 
 /**
  * EPUB2Builder - Create and manipulate EPUB 2.0.1 files
@@ -45,10 +44,8 @@ export class EPUB2Builder extends BaseEPUBBuilder {
   /**
    * Create a new EPUB 2 builder
    */
-  constructor(
-    metadata: Partial<DublinCoreMetadata> & { title: string; creator: string },
-  ) {
-    super(metadata);
+  constructor(metadata: DublinCoreMetadata, options?: EPUBOptions) {
+    super(metadata, options);
   }
 
   /**
@@ -110,17 +107,6 @@ export class EPUB2Builder extends BaseEPUBBuilder {
       compressionOptions: { level: compression },
       mimeType: 'application/epub+zip',
     });
-  }
-
-  /**
-   * Export EPUB 2 to a file
-   */
-  public async exportToFile(
-    filepath: string,
-    options: ExportOptions = {},
-  ): Promise<void> {
-    const buffer = await this.export(options);
-    await fs.writeFile(filepath, buffer);
   }
 
   /**
@@ -278,10 +264,13 @@ export class EPUB2Builder extends BaseEPUBBuilder {
   /**
    * Parse an existing EPUB 2 file
    */
-  public static async parse(filepath: string): Promise<EPUB2Builder> {
+  public static async parse(
+    filepath: string,
+    options?: EPUBOptions,
+  ): Promise<EPUB2Builder> {
     try {
       const data = await fs.readFile(filepath);
-      return await EPUB2Builder.parseBuffer(data);
+      return await EPUB2Builder.parseBuffer(data, options);
     } catch (error) {
       throw new Error(
         `Failed to parse EPUB file: ${error instanceof Error ? error.message : String(error)}`,
@@ -292,36 +281,17 @@ export class EPUB2Builder extends BaseEPUBBuilder {
   /**
    * Parse an EPUB 2 from a Buffer
    */
-  public static async parseBuffer(buffer: Buffer): Promise<EPUB2Builder> {
+  public static async parseBuffer(
+    buffer: Buffer,
+    options?: EPUBOptions,
+  ): Promise<EPUB2Builder> {
     try {
-      const zip = await EPUB2Builder.unzip(buffer);
-
-      const containerFile = zip.file('META-INF/container.xml');
-      if (!containerFile) {
-        throw new Error('Invalid EPUB: META-INF/container.xml not found');
-      }
-
-      const containerXml = await containerFile.async('string');
-      const container: any = await parseXml(containerXml);
-      const opfPath =
-        container?.container?.rootfiles?.[0]?.rootfile?.[0]?.$?.['full-path'];
-
-      if (!opfPath) {
-        throw new Error('Invalid EPUB: OPF path not found in container.xml');
-      }
-
-      const opfFile = zip.file(opfPath);
-      if (!opfFile) {
-        throw new Error(`Invalid EPUB: OPF file not found at ${opfPath}`);
-      }
-
-      const opfXml = await opfFile.async('string');
-      const opfData = await parseXml(opfXml);
+      const { opfData, zip, opfPath } = await EPUB2Builder.parseEpubZip(buffer);
 
       const metadata = EPUB2Builder.extractMetadata(opfData);
-      const epub = new EPUB2Builder(metadata);
+      const epub = new EPUB2Builder(metadata, options);
 
-      await EPUB2Builder.extractResources(epub, zip, opfData, opfPath);
+      await epub.extractResources(zip, opfData, opfPath);
 
       return epub;
     } catch (error) {
@@ -331,48 +301,12 @@ export class EPUB2Builder extends BaseEPUBBuilder {
     }
   }
 
-  private static extractMetadata(opfData: any): DublinCoreMetadata {
-    const meta = opfData?.package?.metadata?.[0];
-
-    const parseMetaField = (fieldName: string) =>
-      meta?.[fieldName]?.[0]?._ ?? meta?.[fieldName]?.[0];
-
-    const title = parseMetaField('dc:title') ?? 'Untitled';
-    const creator = parseMetaField('dc:creator') ?? 'Unknown';
-    const language = parseMetaField('dc:language') ?? 'en';
-    const identifier = parseMetaField('dc:identifier');
-    const date = parseMetaField('dc:date');
-    const publisher = parseMetaField('dc:publisher');
-    const description = parseMetaField('dc:description');
-    const subject = meta?.['dc:subject'];
-    const rights = parseMetaField('dc:rights');
-    const contributor = parseMetaField('dc:contributor');
-
-    return {
-      title,
-      creator,
-      language,
-      identifier,
-      date,
-      publisher,
-      description,
-      subject,
-      rights,
-      contributor,
-    };
-  }
-
-  private static async extractResources(
-    epub: EPUB2Builder,
+  protected async extractChapters(
     zip: JSZip,
-    opfData: any,
-    opfPath: string,
+    manifest: any,
+    opfDir: string,
+    spine: any,
   ): Promise<void> {
-    const manifest = opfData?.package?.manifest?.[0]?.item || [];
-    const spine = opfData?.package?.spine?.[0]?.itemref || [];
-
-    const opfDir = opfPath.substring(0, opfPath.lastIndexOf('/') + 1);
-
     const chapterIds: string[] = [];
     for (const itemref of spine) {
       const idref = itemref.$?.idref;
@@ -388,9 +322,9 @@ export class EPUB2Builder extends BaseEPUBBuilder {
 
         if (file) {
           const content = await file.async('string');
-          const chapterId = epub.addChapter({
+          const chapterId = this.addChapter({
             title:
-              EPUB2Builder.extractTitleFromXHTML(content) ||
+              this.extractTitleFromXHTML(content) ||
               `Chapter ${chapterIds.length + 1}`,
             content: EPUB2Builder.extractBodyFromXHTML(content),
             linear: itemref.$?.linear !== 'no',
@@ -399,34 +333,6 @@ export class EPUB2Builder extends BaseEPUBBuilder {
         }
       }
     }
-
-    for (const item of manifest) {
-      const mimeType = item.$?.['media-type'];
-      if (mimeType?.startsWith('image/')) {
-        const href = item.$.href;
-        const filePath = opfDir + href;
-        const file = zip.file(filePath);
-
-        if (file) {
-          const data = await file.async('nodebuffer');
-          const filename = href.split('/').pop() || 'image';
-          epub.addImage({
-            filename,
-            data,
-          });
-        }
-      }
-    }
-  }
-
-  private static extractTitleFromXHTML(xhtml: string): string | null {
-    const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
-    if (titleMatch) return titleMatch[1];
-
-    const h1Match = /<h1[^>]*>([^<]+)<\/h1>/i.exec(xhtml);
-    if (h1Match) return h1Match[1];
-
-    return null;
   }
 
   private static extractBodyFromXHTML(xhtml: string): string {

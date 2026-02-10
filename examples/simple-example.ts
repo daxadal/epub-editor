@@ -4,8 +4,11 @@
  */
 
 import * as path from 'node:path';
+import * as fs from 'node:fs/promises';
 
 import { EPUB2Builder, EPUB3Builder } from '../src';
+
+export const IMG_PATH = path.join(__dirname, 'pencil.png');
 
 async function createSimpleBook() {
   const isEpub2 = process.argv.includes('--epub2');
@@ -36,6 +39,19 @@ async function createSimpleBook() {
   const part1 = epub.addChapter({
     title: 'Part I: Basics',
     content: "<p>Let's start with the fundamentals.</p>",
+  });
+
+  epub.addImage({
+    filename: 'image1.jpg',
+    data: await fs.readFile(IMG_PATH),
+    alt: 'Image 1',
+  });
+
+  epub.addChapter({
+    title: 'Chapter 0',
+    content:
+      '<p>Content with image</p><img src="../images/image1.jpg" alt="Image 1" style="width: 50px; height: 50px;"/>',
+    parentId: part1,
   });
 
   epub.addChapter({

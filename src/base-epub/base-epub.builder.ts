@@ -1,7 +1,10 @@
+import { promisify } from 'node:util';
 import * as path from 'node:path';
 
+import * as fs from 'fs-extra';
 import { v4 as uuidV4 } from 'uuid';
 import JSZip from 'jszip';
+import { parseString } from 'xml2js';
 
 import {
   getMimeType,
@@ -11,15 +14,19 @@ import {
 import { DEFAULT_CSS } from '../utils/default-styles';
 
 import {
-  DublinCoreMetadata,
-  Chapter,
-  ImageResource,
-  StylesheetResource,
   AddChapterOptions,
   AddImageOptions,
   AddStylesheetOptions,
+  Chapter,
+  DublinCoreMetadata,
+  EPUBOptions,
+  ExportOptions,
+  ImageResource,
+  StylesheetResource,
   ValidationResult,
 } from './base-epub.types';
+
+const parseXml = promisify(parseString);
 
 const MAX_FILES = 10000;
 const MAX_SIZE = 1000000000; // 1 GB
@@ -35,10 +42,10 @@ export abstract class BaseEPUBBuilder {
   protected readonly stylesheets: Map<string, StylesheetResource>;
   protected rootChapterIds: string[];
   protected chapterCounter: number;
+  protected includeDefStyleSheet: boolean;
+  protected ignoreHeadTitle: boolean;
 
-  constructor(
-    metadata: Partial<DublinCoreMetadata> & { title: string; creator: string },
-  ) {
+  constructor(metadata: DublinCoreMetadata, options: EPUBOptions = {}) {
     if (!metadata.title) {
       throw new Error('Title is required');
     }
@@ -61,19 +68,13 @@ export abstract class BaseEPUBBuilder {
     this.rootChapterIds = [];
     this.chapterCounter = 0;
 
-    this.addDefaultStylesheet();
+    this.includeDefStyleSheet = options.addDefaultStylesheet ?? true;
+    this.ignoreHeadTitle = options.ignoreHeadTitle ?? false;
+
+    if (this.includeDefStyleSheet) this.addDefaultStylesheet();
   }
 
-  /**
-   * Add the default stylesheet
-   */
-  private addDefaultStylesheet(): void {
-    this.stylesheets.set('default-style', {
-      id: 'default-style',
-      filename: 'css/styles.css',
-      content: DEFAULT_CSS,
-    });
-  }
+  // #region Metadata Getters/Setters
 
   /**
    * Update metadata
@@ -88,6 +89,10 @@ export abstract class BaseEPUBBuilder {
   public getMetadata(): DublinCoreMetadata {
     return { ...this.metadata };
   }
+
+  // #endregion Metadata Getters/Setters
+
+  // #region Chapter Management
 
   /**
    * Add a new chapter
@@ -200,6 +205,10 @@ export abstract class BaseEPUBBuilder {
     this.chapters.delete(chapter.id);
   }
 
+  // #endregion Chapter Management
+
+  // #region Image Management
+
   /**
    * Add an image to the EPUB
    * @returns Image ID
@@ -252,6 +261,21 @@ export abstract class BaseEPUBBuilder {
     return Array.from(this.images.values());
   }
 
+  // #endregion Image Management
+
+  // #region Stylesheet Management
+
+  /**
+   * Add the default stylesheet
+   */
+  private addDefaultStylesheet(): void {
+    this.stylesheets.set('default-style', {
+      id: 'default-style',
+      filename: 'css/styles.css',
+      content: DEFAULT_CSS,
+    });
+  }
+
   /**
    * Add a custom stylesheet
    * @returns Stylesheet ID
@@ -277,6 +301,10 @@ export abstract class BaseEPUBBuilder {
   public getAllStylesheets(): StylesheetResource[] {
     return Array.from(this.stylesheets.values());
   }
+
+  // #endregion Stylesheet Management
+
+  // #region Validation
 
   /**
    * Validate the EPUB structure
@@ -310,6 +338,10 @@ export abstract class BaseEPUBBuilder {
       warnings,
     };
   }
+
+  // #endregion Validation
+
+  // #region Utility Methods
 
   /**
    * Generate unique chapter ID
@@ -345,11 +377,51 @@ export abstract class BaseEPUBBuilder {
     return maxOrder + 1;
   }
 
+  // #endregion Utility Methods
+
+  // #region Export
+
   /**
    * Abstract methods to be implemented by subclasses
    */
   public abstract export(options?: any): Promise<Buffer>;
-  public abstract exportToFile(filepath: string, options?: any): Promise<void>;
+
+  /**
+   * Export EPUB to a file
+   */
+  public async exportToFile(
+    filepath: string,
+    options: ExportOptions = {},
+  ): Promise<void> {
+    const buffer = await this.export(options);
+    await fs.writeFile(filepath, buffer);
+  }
+
+  // #endregion Export
+
+  // #region Parse - Public methods
+
+  public static async parse(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _filepath: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _options?: EPUBOptions,
+  ): Promise<BaseEPUBBuilder> {
+    throw new Error('Not implemented');
+  }
+
+  public static async parseBuffer(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _buffer: Buffer,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _options?: EPUBOptions,
+  ): Promise<BaseEPUBBuilder> {
+    throw new Error('Not implemented');
+  }
+
+  // #endregion Parse - Public methods
+
+  // #region Parse - Protected helper methods
 
   protected static async unzip(buffer: Buffer<ArrayBufferLike>): Promise<any> {
     let fileCount = 0;
@@ -383,13 +455,120 @@ export abstract class BaseEPUBBuilder {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static async parse(_filepath: string): Promise<BaseEPUBBuilder> {
-    throw new Error('Not implemented');
+  protected static async parseEpubZip(
+    buffer: Buffer<ArrayBufferLike>,
+  ): Promise<{ zip: JSZip; opfData: unknown; opfPath: any }> {
+    const zip = await BaseEPUBBuilder.unzip(buffer);
+
+    const containerFile = zip.file('META-INF/container.xml');
+    if (!containerFile) {
+      throw new Error('Invalid EPUB: META-INF/container.xml not found');
+    }
+
+    const containerXml = await containerFile.async('string');
+    const container: any = await parseXml(containerXml);
+    const opfPath =
+      container?.container?.rootfiles?.[0]?.rootfile?.[0]?.$?.['full-path'];
+
+    if (!opfPath) {
+      throw new Error('Invalid EPUB: OPF path not found in container.xml');
+    }
+
+    const opfFile = zip.file(opfPath);
+    if (!opfFile) {
+      throw new Error(`Invalid EPUB: OPF file not found at ${opfPath}`);
+    }
+
+    const opfXml = await opfFile.async('string');
+    const opfData = await parseXml(opfXml);
+    return { zip, opfData, opfPath };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static async parseBuffer(_buffer: Buffer): Promise<BaseEPUBBuilder> {
-    throw new Error('Not implemented');
+  protected static extractMetadata(opfData: any): DublinCoreMetadata {
+    const meta = opfData?.package?.metadata?.[0];
+
+    const parseMetaField = (fieldName: string) =>
+      meta?.[fieldName]?.[0]?._ ?? meta?.[fieldName]?.[0] ?? undefined;
+
+    const metadata = {
+      title: parseMetaField('dc:title') ?? 'Untitled',
+      creator: parseMetaField('dc:creator') ?? 'Unknown',
+      language: parseMetaField('dc:language') ?? 'en',
+      identifier: parseMetaField('dc:identifier'),
+      date: parseMetaField('dc:date'),
+      publisher: parseMetaField('dc:publisher'),
+      description: parseMetaField('dc:description'),
+      subject: meta?.['dc:subject'],
+      rights: parseMetaField('dc:rights'),
+      contributor: parseMetaField('dc:contributor'),
+    };
+
+    return metadata;
   }
+
+  protected async extractResources(
+    zip: JSZip,
+    opfData: any,
+    opfPath: string,
+  ): Promise<void> {
+    const manifest = opfData?.package?.manifest?.[0]?.item || [];
+    const spine = opfData?.package?.spine?.[0]?.itemref || [];
+
+    const opfDir = opfPath.substring(0, opfPath.lastIndexOf('/') + 1);
+
+    // Extract chapters from spine order
+    await this.extractChapters(zip, manifest, opfDir, spine);
+
+    // Extract images
+    await this.extractImages(zip, manifest, opfDir);
+  }
+
+  protected abstract extractChapters(
+    zip: JSZip,
+    manifest: any,
+    opfDir: string,
+    spine: any,
+  ): Promise<void>;
+
+  protected async extractImages(
+    zip: JSZip,
+    manifest: any,
+    opfDir: string,
+  ): Promise<void> {
+    for (const item of manifest) {
+      const mimeType = item.$?.['media-type'];
+      if (mimeType?.startsWith('image/')) {
+        const href = item.$.href;
+        const filePath = opfDir + href;
+        const file = zip.file(filePath);
+
+        if (file) {
+          const data = await file.async('nodebuffer');
+          const filename = href.split('/').pop() || 'image';
+          this.addImage({
+            filename,
+            data,
+            isCover: item.$?.properties?.includes('cover-image'),
+          });
+        }
+      }
+    }
+  }
+
+  protected extractTitleFromXHTML(xhtml: string): string | null {
+    if (!this.ignoreHeadTitle) {
+      const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
+      if (titleMatch) return titleMatch[1];
+    }
+
+    const h1Match = /<h1[^>]*>([^<]+)<\/h1>/i.exec(xhtml);
+    if (h1Match) return h1Match[1];
+
+    const h2Match = /<h2[^>]*>([^<]+)<\/h2>/i.exec(xhtml);
+    if (h2Match) return h2Match[1];
+
+    return null;
+  }
+
+  // #endregion Parse - Protected helper methods
 }

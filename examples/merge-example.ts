@@ -1,136 +1,11 @@
-/* eslint-disable security/detect-non-literal-regexp */
-
 import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
 
-import { Chapter, EPUB2Builder, EPUB3Builder } from '../src';
+import { AddChapterOptions, EPUB2Builder, EPUB3Builder } from '../src';
 
-function copyStyleSheets(
-  sourceEPUB: EPUB2Builder | EPUB3Builder,
-  bookNumber: number,
-  mergedEPUB: EPUB2Builder | EPUB3Builder,
-): Map<string, string> {
-  // Get all stylesheets from this EPUB (except default)
-  const stylesheets = sourceEPUB
-    .getAllStylesheets()
-    .filter((s) => s.id !== 'default-style');
+import { copyStyleSheets, copyImages, copyAllChapters } from './merge.utils';
 
-  // Add stylesheets with unique naming
-  const stylesheetMap = new Map<string, string>(); // old filename -> new filename
-  for (const stylesheet of stylesheets) {
-    // This stylesheet hasn't been added yet
-    const uniqueFilename = `book${bookNumber}-${path.basename(stylesheet.filename)}`;
-    mergedEPUB.addStylesheet({
-      filename: uniqueFilename,
-      content: stylesheet.content,
-    });
-    stylesheetMap.set(stylesheet.filename, uniqueFilename);
-    console.log(`      ✓ Added stylesheet: ${uniqueFilename}`);
-  }
-  return stylesheetMap;
-}
-
-function copyImages(
-  sourceEPUB: EPUB2Builder | EPUB3Builder,
-  bookNumber: number,
-  mergedEPUB: EPUB2Builder | EPUB3Builder,
-): Map<string, string> {
-  const images = sourceEPUB.getAllImages();
-
-  // Add images with unique naming
-  const imageMap = new Map<string, string>(); // old filename -> new filename
-  for (const image of images) {
-    // This image hasn't been added yet
-    const originalFilename = path.basename(image.filename);
-    const ext = path.extname(originalFilename);
-    const baseName = path.basename(originalFilename, ext);
-    const uniqueFilename = `book${bookNumber}-${baseName}${ext}`;
-
-    mergedEPUB.addImage({
-      filename: uniqueFilename,
-      data: image.data,
-      alt: image.alt,
-      isCover: false, // Don't preserve cover flags in merged book
-    });
-    imageMap.set(image.filename, uniqueFilename);
-    console.log(`      ✓ Added image: ${uniqueFilename}`);
-  }
-  return imageMap;
-}
-
-function copyAllChapters(
-  rootChapters: Chapter[],
-  stylesheetMap: Map<string, string>,
-  imageMap: Map<string, string>,
-  mergedEPUB: EPUB2Builder | EPUB3Builder,
-  sectionId: string,
-) {
-  // Add all chapters as children of the section
-  let chapterCount = 0;
-  for (const chapter of rootChapters) {
-    // Update content to reflect new image and stylesheet paths
-    let updatedContent = chapter.content;
-
-    // Update stylesheet references in content
-    stylesheetMap.forEach((newFilename, oldFilename) => {
-      const oldPath = oldFilename;
-      const newPath = `styles/${newFilename}`;
-
-      // Handle various possible path formats
-      const patterns = [
-        new RegExp(String.raw`src=["']\.\./${oldPath}["']`, 'g'),
-        new RegExp(String.raw`src=["']${oldPath}["']`, 'g'),
-        new RegExp(String.raw`src=["']\.\./${path.basename(oldPath)}["']`, 'g'),
-        new RegExp(String.raw`src=["']${path.basename(oldPath)}["']`, 'g'),
-      ];
-
-      patterns.forEach((pattern) => {
-        updatedContent = updatedContent.replace(pattern, `src="../${newPath}"`);
-      });
-    });
-
-    // Update image references in content
-    imageMap.forEach((newFilename, oldFilename) => {
-      const oldPath = oldFilename;
-      const newPath = `images/${newFilename}`;
-
-      // Handle various possible path formats
-      const patterns = [
-        new RegExp(String.raw`src=["']\.\./${oldPath}["']`, 'g'),
-        new RegExp(String.raw`src=["']${oldPath}["']`, 'g'),
-        new RegExp(String.raw`src=["']\.\./${path.basename(oldPath)}["']`, 'g'),
-        new RegExp(String.raw`src=["']${path.basename(oldPath)}["']`, 'g'),
-      ];
-
-      patterns.forEach((pattern) => {
-        updatedContent = updatedContent.replace(pattern, `src="../${newPath}"`);
-      });
-    });
-
-    mergedEPUB.addChapter({
-      title: chapter.title,
-      content: updatedContent,
-      parentId: sectionId,
-      headingLevel: chapter.headingLevel,
-      linear: chapter.linear,
-    });
-
-    chapterCount++;
-
-    if (chapter.children && chapter.children.length > 0) {
-      const childrenCount = copyAllChapters(
-        chapter.children,
-        stylesheetMap,
-        imageMap,
-        mergedEPUB,
-        sectionId,
-      );
-      chapterCount += childrenCount;
-    }
-  }
-  return chapterCount;
-}
 /**
  * Merge the series EPUBs into one combined EPUB
  * Run with: npx ts-node examples/merge-example.ts
@@ -156,7 +31,7 @@ async function mergeExample({
     sourceFiles.map(async (file) => {
       const fullPath = path.join(basePath, file);
       console.log(`   Loading: ${file}`);
-      return await EPUBBuilder.parse(fullPath);
+      return await EPUBBuilder.parse(fullPath, { ignoreHeadTitle: true });
     }),
   );
   console.log('✅ All EPUBs loaded successfully\n');
@@ -194,31 +69,17 @@ async function mergeExample({
   // Process each source EPUB
   for (let i = 0; i < sourceEPUBs.length; i++) {
     const sourceEPUB = sourceEPUBs[i];
-    const sourceMeta = metadataList[i];
+    const title = sourceEPUB.getMetadata().title;
     const bookNumber = i + 1;
 
-    console.log(`\n   📕 Processing Book ${bookNumber}: ${sourceMeta.title}`);
+    console.log(`\n   📕 Processing Book ${bookNumber}: ${title}`);
+    console.log(`      ✓ Created section: ${title}`);
 
-    // Create a section chapter for this book
-    const sectionId = mergedEPUB.addChapter({
-      title: sourceMeta.title,
-      headingLevel: 1,
-    });
-
-    console.log(`      ✓ Created section: ${sourceMeta.title}`);
-
-    const stylesheetMap = copyStyleSheets(sourceEPUB, bookNumber, mergedEPUB);
-    const imageMap = copyImages(sourceEPUB, bookNumber, mergedEPUB);
-
-    // Get all root chapters from this EPUB
-    const rootChapters = sourceEPUB.getRootChapters();
-
-    const chapterCount = copyAllChapters(
-      rootChapters,
-      stylesheetMap,
-      imageMap,
+    const chapterCount = addEpubAsChapter(
+      { title, headingLevel: 1 },
       mergedEPUB,
-      sectionId,
+      sourceEPUB,
+      bookNumber,
     );
 
     console.log(`      ✓ Added ${chapterCount} chapters`);
@@ -241,15 +102,40 @@ async function mergeExample({
   console.log(`   File size: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
 }
 
+function addEpubAsChapter(
+  chapter: Omit<AddChapterOptions, 'content'>,
+  mergedEPUB: EPUB2Builder | EPUB3Builder,
+  sourceEPUB: EPUB2Builder | EPUB3Builder,
+  bookNumber: number,
+) {
+  // Create a section chapter for this book
+  const sectionId = mergedEPUB.addChapter(chapter);
+
+  const stylesheetMap = copyStyleSheets(sourceEPUB, bookNumber, mergedEPUB);
+
+  // Get all images from this EPUB
+  const imageMap = copyImages(sourceEPUB, bookNumber, mergedEPUB);
+
+  // Get all root chapters from this EPUB
+  const rootChapters = sourceEPUB.getRootChapters();
+
+  const chapterCount = copyAllChapters(
+    rootChapters,
+    stylesheetMap,
+    imageMap,
+    mergedEPUB,
+    sectionId,
+  );
+  return chapterCount;
+}
+
 // Run the merge
 mergeExample({
-  seriesName: 'Kits Out For Temeria',
-  outputFile: 'resources/kits-out-of-temeria.epub',
+  seriesName: 'Re Merged Series',
+  outputFile: 'resources/re-merged.epub',
   sourceFiles: [
-    'resources/Kits Out Of Temeria/1 - companions.epub',
-    'resources/Kits Out Of Temeria/2 - acquisition.epub',
-    'resources/Kits Out Of Temeria/3 - interlude for naming.epub',
-    'resources/Kits Out Of Temeria/4 - vision test.epub',
+    'examples/simple-guide-3.epub',
+    'resources/Diaries_from_an.epub',
   ],
 }).catch((error) => {
   console.error('\n❌ Error merging EPUBs:', error);
