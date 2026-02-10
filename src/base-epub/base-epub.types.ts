@@ -4,6 +4,7 @@
 
 export interface EPUBOptions {
   addDefaultStylesheet?: boolean;
+  ignoreHeadTitle?: boolean;
 }
 
 /**

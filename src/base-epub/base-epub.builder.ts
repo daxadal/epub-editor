@@ -39,6 +39,7 @@ export abstract class BaseEPUBBuilder {
   protected rootChapterIds: string[];
   protected chapterCounter: number;
   protected includeDefStyleSheet: boolean;
+  protected ignoreHeadTitle: boolean;
 
   constructor(metadata: DublinCoreMetadata, options: EPUBOptions = {}) {
     if (!metadata.title) {
@@ -64,6 +65,7 @@ export abstract class BaseEPUBBuilder {
     this.chapterCounter = 0;
 
     this.includeDefStyleSheet = options.addDefaultStylesheet ?? true;
+    this.ignoreHeadTitle = options.ignoreHeadTitle ?? false;
 
     if (this.includeDefStyleSheet) this.addDefaultStylesheet();
   }
@@ -509,12 +511,17 @@ export abstract class BaseEPUBBuilder {
     }
   }
 
-  protected static extractTitleFromXHTML(xhtml: string): string | null {
-    const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
-    if (titleMatch) return titleMatch[1];
+  protected extractTitleFromXHTML(xhtml: string): string | null {
+    if (!this.ignoreHeadTitle) {
+      const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
+      if (titleMatch) return titleMatch[1];
+    }
 
     const h1Match = /<h1[^>]*>([^<]+)<\/h1>/i.exec(xhtml);
     if (h1Match) return h1Match[1];
+
+    const h2Match = /<h2 class="heading"[^>]*>([^<]+)<\/h2>/i.exec(xhtml);
+    if (h2Match) return h2Match[1];
 
     return null;
   }
