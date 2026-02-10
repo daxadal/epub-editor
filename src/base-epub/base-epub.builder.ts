@@ -12,6 +12,11 @@ import {
   sanitizeFilename,
 } from '../utils/mime-types';
 import { DEFAULT_CSS } from '../utils/default-styles';
+import {
+  copyAllChapters,
+  copyImages,
+  copyStyleSheets,
+} from '../../examples/merge.utils';
 
 import {
   AddChapterOptions,
@@ -575,4 +580,41 @@ export abstract class BaseEPUBBuilder {
   }
 
   // #endregion Parse - Protected helper methods
+
+  // #region Merge - Public methods
+
+  public addEpubAsChapter(
+    chapter: Omit<AddChapterOptions, 'content'>,
+    sourceEPUB: BaseEPUBBuilder,
+    addedStylesheets: Map<string, string>,
+    addedImages: Map<string, string>,
+    bookNumber: number,
+  ) {
+    // Create a section chapter for this book
+    const sectionId = this.addChapter(chapter);
+
+    const stylesheetMap = copyStyleSheets(
+      sourceEPUB,
+      addedStylesheets,
+      bookNumber,
+      this,
+    );
+
+    // Get all images from this EPUB
+    const imageMap = copyImages(sourceEPUB, addedImages, bookNumber, this);
+
+    // Get all root chapters from this EPUB
+    const rootChapters = sourceEPUB.getRootChapters();
+
+    const chapterCount = copyAllChapters(
+      rootChapters,
+      stylesheetMap,
+      imageMap,
+      this,
+      sectionId,
+    );
+    return chapterCount;
+  }
+
+  // #endregion Merge - Public methods
 }

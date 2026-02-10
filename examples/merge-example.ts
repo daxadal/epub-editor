@@ -4,8 +4,6 @@ import * as fs from 'fs-extra';
 
 import { EPUB2Builder, EPUB3Builder } from '../src';
 
-import { addEpubAsChapter } from './merge.utils';
-
 /**
  * Merge the series EPUBs into one combined EPUB
  * Run with: npx ts-node examples/merge-example.ts
@@ -79,9 +77,8 @@ async function mergeExample({
     console.log(`\n   📕 Processing Book ${bookNumber}: ${title}`);
     console.log(`      ✓ Created section: ${title}`);
 
-    const chapterCount = addEpubAsChapter(
+    const chapterCount = mergedEPUB.addEpubAsChapter(
       { title, headingLevel: 1 },
-      mergedEPUB,
       sourceEPUB,
       addedStylesheets,
       addedImages,
