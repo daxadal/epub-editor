@@ -113,17 +113,6 @@ export class EPUB3Builder extends BaseEPUBBuilder {
   }
 
   /**
-   * Export EPUB to a file
-   */
-  public async exportToFile(
-    filepath: string,
-    options: ExportOptions = {},
-  ): Promise<void> {
-    const buffer = await this.export(options);
-    await fs.writeFile(filepath, buffer);
-  }
-
-  /**
    * Generate Navigation Document
    */
   private generateNavigationDocument(): EPUBNavigationDocument {

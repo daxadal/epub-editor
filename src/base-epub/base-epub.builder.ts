@@ -1,4 +1,5 @@
 import { v4 as uuidV4 } from 'uuid';
+import * as fs from 'fs-extra';
 
 import {
   getMimeType,
@@ -16,6 +17,7 @@ import {
   AddImageOptions,
   AddStylesheetOptions,
   ValidationResult,
+  ExportOptions,
 } from './base-epub.types';
 
 /**
@@ -369,7 +371,17 @@ export abstract class BaseEPUBBuilder {
    * Abstract methods to be implemented by subclasses
    */
   public abstract export(options?: any): Promise<Buffer>;
-  public abstract exportToFile(filepath: string, options?: any): Promise<void>;
+
+  /**
+   * Export EPUB to a file
+   */
+  public async exportToFile(
+    filepath: string,
+    options: ExportOptions = {},
+  ): Promise<void> {
+    const buffer = await this.export(options);
+    await fs.writeFile(filepath, buffer);
+  }
 
   // #endregion Export
 
