@@ -3,85 +3,10 @@
 import * as path from 'node:path';
 import { createHash } from 'node:crypto';
 
-import { Chapter } from '../src';
-import { BaseEPUBBuilder } from '../src/base-epub/base-epub.builder';
-
-const hash = (content: string | Buffer) =>
+export const hash = (content: string | Buffer) =>
   createHash('sha1').update(content).digest('base64');
 
-export function copyStyleSheets(
-  sourceEPUB: BaseEPUBBuilder,
-  addedStylesheets: Map<string, string>,
-  bookNumber: number,
-  mergedEPUB: BaseEPUBBuilder,
-): Map<string, string> {
-  // Get all stylesheets from this EPUB (except default)
-  const stylesheets = sourceEPUB
-    .getAllStylesheets()
-    .filter((s) => s.id !== 'default-style');
-
-  // Add stylesheets with unique naming
-  const stylesheetMap = new Map<string, string>(); // old filename -> new filename
-  for (const stylesheet of stylesheets) {
-    const contentHash = hash(stylesheet.content);
-
-    if (!addedStylesheets.has(contentHash)) {
-      // This stylesheet hasn't been added yet
-      const uniqueFilename = `book${bookNumber}-${path.basename(stylesheet.filename)}`;
-      mergedEPUB.addStylesheet({
-        filename: uniqueFilename,
-        content: stylesheet.content,
-      });
-      addedStylesheets.set(contentHash, uniqueFilename);
-      stylesheetMap.set(stylesheet.filename, uniqueFilename);
-      console.log(`      ✓ Added stylesheet: ${uniqueFilename}`);
-    } else {
-      stylesheetMap.set(
-        stylesheet.filename,
-        addedStylesheets.get(contentHash)!,
-      );
-    }
-  }
-  return stylesheetMap;
-}
-
-export function copyImages(
-  sourceEPUB: BaseEPUBBuilder,
-  addedImages: Map<string, string>,
-  bookNumber: number,
-  mergedEPUB: BaseEPUBBuilder,
-): Map<string, string> {
-  const images = sourceEPUB.getAllImages();
-
-  // Add images with unique naming
-  const imageMap = new Map<string, string>(); // old filename -> new filename
-  for (const image of images) {
-    const dataHash = hash(image.data);
-
-    if (!addedImages.has(dataHash)) {
-      // This image hasn't been added yet
-      const originalFilename = path.basename(image.filename);
-      const ext = path.extname(originalFilename);
-      const baseName = path.basename(originalFilename, ext);
-      const uniqueFilename = `book${bookNumber}-${baseName}${ext}`;
-
-      mergedEPUB.addImage({
-        filename: uniqueFilename,
-        data: image.data,
-        alt: image.alt,
-        isCover: false, // Don't preserve cover flags in merged book
-      });
-      addedImages.set(dataHash, uniqueFilename);
-      imageMap.set(image.filename, uniqueFilename);
-      console.log(`      ✓ Added image: ${uniqueFilename}`);
-    } else {
-      imageMap.set(image.filename, addedImages.get(dataHash)!);
-    }
-  }
-  return imageMap;
-}
-
-type Replacement = {
+export type Replacement = {
   pattern: RegExp;
   replacement: string;
 };
@@ -100,7 +25,7 @@ function getSingleReplacement(oldPath: string, newPath: string): Replacement[] {
   return patterns.map((pattern) => ({ pattern, replacement }));
 }
 
-function getAllReplacements(
+export function getAllReplacements(
   stylesheetMap: Map<string, string>,
   imageMap: Map<string, string>,
 ): Replacement[] {
@@ -123,46 +48,4 @@ function getAllReplacements(
   });
 
   return allReplacements;
-}
-
-export function copyAllChapters(
-  rootChapters: Chapter[],
-  stylesheetMap: Map<string, string>,
-  imageMap: Map<string, string>,
-  mergedEPUB: BaseEPUBBuilder,
-  sectionId: string,
-) {
-  // Add all chapters as children of the section
-  let chapterCount = 0;
-  for (const chapter of rootChapters) {
-    const allReplacements = getAllReplacements(stylesheetMap, imageMap);
-
-    // Update content to reflect new image and stylesheet paths
-    let updatedContent = chapter.content;
-    for (const { pattern, replacement } of allReplacements) {
-      updatedContent = updatedContent.replace(pattern, replacement);
-    }
-
-    const mergedChapterId = mergedEPUB.addChapter({
-      title: chapter.title,
-      content: updatedContent,
-      parentId: sectionId,
-      headingLevel: chapter.headingLevel,
-      linear: chapter.linear,
-    });
-
-    chapterCount++;
-
-    if (chapter.children && chapter.children.length > 0) {
-      const childrenCount = copyAllChapters(
-        chapter.children,
-        stylesheetMap,
-        imageMap,
-        mergedEPUB,
-        mergedChapterId,
-      );
-      chapterCount += childrenCount;
-    }
-  }
-  return chapterCount;
 }
