@@ -286,7 +286,7 @@ export class EPUB2Builder extends BaseEPUBBuilder {
       const metadata = EPUB2Builder.extractMetadata(opfData);
       const epub = new EPUB2Builder(metadata);
 
-      await EPUB2Builder.extractResources(epub, zip, opfData, opfPath);
+      await epub.extractResources(zip, opfData, opfPath);
 
       return epub;
     } catch (error) {
@@ -296,8 +296,7 @@ export class EPUB2Builder extends BaseEPUBBuilder {
     }
   }
 
-  private static async extractResources(
-    epub: EPUB2Builder,
+  private async extractResources(
     zip: JSZip,
     opfData: any,
     opfPath: string,
@@ -322,7 +321,7 @@ export class EPUB2Builder extends BaseEPUBBuilder {
 
         if (file) {
           const content = await file.async('string');
-          const chapterId = epub.addChapter({
+          const chapterId = this.addChapter({
             title:
               EPUB2Builder.extractTitleFromXHTML(content) ||
               `Chapter ${chapterIds.length + 1}`,
@@ -344,7 +343,7 @@ export class EPUB2Builder extends BaseEPUBBuilder {
         if (file) {
           const data = await file.async('nodebuffer');
           const filename = href.split('/').pop() || 'image';
-          epub.addImage({
+          this.addImage({
             filename,
             data,
           });

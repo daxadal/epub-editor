@@ -1,8 +1,5 @@
-import { promisify } from 'node:util';
-
 import * as fs from 'fs-extra';
 import JSZip from 'jszip';
-import { parseString } from 'xml2js';
 
 import { BaseEPUBBuilder } from '../base-epub/base-epub.builder';
 import {
@@ -23,8 +20,6 @@ import {
   generateOPF,
   generateNavigationDocument,
 } from './epub3.templates';
-
-const parseXml = promisify(parseString);
 
 /**
  * EPUB3Builder - Create and manipulate EPUB 3.3 files
@@ -253,7 +248,7 @@ export class EPUB3Builder extends BaseEPUBBuilder {
       const metadata = EPUB3Builder.extractMetadata(opfData);
       const epub = new EPUB3Builder(metadata);
 
-      await EPUB3Builder.extractResources(epub, zip, opfData, opfPath);
+      await epub.extractResources(zip, opfData, opfPath);
 
       return epub;
     } catch (error) {
@@ -263,8 +258,7 @@ export class EPUB3Builder extends BaseEPUBBuilder {
     }
   }
 
-  private static async extractResources(
-    epub: EPUB3Builder,
+  private async extractResources(
     zip: JSZip,
     opfData: any,
     opfPath: string,
@@ -275,14 +269,13 @@ export class EPUB3Builder extends BaseEPUBBuilder {
     const opfDir = opfPath.substring(0, opfPath.lastIndexOf('/') + 1);
 
     // Extract chapters from spine order
-    await EPUB3Builder.extractChapters(epub, zip, manifest, opfDir, spine);
+    await this.extractChapters(zip, manifest, opfDir, spine);
 
     // Extract images
-    await EPUB3Builder.extractImages(epub, zip, manifest, opfDir);
+    await this.extractImages(zip, manifest, opfDir);
   }
 
-  private static async extractChapters(
-    epub: EPUB3Builder,
+  private async extractChapters(
     zip: JSZip,
     manifest: any,
     opfDir: string,
@@ -307,7 +300,7 @@ export class EPUB3Builder extends BaseEPUBBuilder {
 
         if (file) {
           const content = await file.async('string');
-          const chapterId = epub.addChapter({
+          const chapterId = this.addChapter({
             title:
               EPUB3Builder.extractTitleFromXHTML(content) ||
               `Chapter ${chapterIds.length + 1}`,
@@ -320,12 +313,7 @@ export class EPUB3Builder extends BaseEPUBBuilder {
     }
   }
 
-  private static async extractImages(
-    epub: EPUB3Builder,
-    zip: JSZip,
-    manifest: any,
-    opfDir: string,
-  ) {
+  private async extractImages(zip: JSZip, manifest: any, opfDir: string) {
     for (const item of manifest) {
       const mimeType = item.$?.['media-type'];
       if (mimeType?.startsWith('image/')) {
@@ -336,7 +324,7 @@ export class EPUB3Builder extends BaseEPUBBuilder {
         if (file) {
           const data = await file.async('nodebuffer');
           const filename = href.split('/').pop() || 'image';
-          epub.addImage({
+          this.addImage({
             filename,
             data,
             isCover: item.$?.properties?.includes('cover-image'),
