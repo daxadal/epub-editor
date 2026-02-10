@@ -306,6 +306,19 @@ export class EPUB2Builder extends BaseEPUBBuilder {
 
     const opfDir = opfPath.substring(0, opfPath.lastIndexOf('/') + 1);
 
+    // Extract chapters from spine order
+    await this.extractChapters(zip, manifest, opfDir, spine);
+
+    // Extract images
+    await this.extractImages(zip, manifest, opfDir);
+  }
+
+  private async extractChapters(
+    zip: JSZip,
+    manifest: any,
+    opfDir: string,
+    spine: any,
+  ) {
     const chapterIds: string[] = [];
     for (const itemref of spine) {
       const idref = itemref.$?.idref;
@@ -332,7 +345,9 @@ export class EPUB2Builder extends BaseEPUBBuilder {
         }
       }
     }
+  }
 
+  private async extractImages(zip: JSZip, manifest: any, opfDir: string) {
     for (const item of manifest) {
       const mimeType = item.$?.['media-type'];
       if (mimeType?.startsWith('image/')) {
