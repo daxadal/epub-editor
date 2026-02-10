@@ -58,16 +58,7 @@ export abstract class BaseEPUBBuilder {
     this.addDefaultStylesheet();
   }
 
-  /**
-   * Add the default stylesheet
-   */
-  private addDefaultStylesheet(): void {
-    this.stylesheets.set('default-style', {
-      id: 'default-style',
-      filename: 'css/styles.css',
-      content: DEFAULT_CSS,
-    });
-  }
+  // #region Metadata Getters/Setters
 
   /**
    * Update metadata
@@ -82,6 +73,10 @@ export abstract class BaseEPUBBuilder {
   public getMetadata(): DublinCoreMetadata {
     return { ...this.metadata };
   }
+
+  // #endregion Metadata Getters/Setters
+
+  // #region Chapter Management
 
   /**
    * Add a new chapter
@@ -194,6 +189,10 @@ export abstract class BaseEPUBBuilder {
     this.chapters.delete(chapter.id);
   }
 
+  // #endregion Chapter Management
+
+  // #region Image Management
+
   /**
    * Add an image to the EPUB
    * @returns Image ID
@@ -246,6 +245,21 @@ export abstract class BaseEPUBBuilder {
     return Array.from(this.images.values());
   }
 
+  // #endregion Image Management
+
+  // #region Stylesheet Management
+
+  /**
+   * Add the default stylesheet
+   */
+  private addDefaultStylesheet(): void {
+    this.stylesheets.set('default-style', {
+      id: 'default-style',
+      filename: 'css/styles.css',
+      content: DEFAULT_CSS,
+    });
+  }
+
   /**
    * Add a custom stylesheet
    * @returns Stylesheet ID
@@ -271,6 +285,10 @@ export abstract class BaseEPUBBuilder {
   public getAllStylesheets(): StylesheetResource[] {
     return Array.from(this.stylesheets.values());
   }
+
+  // #endregion Stylesheet Management
+
+  // #region Validation
 
   /**
    * Validate the EPUB structure
@@ -304,6 +322,10 @@ export abstract class BaseEPUBBuilder {
       warnings,
     };
   }
+
+  // #endregion Validation
+
+  // #region Utility Methods
 
   /**
    * Generate unique chapter ID
@@ -339,11 +361,19 @@ export abstract class BaseEPUBBuilder {
     return maxOrder + 1;
   }
 
+  // #endregion Utility Methods
+
+  // #region Export
+
   /**
    * Abstract methods to be implemented by subclasses
    */
   public abstract export(options?: any): Promise<Buffer>;
   public abstract exportToFile(filepath: string, options?: any): Promise<void>;
+
+  // #endregion Export
+
+  // #region Parse
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public static async parse(_filepath: string): Promise<BaseEPUBBuilder> {
@@ -354,4 +384,6 @@ export abstract class BaseEPUBBuilder {
   public static async parseBuffer(_buffer: Buffer): Promise<BaseEPUBBuilder> {
     throw new Error('Not implemented');
   }
+
+  // #endregion Parse
 }
