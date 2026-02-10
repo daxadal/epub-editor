@@ -1,7 +1,7 @@
 import { promisify } from 'node:util';
 
-import JSZip from 'jszip';
 import * as fs from 'fs-extra';
+import JSZip from 'jszip';
 import { parseString } from 'xml2js';
 
 import { BaseEPUBBuilder } from '../base-epub/base-epub.builder';
@@ -12,11 +12,13 @@ import {
   ExportOptions,
   Chapter,
 } from '../base-epub/base-epub.types';
-
-import { EPUBNavigationDocument, TocNav, NavListItem } from './epub3.types';
 import {
   generateMimetype,
   generateContainer,
+} from '../base-epub/base-epub.templates';
+
+import { EPUBNavigationDocument, TocNav, NavListItem } from './epub3.types';
+import {
   generateChapterXHTML,
   generateOPF,
   generateNavigationDocument,

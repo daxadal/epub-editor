@@ -13,7 +13,10 @@ import {
   SpineItem,
   ExportOptions,
 } from '../base-epub/base-epub.types';
-import { generateMimetype, generateContainer } from '../epub3/epub3.templates';
+import {
+  generateMimetype,
+  generateContainer,
+} from '../base-epub/base-epub.templates';
 
 import { NCXDocument, NCXNavPoint } from './epub2.types';
 import {
