@@ -66,10 +66,6 @@ async function mergeExample({
 
   console.log('🔧 Merging content...');
 
-  // Track added resources to avoid duplicates
-  const addedStylesheets = new Map<string, string>(); // content hash -> new filename
-  const addedImages = new Map<string, string>(); // data hash -> new filename
-
   // Process each source EPUB
   for (let i = 0; i < sourceEPUBs.length; i++) {
     const sourceEPUB = sourceEPUBs[i];
@@ -83,8 +79,6 @@ async function mergeExample({
       { title, headingLevel: 1 },
       mergedEPUB,
       sourceEPUB,
-      addedStylesheets,
-      addedImages,
       bookNumber,
     );
 
@@ -112,22 +106,15 @@ function addEpubAsChapter(
   chapter: Omit<AddChapterOptions, 'content'>,
   mergedEPUB: EPUB2Builder | EPUB3Builder,
   sourceEPUB: EPUB2Builder | EPUB3Builder,
-  addedStylesheets: Map<string, string>,
-  addedImages: Map<string, string>,
   bookNumber: number,
 ) {
   // Create a section chapter for this book
   const sectionId = mergedEPUB.addChapter(chapter);
 
-  const stylesheetMap = copyStyleSheets(
-    sourceEPUB,
-    addedStylesheets,
-    bookNumber,
-    mergedEPUB,
-  );
+  const stylesheetMap = copyStyleSheets(sourceEPUB, bookNumber, mergedEPUB);
 
   // Get all images from this EPUB
-  const imageMap = copyImages(sourceEPUB, addedImages, bookNumber, mergedEPUB);
+  const imageMap = copyImages(sourceEPUB, bookNumber, mergedEPUB);
 
   // Get all root chapters from this EPUB
   const rootChapters = sourceEPUB.getRootChapters();
