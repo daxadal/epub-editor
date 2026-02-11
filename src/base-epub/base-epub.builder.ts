@@ -582,7 +582,7 @@ export abstract class BaseEPUBBuilder {
   public addEpubAsChapter(
     chapter: Omit<AddChapterOptions, 'content'>,
     sourceEPUB: BaseEPUBBuilder,
-  ) {
+  ): string {
     // Create a section chapter for this book
     const sectionId = this.addChapter(chapter);
 
@@ -594,13 +594,8 @@ export abstract class BaseEPUBBuilder {
     // Get all root chapters from this EPUB
     const rootChapters = sourceEPUB.getRootChapters();
 
-    const chapterCount = this.copyAllChapters(
-      rootChapters,
-      stylesheetMap,
-      imageMap,
-      sectionId,
-    );
-    return chapterCount;
+    this.copyAllChapters(rootChapters, stylesheetMap, imageMap, sectionId);
+    return sectionId;
   }
 
   // #endregion Merge - Public methods
@@ -661,9 +656,8 @@ export abstract class BaseEPUBBuilder {
     stylesheetMap: Map<string, string>,
     imageMap: Map<string, string>,
     sectionId: string,
-  ) {
+  ): void {
     // Add all chapters as children of the section
-    let chapterCount = 0;
     for (const chapter of rootChapters) {
       const allReplacements = getAllReplacements(stylesheetMap, imageMap);
 
@@ -681,20 +675,16 @@ export abstract class BaseEPUBBuilder {
         linear: chapter.linear,
       });
 
-      chapterCount++;
-
       if (chapter.children && chapter.children.length > 0) {
-        const childrenCount = this.copyAllChapters(
+        this.copyAllChapters(
           chapter.children,
           stylesheetMap,
           imageMap,
 
           mergedChapterId,
         );
-        chapterCount += childrenCount;
       }
     }
-    return chapterCount;
   }
 
   // #endregion Merge - Protected helper methods
