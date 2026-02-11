@@ -2,9 +2,7 @@ import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
 
-import { AddChapterOptions, EPUB2Builder, EPUB3Builder } from '../src';
-
-import { copyStyleSheets, copyImages, copyAllChapters } from './merge.utils';
+import { EPUB2Builder, EPUB3Builder } from '../src';
 
 /**
  * Merge the series EPUBs into one combined EPUB
@@ -75,14 +73,9 @@ async function mergeExample({
     console.log(`\n   📕 Processing Book ${bookNumber}: ${title}`);
     console.log(`      ✓ Created section: ${title}`);
 
-    const chapterCount = addEpubAsChapter(
-      { title, headingLevel: 1 },
-      mergedEPUB,
-      sourceEPUB,
-      bookNumber,
-    );
+    mergedEPUB.addEpubAsChapter({ title, headingLevel: 1 }, sourceEPUB);
 
-    console.log(`      ✓ Added ${chapterCount} chapters`);
+    console.log(`      ✓ Added ${sourceEPUB.getAllChapters().length} chapters`);
   }
 
   // Export the merged EPUB
@@ -100,33 +93,6 @@ async function mergeExample({
   // Get file size
   const stats = await fs.stat(outputPath);
   console.log(`   File size: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
-}
-
-function addEpubAsChapter(
-  chapter: Omit<AddChapterOptions, 'content'>,
-  mergedEPUB: EPUB2Builder | EPUB3Builder,
-  sourceEPUB: EPUB2Builder | EPUB3Builder,
-  bookNumber: number,
-) {
-  // Create a section chapter for this book
-  const sectionId = mergedEPUB.addChapter(chapter);
-
-  const stylesheetMap = copyStyleSheets(sourceEPUB, bookNumber, mergedEPUB);
-
-  // Get all images from this EPUB
-  const imageMap = copyImages(sourceEPUB, bookNumber, mergedEPUB);
-
-  // Get all root chapters from this EPUB
-  const rootChapters = sourceEPUB.getRootChapters();
-
-  const chapterCount = copyAllChapters(
-    rootChapters,
-    stylesheetMap,
-    imageMap,
-    mergedEPUB,
-    sectionId,
-  );
-  return chapterCount;
 }
 
 // Run the merge

@@ -130,3 +130,8 @@ export interface SpineItem {
   linear?: boolean;
   properties?: string;
 }
+
+export type Replacement = {
+  pattern: RegExp;
+  replacement: string;
+};

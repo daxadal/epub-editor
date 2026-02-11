@@ -13,6 +13,7 @@ import {
 } from '../utils/mime-types';
 import { DEFAULT_CSS } from '../utils/default-styles';
 
+import { getAllReplacements } from './base-epub.merge-utils';
 import {
   AddChapterOptions,
   AddImageOptions,
@@ -562,17 +563,129 @@ export abstract class BaseEPUBBuilder {
   protected extractTitleFromXHTML(xhtml: string): string | null {
     if (!this.ignoreHeadTitle) {
       const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
-      if (titleMatch) return titleMatch[1];
+      if (titleMatch) return titleMatch[1].trim();
     }
 
     const h1Match = /<h1[^>]*>([^<]+)<\/h1>/i.exec(xhtml);
-    if (h1Match) return h1Match[1];
+    if (h1Match) return h1Match[1].trim();
 
     const h2Match = /<h2[^>]*>([^<]+)<\/h2>/i.exec(xhtml);
-    if (h2Match) return h2Match[1];
+    if (h2Match) return h2Match[1].trim();
 
     return null;
   }
 
   // #endregion Parse - Protected helper methods
+
+  // #region Merge - Public methods
+
+  public addEpubAsChapter(
+    chapter: Omit<AddChapterOptions, 'content'>,
+    sourceEPUB: BaseEPUBBuilder,
+  ): string {
+    // Create a section chapter for this book
+    const sectionId = this.addChapter(chapter);
+
+    const stylesheetMap = this.copyStyleSheets(sourceEPUB, sectionId);
+
+    // Get all images from this EPUB
+    const imageMap = this.copyImages(sourceEPUB, sectionId);
+
+    // Get all root chapters from this EPUB
+    const rootChapters = sourceEPUB.getRootChapters();
+
+    this.copyAllChapters(rootChapters, stylesheetMap, imageMap, sectionId);
+    return sectionId;
+  }
+
+  // #endregion Merge - Public methods
+
+  // #region Merge - Protected helper methods
+
+  protected copyStyleSheets(
+    sourceEPUB: BaseEPUBBuilder,
+    sectionId: string,
+  ): Map<string, string> {
+    // Get all stylesheets from this EPUB (except default)
+    const stylesheets = sourceEPUB
+      .getAllStylesheets()
+      .filter((s) => s.id !== 'default-style');
+
+    // Add stylesheets with unique naming
+    const stylesheetMap = new Map<string, string>(); // old filename -> new filename
+    for (const stylesheet of stylesheets) {
+      // This stylesheet hasn't been added yet
+      const uniqueFilename = `book-${sectionId}-${path.basename(stylesheet.filename)}`;
+      this.addStylesheet({
+        filename: uniqueFilename,
+        content: stylesheet.content,
+      });
+      stylesheetMap.set(stylesheet.filename, uniqueFilename);
+    }
+    return stylesheetMap;
+  }
+
+  protected copyImages(
+    sourceEPUB: BaseEPUBBuilder,
+    sectionId: string,
+  ): Map<string, string> {
+    const images = sourceEPUB.getAllImages();
+
+    // Add images with unique naming
+    const imageMap = new Map<string, string>(); // old filename -> new filename
+    for (const image of images) {
+      // This image hasn't been added yet
+      const originalFilename = path.basename(image.filename);
+      const ext = path.extname(originalFilename);
+      const baseName = path.basename(originalFilename, ext);
+      const uniqueFilename = `book-${sectionId}-${baseName}${ext}`;
+
+      this.addImage({
+        filename: uniqueFilename,
+        data: image.data,
+        alt: image.alt,
+        isCover: false, // Don't preserve cover flags in merged book
+      });
+      imageMap.set(image.filename, uniqueFilename);
+    }
+    return imageMap;
+  }
+
+  protected copyAllChapters(
+    rootChapters: Chapter[],
+    stylesheetMap: Map<string, string>,
+    imageMap: Map<string, string>,
+    sectionId: string,
+  ): void {
+    // Add all chapters as children of the section
+    for (const chapter of rootChapters) {
+      const allReplacements = getAllReplacements(stylesheetMap, imageMap);
+
+      // Update content to reflect new image and stylesheet paths
+      let updatedContent = chapter.content;
+      for (const { pattern, replacement } of allReplacements) {
+        updatedContent = updatedContent.replace(pattern, replacement);
+      }
+
+      const mergedChapterId = this.addChapter({
+        title: chapter.title,
+        content: updatedContent,
+        parentId: sectionId,
+        headingLevel: chapter.headingLevel,
+        linear: chapter.linear,
+      });
+
+      if (chapter.children && chapter.children.length > 0) {
+        this.copyAllChapters(
+          chapter.children,
+          stylesheetMap,
+          imageMap,
+
+          mergedChapterId,
+        );
+      }
+    }
+  }
+
+  // #endregion Merge - Protected helper methods
 }

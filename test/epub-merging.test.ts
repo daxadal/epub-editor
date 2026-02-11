@@ -9,7 +9,7 @@ import * as fs from 'fs-extra';
 
 import { EPUB2Builder, EPUB3Builder } from '../src';
 
-import { addAllChapters, createTestEPUB } from './resources/epub-merging.utils';
+import { createTestEPUB } from './resources/epub-merging.utils';
 
 export const TEMP_DIR = path.join(__dirname, 'temp');
 
@@ -56,33 +56,8 @@ describe.each([
         description: 'Books 1 and 2 combined',
       });
 
-      const book1Section = mergedEpub.addChapter({
-        title: 'Book 1',
-        headingLevel: 1,
-      });
-
-      const book1Chapters = epub1.getRootChapters();
-      for (const chapter of book1Chapters) {
-        mergedEpub.addChapter({
-          title: chapter.title,
-          content: chapter.content,
-          parentId: book1Section,
-        });
-      }
-
-      const book2Section = mergedEpub.addChapter({
-        title: 'Book 2',
-        headingLevel: 1,
-      });
-
-      const book2Chapters = epub2.getRootChapters();
-      for (const chapter of book2Chapters) {
-        mergedEpub.addChapter({
-          title: chapter.title,
-          content: chapter.content,
-          parentId: book2Section,
-        });
-      }
+      mergedEpub.addEpubAsChapter({ title: 'Book 1', headingLevel: 1 }, epub1);
+      mergedEpub.addEpubAsChapter({ title: 'Book 2', headingLevel: 1 }, epub2);
 
       const outputPath = path.join(TEMP_DIR, 'merged-basic.epub');
       await mergedEpub.exportToFile(outputPath);
@@ -135,19 +110,10 @@ describe.each([
       });
 
       for (const source of sourceEPUBs) {
-        const sectionId = mergedEpub.addChapter({
-          title: source.getMetadata().title,
-          headingLevel: 1,
-        });
-
-        const chapters = source.getRootChapters();
-        for (const chapter of chapters) {
-          mergedEpub.addChapter({
-            title: chapter.title,
-            content: chapter.content,
-            parentId: sectionId,
-          });
-        }
+        mergedEpub.addEpubAsChapter(
+          { title: source.getMetadata().title, headingLevel: 1 },
+          source,
+        );
       }
 
       // then
@@ -214,21 +180,8 @@ describe.each([
         description: 'Books 1 and 2 combined',
       });
 
-      const book1Section = mergedEpub.addChapter({
-        title: 'Book 1',
-        headingLevel: 1,
-      });
-
-      const book1Chapters = epub1.getRootChapters();
-      addAllChapters(mergedEpub, book1Chapters, book1Section);
-
-      const book2Section = mergedEpub.addChapter({
-        title: 'Book 2',
-        headingLevel: 1,
-      });
-
-      const book2Chapters = epub2.getRootChapters();
-      addAllChapters(mergedEpub, book2Chapters, book2Section);
+      mergedEpub.addEpubAsChapter({ title: 'Book 1', headingLevel: 1 }, epub1);
+      mergedEpub.addEpubAsChapter({ title: 'Book 2', headingLevel: 1 }, epub2);
 
       const outputPath = path.join(TEMP_DIR, 'merged-basic.epub');
       await mergedEpub.exportToFile(outputPath);
@@ -310,48 +263,8 @@ describe.each([
         language: 'en',
       });
 
-      const images1 = epub1.getAllImages();
-      for (const image of images1) {
-        mergedEpub.addImage({
-          filename: `book1-${image.filename}`,
-          data: image.data,
-          alt: image.alt,
-        });
-      }
-
-      const images2 = epub2.getAllImages();
-      for (const image of images2) {
-        mergedEpub.addImage({
-          filename: `book2-${image.filename}`,
-          data: image.data,
-          alt: image.alt,
-        });
-      }
-
-      const section1 = mergedEpub.addChapter({
-        title: 'Book 1',
-        headingLevel: 1,
-      });
-      const section2 = mergedEpub.addChapter({
-        title: 'Book 2',
-        headingLevel: 1,
-      });
-
-      epub1.getRootChapters().forEach((chapter) => {
-        mergedEpub.addChapter({
-          title: chapter.title,
-          content: chapter.content,
-          parentId: section1,
-        });
-      });
-
-      epub2.getRootChapters().forEach((chapter) => {
-        mergedEpub.addChapter({
-          title: chapter.title,
-          content: chapter.content,
-          parentId: section2,
-        });
-      });
+      mergedEpub.addEpubAsChapter({ title: 'Book 1', headingLevel: 1 }, epub1);
+      mergedEpub.addEpubAsChapter({ title: 'Book 2', headingLevel: 1 }, epub2);
 
       // then
       const allImages = mergedEpub.getAllImages();
@@ -395,31 +308,22 @@ describe.each([
         language: 'en',
       });
 
-      const images1 = epub1.getAllImages();
-      for (const image of images1) {
-        mergedEpub.addImage({
-          filename: `book1-${image.filename}`,
-          data: image.data,
-          alt: image.alt,
-        });
-      }
-
-      const images2 = epub2.getAllImages();
-      for (const image of images2) {
-        mergedEpub.addImage({
-          filename: `book2-${image.filename}`,
-          data: image.data,
-          alt: image.alt,
-        });
-      }
+      const section1 = mergedEpub.addEpubAsChapter(
+        { title: 'Book 1', headingLevel: 1 },
+        epub1,
+      );
+      const section2 = mergedEpub.addEpubAsChapter(
+        { title: 'Book 2', headingLevel: 1 },
+        epub2,
+      );
 
       // then
       const allImages = mergedEpub.getAllImages();
       expect(allImages).toHaveLength(2);
 
       const filenames = allImages.map((img) => img.filename);
-      expect(filenames).toContain('images/book1-images-diagram.png');
-      expect(filenames).toContain('images/book2-images-diagram.png');
+      expect(filenames).toContain(`images/book-${section1}-diagram.png`);
+      expect(filenames).toContain(`images/book-${section2}-diagram.png`);
     });
   });
 
@@ -459,25 +363,8 @@ describe.each([
         language: 'en',
       });
 
-      const styles1 = epub1
-        .getAllStylesheets()
-        .filter((s) => s.id !== 'default-style');
-      for (const style of styles1) {
-        mergedEpub.addStylesheet({
-          filename: `book1-${style.filename}`,
-          content: style.content,
-        });
-      }
-
-      const styles2 = epub2
-        .getAllStylesheets()
-        .filter((s) => s.id !== 'default-style');
-      for (const style of styles2) {
-        mergedEpub.addStylesheet({
-          filename: `book2-${style.filename}`,
-          content: style.content,
-        });
-      }
+      mergedEpub.addEpubAsChapter({ title: 'Book 1', headingLevel: 1 }, epub1);
+      mergedEpub.addEpubAsChapter({ title: 'Book 2', headingLevel: 1 }, epub2);
 
       // then
       const allStylesheets = mergedEpub.getAllStylesheets();
@@ -582,29 +469,8 @@ describe.each([
         language: 'en',
       });
 
-      const section1 = mergedEpub.addChapter({
-        title: 'Book 1',
-        headingLevel: 1,
-      });
-      epub1.getRootChapters().forEach((ch) => {
-        mergedEpub.addChapter({
-          title: ch.title,
-          content: ch.content,
-          parentId: section1,
-        });
-      });
-
-      const section2 = mergedEpub.addChapter({
-        title: 'Book 2',
-        headingLevel: 1,
-      });
-      epub2.getRootChapters().forEach((ch) => {
-        mergedEpub.addChapter({
-          title: ch.title,
-          content: ch.content,
-          parentId: section2,
-        });
-      });
+      mergedEpub.addEpubAsChapter({ title: 'Book 1', headingLevel: 1 }, epub1);
+      mergedEpub.addEpubAsChapter({ title: 'Book 2', headingLevel: 1 }, epub2);
 
       // when
       const outputPath = path.join(TEMP_DIR, 'merged-export.epub');
@@ -644,29 +510,8 @@ describe.each([
         language: 'en',
       });
 
-      const section1 = mergedEpub.addChapter({
-        title: 'Book 1',
-        headingLevel: 1,
-      });
-      epub1.getRootChapters().forEach((ch) => {
-        mergedEpub.addChapter({
-          title: ch.title,
-          content: ch.content,
-          parentId: section1,
-        });
-      });
-
-      const section2 = mergedEpub.addChapter({
-        title: 'Book 2',
-        headingLevel: 1,
-      });
-      epub2.getRootChapters().forEach((ch) => {
-        mergedEpub.addChapter({
-          title: ch.title,
-          content: ch.content,
-          parentId: section2,
-        });
-      });
+      mergedEpub.addEpubAsChapter({ title: 'Book 1', headingLevel: 1 }, epub1);
+      mergedEpub.addEpubAsChapter({ title: 'Book 2', headingLevel: 1 }, epub2);
 
       // when
       const validation = mergedEpub.validate();
