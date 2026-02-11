@@ -13,7 +13,7 @@ import {
 } from '../utils/mime-types';
 import { DEFAULT_CSS } from '../utils/default-styles';
 
-import { getAllReplacements } from './base-epub.merge-utils';
+import { getAllReplacements, hash } from './base-epub.merge-utils';
 import {
   AddChapterOptions,
   AddImageOptions,
@@ -582,15 +582,21 @@ export abstract class BaseEPUBBuilder {
   public addEpubAsChapter(
     chapter: Omit<AddChapterOptions, 'content'>,
     sourceEPUB: BaseEPUBBuilder,
+    addedStylesheets: Map<string, string>,
+    addedImages: Map<string, string>,
     bookNumber: number,
   ) {
     // Create a section chapter for this book
     const sectionId = this.addChapter(chapter);
 
-    const stylesheetMap = this.copyStyleSheets(sourceEPUB, bookNumber);
+    const stylesheetMap = this.copyStyleSheets(
+      sourceEPUB,
+      addedStylesheets,
+      bookNumber,
+    );
 
     // Get all images from this EPUB
-    const imageMap = this.copyImages(sourceEPUB, bookNumber);
+    const imageMap = this.copyImages(sourceEPUB, addedImages, bookNumber);
 
     // Get all root chapters from this EPUB
     const rootChapters = sourceEPUB.getRootChapters();
@@ -611,6 +617,7 @@ export abstract class BaseEPUBBuilder {
 
   protected copyStyleSheets(
     sourceEPUB: BaseEPUBBuilder,
+    addedStylesheets: Map<string, string>,
     bookNumber: number,
   ): Map<string, string> {
     // Get all stylesheets from this EPUB (except default)
@@ -621,20 +628,31 @@ export abstract class BaseEPUBBuilder {
     // Add stylesheets with unique naming
     const stylesheetMap = new Map<string, string>(); // old filename -> new filename
     for (const stylesheet of stylesheets) {
-      // This stylesheet hasn't been added yet
-      const uniqueFilename = `book${bookNumber}-${path.basename(stylesheet.filename)}`;
-      this.addStylesheet({
-        filename: uniqueFilename,
-        content: stylesheet.content,
-      });
-      stylesheetMap.set(stylesheet.filename, uniqueFilename);
-      console.log(`      ✓ Added stylesheet: ${uniqueFilename}`);
+      const contentHash = hash(stylesheet.content);
+
+      if (!addedStylesheets.has(contentHash)) {
+        // This stylesheet hasn't been added yet
+        const uniqueFilename = `book${bookNumber}-${path.basename(stylesheet.filename)}`;
+        this.addStylesheet({
+          filename: uniqueFilename,
+          content: stylesheet.content,
+        });
+        addedStylesheets.set(contentHash, uniqueFilename);
+        stylesheetMap.set(stylesheet.filename, uniqueFilename);
+        console.log(`      ✓ Added stylesheet: ${uniqueFilename}`);
+      } else {
+        stylesheetMap.set(
+          stylesheet.filename,
+          addedStylesheets.get(contentHash)!,
+        );
+      }
     }
     return stylesheetMap;
   }
 
   protected copyImages(
     sourceEPUB: BaseEPUBBuilder,
+    addedImages: Map<string, string>,
     bookNumber: number,
   ): Map<string, string> {
     const images = sourceEPUB.getAllImages();
@@ -642,20 +660,27 @@ export abstract class BaseEPUBBuilder {
     // Add images with unique naming
     const imageMap = new Map<string, string>(); // old filename -> new filename
     for (const image of images) {
-      // This image hasn't been added yet
-      const originalFilename = path.basename(image.filename);
-      const ext = path.extname(originalFilename);
-      const baseName = path.basename(originalFilename, ext);
-      const uniqueFilename = `book${bookNumber}-${baseName}${ext}`;
+      const dataHash = hash(image.data);
 
-      this.addImage({
-        filename: uniqueFilename,
-        data: image.data,
-        alt: image.alt,
-        isCover: false, // Don't preserve cover flags in merged book
-      });
-      imageMap.set(image.filename, uniqueFilename);
-      console.log(`      ✓ Added image: ${uniqueFilename}`);
+      if (!addedImages.has(dataHash)) {
+        // This image hasn't been added yet
+        const originalFilename = path.basename(image.filename);
+        const ext = path.extname(originalFilename);
+        const baseName = path.basename(originalFilename, ext);
+        const uniqueFilename = `book${bookNumber}-${baseName}${ext}`;
+
+        this.addImage({
+          filename: uniqueFilename,
+          data: image.data,
+          alt: image.alt,
+          isCover: false, // Don't preserve cover flags in merged book
+        });
+        addedImages.set(dataHash, uniqueFilename);
+        imageMap.set(image.filename, uniqueFilename);
+        console.log(`      ✓ Added image: ${uniqueFilename}`);
+      } else {
+        imageMap.set(image.filename, addedImages.get(dataHash)!);
+      }
     }
     return imageMap;
   }
