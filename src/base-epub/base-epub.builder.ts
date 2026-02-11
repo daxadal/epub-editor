@@ -112,7 +112,7 @@ export abstract class BaseEPUBBuilder {
       title: options.title,
       content: options.content || '',
       filename,
-      parentId: options.parentId || null,
+      parentId: options.parentId,
       order: this.getNextChapterOrder(),
       children: [],
       headingLevel: options.headingLevel ?? 1,
@@ -562,19 +562,19 @@ export abstract class BaseEPUBBuilder {
     }
   }
 
-  protected extractTitleFromXHTML(xhtml: string): string | null {
+  protected extractTitleFromXHTML(xhtml: string): Partial<Chapter> {
     if (!this.ignoreHeadTitle) {
       const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
-      if (titleMatch) return titleMatch[1].trim();
+      if (titleMatch) return { title: titleMatch[1].trim() };
     }
 
     const h1Match = /<h1[^>]*>([^<]+)<\/h1>/i.exec(xhtml);
-    if (h1Match) return h1Match[1].trim();
+    if (h1Match) return { title: h1Match[1].trim() };
 
     const h2Match = /<h2[^>]*>([^<]+)<\/h2>/i.exec(xhtml);
-    if (h2Match) return h2Match[1].trim();
+    if (h2Match) return { title: h2Match[1].trim() };
 
-    return null;
+    return {};
   }
 
   // #endregion Parse - Protected helper methods

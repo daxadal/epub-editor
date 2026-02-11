@@ -38,7 +38,7 @@ export interface Chapter {
   title: string;
   content: string;
   filename: string;
-  parentId: string | null;
+  parentId?: string;
   order: number;
   children: Chapter[];
   headingLevel: number;
