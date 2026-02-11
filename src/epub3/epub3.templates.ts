@@ -34,7 +34,7 @@ ${styleLinks}
 </head>
 <body>
   <section id="${chapter.id}" epub:type="chapter">
-    <h${chapter.headingLevel || 1}>${escapeXml(chapter.title)}</h${chapter.headingLevel || 1}>
+    <h${chapter.headingLevel}>${escapeXml(chapter.title)}</h${chapter.headingLevel}>
     ${chapter.content}
   </section>
 </body>

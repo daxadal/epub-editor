@@ -113,7 +113,7 @@ export abstract class BaseEPUBBuilder {
       parentId: options.parentId || null,
       order: this.getNextChapterOrder(),
       children: [],
-      headingLevel: options.headingLevel,
+      headingLevel: options.headingLevel ?? 1,
       linear: options.linear !== false,
     };
 

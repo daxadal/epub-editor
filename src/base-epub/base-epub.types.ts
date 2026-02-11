@@ -40,7 +40,7 @@ export interface Chapter {
   parentId: string | null;
   order: number;
   children: Chapter[];
-  headingLevel?: number;
+  headingLevel: number;
   linear?: boolean;
 }
 
