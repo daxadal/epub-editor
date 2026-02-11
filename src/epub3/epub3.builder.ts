@@ -80,7 +80,11 @@ export class EPUB3Builder extends BaseEPUBBuilder {
 
     // Add chapters
     this.chapters.forEach((chapter) => {
-      const xhtml = generateChapterXHTML(chapter, stylesheetHrefs);
+      const xhtml = generateChapterXHTML(
+        chapter,
+        stylesheetHrefs,
+        this.addTitleToChapters,
+      );
       zip.file(`EPUB/${chapter.filename}`, xhtml);
     });
 

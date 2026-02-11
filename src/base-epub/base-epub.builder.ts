@@ -45,6 +45,7 @@ export abstract class BaseEPUBBuilder {
   protected chapterCounter: number;
   protected includeDefStyleSheet: boolean;
   protected ignoreHeadTitle: boolean;
+  protected addTitleToChapters: boolean;
 
   constructor(metadata: DublinCoreMetadata, options: EPUBOptions = {}) {
     if (!metadata.title) {
@@ -71,6 +72,7 @@ export abstract class BaseEPUBBuilder {
 
     this.includeDefStyleSheet = options.addDefaultStylesheet ?? true;
     this.ignoreHeadTitle = options.ignoreHeadTitle ?? false;
+    this.addTitleToChapters = options.addTitleToChapters ?? true;
 
     if (this.includeDefStyleSheet) this.addDefaultStylesheet();
   }

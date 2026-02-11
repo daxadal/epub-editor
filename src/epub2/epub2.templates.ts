@@ -20,6 +20,7 @@ import { NCXDocument, NCXNavPoint } from './epub2.types';
 export function generateChapterXHTML(
   chapter: Chapter,
   stylesheetHrefs: string[] = [],
+  addTitle: boolean,
 ): string {
   const styleLinks = stylesheetHrefs
     .map((href) => `  <link rel="stylesheet" type="text/css" href="${href}"/>`)
@@ -36,7 +37,7 @@ ${styleLinks}
 </head>
 <body>
   <div id="${chapter.id}">
-    <h${chapter.headingLevel}>${escapeXml(chapter.title)}</h${chapter.headingLevel}>
+    ${addTitle ? `<h${chapter.headingLevel}>${escapeXml(chapter.title)}</h${chapter.headingLevel}>` : ''}
     ${chapter.content}
   </div>
 </body>

@@ -5,6 +5,7 @@
 export interface EPUBOptions {
   addDefaultStylesheet?: boolean;
   ignoreHeadTitle?: boolean;
+  addTitleToChapters?: boolean;
 }
 
 /**
