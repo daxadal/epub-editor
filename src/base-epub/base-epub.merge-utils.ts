@@ -1,12 +1,8 @@
 /* eslint-disable security/detect-non-literal-regexp */
 
 import * as path from 'node:path';
-import { createHash } from 'node:crypto';
 
 import { Replacement } from './base-epub.types';
-
-export const hash = (content: string | Buffer) =>
-  createHash('sha1').update(content).digest('base64');
 
 function getSingleReplacement(oldPath: string, newPath: string): Replacement[] {
   // Handle various possible path formats

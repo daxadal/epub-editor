@@ -64,10 +64,6 @@ async function mergeExample({
 
   console.log('🔧 Merging content...');
 
-  // Track added resources to avoid duplicates
-  const addedStylesheets = new Map<string, string>(); // content hash -> new filename
-  const addedImages = new Map<string, string>(); // data hash -> new filename
-
   // Process each source EPUB
   for (let i = 0; i < sourceEPUBs.length; i++) {
     const sourceEPUB = sourceEPUBs[i];
@@ -80,8 +76,6 @@ async function mergeExample({
     const chapterCount = mergedEPUB.addEpubAsChapter(
       { title, headingLevel: 1 },
       sourceEPUB,
-      addedStylesheets,
-      addedImages,
       bookNumber,
     );
 
