@@ -567,11 +567,15 @@ export abstract class BaseEPUBBuilder {
       if (titleMatch) return { title: titleMatch[1].trim() };
     }
 
-    const h1Match = /<h1[^>]*>([^<]+)<\/h1>/i.exec(xhtml);
-    if (h1Match) return { title: h1Match[1].trim() };
-
-    const h2Match = /<h2[^>]*>([^<]+)<\/h2>/i.exec(xhtml);
-    if (h2Match) return { title: h2Match[1].trim() };
+    const hMatch = /<h(\d)[^>]*>([^<]+)<\/h\d>/i.exec(xhtml);
+    if (hMatch) {
+      const [, level, title] = hMatch;
+      return {
+        title: title.trim(),
+        headingLevel: parseInt(level),
+        addTitleToContent: false,
+      };
+    }
 
     return {};
   }
