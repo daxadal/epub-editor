@@ -76,7 +76,6 @@ async function mergeExample({
     const chapterCount = mergedEPUB.addEpubAsChapter(
       { title, headingLevel: 1 },
       sourceEPUB,
-      bookNumber,
     );
 
     console.log(`      ✓ Added ${chapterCount} chapters`);

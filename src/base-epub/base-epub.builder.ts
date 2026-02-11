@@ -582,15 +582,14 @@ export abstract class BaseEPUBBuilder {
   public addEpubAsChapter(
     chapter: Omit<AddChapterOptions, 'content'>,
     sourceEPUB: BaseEPUBBuilder,
-    bookNumber: number,
   ) {
     // Create a section chapter for this book
     const sectionId = this.addChapter(chapter);
 
-    const stylesheetMap = this.copyStyleSheets(sourceEPUB, bookNumber);
+    const stylesheetMap = this.copyStyleSheets(sourceEPUB, sectionId);
 
     // Get all images from this EPUB
-    const imageMap = this.copyImages(sourceEPUB, bookNumber);
+    const imageMap = this.copyImages(sourceEPUB, sectionId);
 
     // Get all root chapters from this EPUB
     const rootChapters = sourceEPUB.getRootChapters();
@@ -599,7 +598,6 @@ export abstract class BaseEPUBBuilder {
       rootChapters,
       stylesheetMap,
       imageMap,
-
       sectionId,
     );
     return chapterCount;
@@ -611,7 +609,7 @@ export abstract class BaseEPUBBuilder {
 
   protected copyStyleSheets(
     sourceEPUB: BaseEPUBBuilder,
-    bookNumber: number,
+    sectionId: string,
   ): Map<string, string> {
     // Get all stylesheets from this EPUB (except default)
     const stylesheets = sourceEPUB
@@ -622,20 +620,19 @@ export abstract class BaseEPUBBuilder {
     const stylesheetMap = new Map<string, string>(); // old filename -> new filename
     for (const stylesheet of stylesheets) {
       // This stylesheet hasn't been added yet
-      const uniqueFilename = `book${bookNumber}-${path.basename(stylesheet.filename)}`;
+      const uniqueFilename = `book-${sectionId}-${path.basename(stylesheet.filename)}`;
       this.addStylesheet({
         filename: uniqueFilename,
         content: stylesheet.content,
       });
       stylesheetMap.set(stylesheet.filename, uniqueFilename);
-      console.log(`      ✓ Added stylesheet: ${uniqueFilename}`);
     }
     return stylesheetMap;
   }
 
   protected copyImages(
     sourceEPUB: BaseEPUBBuilder,
-    bookNumber: number,
+    sectionId: string,
   ): Map<string, string> {
     const images = sourceEPUB.getAllImages();
 
@@ -646,7 +643,7 @@ export abstract class BaseEPUBBuilder {
       const originalFilename = path.basename(image.filename);
       const ext = path.extname(originalFilename);
       const baseName = path.basename(originalFilename, ext);
-      const uniqueFilename = `book${bookNumber}-${baseName}${ext}`;
+      const uniqueFilename = `book-${sectionId}-${baseName}${ext}`;
 
       this.addImage({
         filename: uniqueFilename,
@@ -655,7 +652,6 @@ export abstract class BaseEPUBBuilder {
         isCover: false, // Don't preserve cover flags in merged book
       });
       imageMap.set(image.filename, uniqueFilename);
-      console.log(`      ✓ Added image: ${uniqueFilename}`);
     }
     return imageMap;
   }
