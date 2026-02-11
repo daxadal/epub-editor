@@ -5,7 +5,6 @@
 export interface EPUBOptions {
   addDefaultStylesheet?: boolean;
   ignoreHeadTitle?: boolean;
-  addTitleToChapters?: boolean;
 }
 
 /**
@@ -43,6 +42,7 @@ export interface Chapter {
   children: Chapter[];
   headingLevel: number;
   linear?: boolean;
+  addTitleToContent: boolean;
 }
 
 /**
@@ -75,6 +75,7 @@ export interface AddChapterOptions {
   parentId?: string;
   headingLevel?: number;
   linear?: boolean;
+  addTitleToContent?: boolean;
 }
 
 /**
