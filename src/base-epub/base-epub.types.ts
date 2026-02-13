@@ -7,6 +7,7 @@ export type TitleExtraction = 'HEAD' | 'NAV' | 'CONTENT';
 export interface EPUBOptions {
   addDefaultStylesheet?: boolean;
   titleExtraction?: TitleExtraction[];
+  logWarnings?: boolean;
 }
 
 /**
@@ -45,6 +46,8 @@ export interface Chapter {
   headingLevel: number;
   linear?: boolean;
   addTitleToContent: boolean;
+  fragment?: string;
+  sourceChapterId?: string;
 }
 
 /**

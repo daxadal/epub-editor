@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import * as fs from 'fs-extra';
+import { parseStringPromise } from 'xml2js';
 
 import { BaseEPUBBuilder } from '../base-epub/base-epub.builder';
 import { EPUB3Builder } from '../epub3/epub3.builder';
@@ -307,10 +308,336 @@ export class EPUB2Builder extends BaseEPUBBuilder {
     opfDir: string,
     spine: any,
   ): Promise<void> {
-    const chapterIds: string[] = [];
-    for (const itemref of spine) {
-      const idref = itemref.$?.idref;
-      const manifestItem = manifest.find((item: any) => item.$.id === idref);
+    // Build manifest map for quick lookup
+    const manifestMap = new Map<string, any>();
+    for (const item of manifest) {
+      manifestMap.set(item.$.id, item);
+    }
+
+    // Build spine map for linear property and order
+    const spineMap = new Map<string, { linear: boolean; order: number }>();
+    spine.forEach((itemref: any, index: number) => {
+      const idref = itemref.$.idref;
+      spineMap.set(idref, {
+        linear: itemref.$?.linear !== 'no',
+        order: index,
+      });
+    });
+
+    // Find and parse NCX file
+    const ncxItem = manifest.find(
+      (item: any) => item.$?.['media-type'] === 'application/x-dtbncx+xml',
+    );
+
+    if (!ncxItem) {
+      this.addWarning(
+        'No NCX file found in manifest, falling back to spine-only parsing',
+      );
+      await this.extractChaptersFromSpine(zip, manifestMap, opfDir, spineMap);
+      return;
+    }
+
+    const ncxHref = ncxItem.$.href;
+    const ncxPath = opfDir + ncxHref;
+    const ncxFile = zip.file(ncxPath);
+
+    if (!ncxFile) {
+      this.addWarning(
+        `NCX file not found at ${ncxPath}, falling back to spine-only parsing`,
+      );
+      await this.extractChaptersFromSpine(zip, manifestMap, opfDir, spineMap);
+      return;
+    }
+
+    try {
+      const ncxContent = await ncxFile.async('string');
+      const ncxData = await parseStringPromise(ncxContent);
+      const navMap = ncxData.ncx?.navMap?.[0]?.navPoint || [];
+
+      // Track which files we've seen in navigation
+      const filesInNav = new Set<string>();
+
+      // Process navigation structure
+      for (const navPoint of navMap) {
+        await this.processNavPoint(
+          navPoint,
+          zip,
+          manifestMap,
+          opfDir,
+          spineMap,
+          filesInNav,
+          undefined,
+        );
+      }
+
+      // Handle orphaned chapters (in spine but not in navigation)
+      await this.handleOrphanedChapters(
+        zip,
+        manifestMap,
+        opfDir,
+        spineMap,
+        filesInNav,
+      );
+    } catch (error) {
+      this.addWarning(
+        `Failed to parse NCX: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      await this.extractChaptersFromSpine(zip, manifestMap, opfDir, spineMap);
+    }
+  }
+
+  /**
+   * Process a single navigation point recursively
+   */
+  private async processNavPoint(
+    navPoint: any,
+    zip: JSZip,
+    manifestMap: Map<string, any>,
+    opfDir: string,
+    spineMap: Map<string, { linear: boolean; order: number }>,
+    filesInNav: Set<string>,
+    parentId?: string,
+  ): Promise<string | null> {
+    const navLabel = navPoint.navLabel?.[0]?.text?.[0] || 'Untitled';
+    const contentSrc = navPoint.content?.[0]?.$?.src;
+
+    if (!contentSrc) {
+      this.addWarning(`Navigation point "${navLabel}" has no content source`);
+      return null;
+    }
+
+    // Parse href and fragment
+    const [href, fragment] = contentSrc.split('#');
+    filesInNav.add(href);
+
+    // Find manifest item by href
+    let manifestItem: any = null;
+    for (const [, item] of manifestMap) {
+      if (item.$.href === href) {
+        manifestItem = item;
+        break;
+      }
+    }
+
+    if (!manifestItem) {
+      this.addWarning(
+        `Navigation point "${navLabel}" references file "${href}" not found in manifest`,
+      );
+      return null;
+    }
+
+    // Check if file exists in zip
+    const filePath = opfDir + href;
+    const file = zip.file(filePath);
+
+    if (!file) {
+      this.addWarning(
+        `File "${href}" referenced in navigation not found in EPUB`,
+      );
+      return null;
+    }
+
+    // Get spine info
+    const spineInfo = spineMap.get(manifestItem.$.id);
+    let linear = spineInfo?.linear ?? false;
+    const order = spineInfo?.order ?? 9999;
+
+    // Warn if not in spine
+    if (!spineInfo) {
+      this.addWarning(
+        `Navigation entry "${navLabel}" (${href}) not found in spine, setting linear=false`,
+      );
+      linear = false;
+    }
+
+    let chapterId: string;
+
+    if (fragment) {
+      // This is a fragment reference
+      // First, check if we already have a chapter for this file
+      let sourceChapterId: string | null = null;
+      for (const [id, chapter] of this.chapters) {
+        if (chapter.filename === href && !chapter.fragment) {
+          sourceChapterId = id;
+          break;
+        }
+      }
+
+      // If no source chapter exists, create one
+      if (!sourceChapterId) {
+        const content = await file.async('string');
+        const titleInfo = this.extractTitleFromXHTML(content, navLabel);
+
+        sourceChapterId = this.addChapter({
+          title: titleInfo.title || navLabel,
+          content: EPUB2Builder.extractBodyFromXHTML(content),
+          headingLevel: titleInfo.headingLevel,
+          linear,
+          addTitleToContent: titleInfo.addTitleToContent,
+          parentId,
+        });
+
+        // Update internal tracking
+        const sourceChapter = this.chapters.get(sourceChapterId);
+        if (sourceChapter) {
+          sourceChapter.filename = href;
+          sourceChapter.order = order;
+        }
+      }
+
+      // Create fragment-based chapter
+      chapterId = this.addChapter({
+        title: navLabel,
+        content: '', // No content for fragment chapters
+        headingLevel: 2,
+        linear,
+        addTitleToContent: false,
+        parentId,
+      });
+
+      // Update internal tracking for fragment chapter
+      const fragmentChapter = this.chapters.get(chapterId);
+      if (fragmentChapter) {
+        fragmentChapter.filename = href;
+        fragmentChapter.fragment = fragment;
+        fragmentChapter.sourceChapterId = sourceChapterId;
+        fragmentChapter.order = order;
+      }
+    } else {
+      // Regular chapter without fragment
+      // Check if we already created this chapter (from a previous fragment reference)
+      let existingId: string | null = null;
+      for (const [id, chapter] of this.chapters) {
+        if (chapter.filename === href && !chapter.fragment) {
+          existingId = id;
+          break;
+        }
+      }
+
+      if (existingId) {
+        // Update the existing chapter's title from nav if NAV is in titleExtraction
+        const chapter = this.chapters.get(existingId);
+        if (chapter && this.titleExtraction.includes('NAV')) {
+          chapter.title = navLabel;
+        }
+        if (chapter && parentId && chapter.parentId !== parentId) {
+          // Update parent relationship
+          chapter.parentId = parentId;
+          const parent = this.chapters.get(parentId);
+          if (parent && !parent.children.find((c) => c.id === existingId)) {
+            parent.children.push(chapter);
+          }
+        }
+        chapterId = existingId;
+      } else {
+        // Create new chapter
+        const content = await file.async('string');
+        const titleInfo = this.extractTitleFromXHTML(content, navLabel);
+
+        chapterId = this.addChapter({
+          title: titleInfo.title || navLabel,
+          content: EPUB2Builder.extractBodyFromXHTML(content),
+          headingLevel: titleInfo.headingLevel,
+          linear,
+          addTitleToContent: titleInfo.addTitleToContent,
+          parentId,
+        });
+
+        // Update internal tracking
+        const chapter = this.chapters.get(chapterId);
+        if (chapter) {
+          chapter.filename = href;
+          chapter.order = order;
+        }
+      }
+    }
+
+    // Process children recursively
+    const children = navPoint.navPoint || [];
+    for (const childNavPoint of children) {
+      await this.processNavPoint(
+        childNavPoint,
+        zip,
+        manifestMap,
+        opfDir,
+        spineMap,
+        filesInNav,
+        chapterId,
+      );
+    }
+
+    return chapterId;
+  }
+
+  /**
+   * Handle chapters in spine but not in navigation (orphaned chapters)
+   */
+  private async handleOrphanedChapters(
+    zip: JSZip,
+    manifestMap: Map<string, any>,
+    opfDir: string,
+    spineMap: Map<string, { linear: boolean; order: number }>,
+    filesInNav: Set<string>,
+  ): Promise<void> {
+    for (const [idref, spineInfo] of spineMap) {
+      const manifestItem = manifestMap.get(idref);
+      if (
+        !manifestItem ||
+        manifestItem.$?.['media-type'] !== 'application/xhtml+xml'
+      ) {
+        continue;
+      }
+
+      const href = manifestItem.$.href;
+
+      // Check if already processed in navigation
+      if (filesInNav.has(href)) {
+        continue;
+      }
+
+      const filePath = opfDir + href;
+      const file = zip.file(filePath);
+
+      if (!file) {
+        this.addWarning(`Orphaned chapter file "${href}" not found in EPUB`);
+        continue;
+      }
+
+      this.addWarning(
+        `Chapter "${href}" found in spine but not in navigation, adding as root chapter`,
+      );
+
+      const content = await file.async('string');
+      const titleInfo = this.extractTitleFromXHTML(content);
+
+      const chapterId = this.addChapter({
+        title: titleInfo.title || `Orphaned: ${href}`,
+        content: EPUB2Builder.extractBodyFromXHTML(content),
+        headingLevel: titleInfo.headingLevel,
+        linear: spineInfo.linear,
+        addTitleToContent: titleInfo.addTitleToContent,
+      });
+
+      // Update internal tracking
+      const chapter = this.chapters.get(chapterId);
+      if (chapter) {
+        chapter.filename = href;
+        chapter.order = spineInfo.order;
+      }
+    }
+  }
+
+  /**
+   * Fallback: Extract chapters from spine only (old behavior)
+   */
+  private async extractChaptersFromSpine(
+    zip: JSZip,
+    manifestMap: Map<string, any>,
+    opfDir: string,
+    spineMap: Map<string, { linear: boolean; order: number }>,
+  ): Promise<void> {
+    for (const [idref, spineInfo] of spineMap) {
+      const manifestItem = manifestMap.get(idref);
 
       if (
         manifestItem &&
@@ -322,13 +649,22 @@ export class EPUB2Builder extends BaseEPUBBuilder {
 
         if (file) {
           const content = await file.async('string');
+          const titleInfo = this.extractTitleFromXHTML(content);
+
           const chapterId = this.addChapter({
-            title: `Chapter ${chapterIds.length + 1}`,
-            ...this.extractTitleFromXHTML(content),
+            title: titleInfo.title || `Chapter ${this.chapters.size + 1}`,
             content: EPUB2Builder.extractBodyFromXHTML(content),
-            linear: itemref.$?.linear !== 'no',
+            headingLevel: titleInfo.headingLevel,
+            linear: spineInfo.linear,
+            addTitleToContent: titleInfo.addTitleToContent,
           });
-          chapterIds.push(chapterId);
+
+          // Update internal tracking
+          const chapter = this.chapters.get(chapterId);
+          if (chapter) {
+            chapter.filename = href;
+            chapter.order = spineInfo.order;
+          }
         }
       }
     }

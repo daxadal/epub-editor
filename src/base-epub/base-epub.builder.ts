@@ -46,6 +46,8 @@ export abstract class BaseEPUBBuilder {
   protected chapterCounter: number;
   protected includeDefStyleSheet: boolean;
   protected titleExtraction: TitleExtraction[];
+  protected warnings: string[];
+  protected logWarnings: boolean;
 
   constructor(metadata: DublinCoreMetadata, options: EPUBOptions = {}) {
     if (!metadata.title) {
@@ -72,6 +74,8 @@ export abstract class BaseEPUBBuilder {
 
     this.includeDefStyleSheet = options.addDefaultStylesheet ?? true;
     this.titleExtraction = options.titleExtraction ?? ['HEAD', 'CONTENT'];
+    this.warnings = [];
+    this.logWarnings = options.logWarnings ?? true;
 
     if (this.includeDefStyleSheet) this.addDefaultStylesheet();
   }
@@ -93,6 +97,27 @@ export abstract class BaseEPUBBuilder {
   }
 
   // #endregion Metadata Getters/Setters
+
+  // #region Warnings
+
+  /**
+   * Get all warnings generated during parsing or building
+   */
+  public getWarnings(): string[] {
+    return [...this.warnings];
+  }
+
+  /**
+   * Add a warning message
+   */
+  protected addWarning(message: string): void {
+    this.warnings.push(message);
+    if (this.logWarnings) {
+      console.warn(`[EPUB Warning] ${message}`);
+    }
+  }
+
+  // #endregion Warnings
 
   // #region Chapter Management
 
@@ -562,7 +587,10 @@ export abstract class BaseEPUBBuilder {
     }
   }
 
-  protected extractTitleFromXHTML(xhtml: string): Partial<Chapter> {
+  protected extractTitleFromXHTML(
+    xhtml: string,
+    navTitle?: string,
+  ): Partial<Chapter> {
     for (const method of this.titleExtraction) {
       switch (method) {
         case 'HEAD': {
@@ -573,7 +601,10 @@ export abstract class BaseEPUBBuilder {
         }
 
         case 'NAV': {
-          // TODO: Implement proper NAV parsing to extract chapter titles from the table of contents
+          // Use the title from navigation document
+          if (navTitle) {
+            return { title: navTitle };
+          }
 
           break;
         }
