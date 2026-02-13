@@ -289,9 +289,8 @@ export class EPUB3Builder extends BaseEPUBBuilder {
         if (file) {
           const content = await file.async('string');
           const chapterId = this.addChapter({
-            title:
-              this.extractTitleFromXHTML(content) ||
-              `Chapter ${chapterIds.length + 1}`,
+            title: `Chapter ${chapterIds.length + 1}`,
+            ...this.extractTitleFromXHTML(content),
             content: EPUB3Builder.extractBodyFromXHTML(content),
             linear: itemref.$?.linear !== 'no',
           });

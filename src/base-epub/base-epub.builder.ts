@@ -24,6 +24,7 @@ import {
   ExportOptions,
   ImageResource,
   StylesheetResource,
+  TitleExtraction,
   ValidationResult,
 } from './base-epub.types';
 
@@ -44,7 +45,7 @@ export abstract class BaseEPUBBuilder {
   protected rootChapterIds: string[];
   protected chapterCounter: number;
   protected includeDefStyleSheet: boolean;
-  protected ignoreHeadTitle: boolean;
+  protected titleExtraction: TitleExtraction[];
 
   constructor(metadata: DublinCoreMetadata, options: EPUBOptions = {}) {
     if (!metadata.title) {
@@ -70,7 +71,7 @@ export abstract class BaseEPUBBuilder {
     this.chapterCounter = 0;
 
     this.includeDefStyleSheet = options.addDefaultStylesheet ?? true;
-    this.ignoreHeadTitle = options.ignoreHeadTitle ?? false;
+    this.titleExtraction = options.titleExtraction ?? ['HEAD', 'CONTENT'];
 
     if (this.includeDefStyleSheet) this.addDefaultStylesheet();
   }
@@ -110,11 +111,12 @@ export abstract class BaseEPUBBuilder {
       title: options.title,
       content: options.content || '',
       filename,
-      parentId: options.parentId || null,
+      parentId: options.parentId,
       order: this.getNextChapterOrder(),
       children: [],
-      headingLevel: options.headingLevel,
+      headingLevel: options.headingLevel ?? 1,
       linear: options.linear !== false,
+      addTitleToContent: options.addTitleToContent ?? true,
     };
 
     if (chapter.parentId) {
@@ -560,19 +562,38 @@ export abstract class BaseEPUBBuilder {
     }
   }
 
-  protected extractTitleFromXHTML(xhtml: string): string | null {
-    if (!this.ignoreHeadTitle) {
-      const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
-      if (titleMatch) return titleMatch[1].trim();
+  protected extractTitleFromXHTML(xhtml: string): Partial<Chapter> {
+    for (const method of this.titleExtraction) {
+      switch (method) {
+        case 'HEAD': {
+          const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
+          if (titleMatch) return { title: titleMatch[1].trim() };
+
+          break;
+        }
+
+        case 'NAV': {
+          // TODO: Implement proper NAV parsing to extract chapter titles from the table of contents
+
+          break;
+        }
+
+        case 'CONTENT': {
+          const hMatch = /<h(\d)[^>]*>([^<]+)<\/h\d>/i.exec(xhtml);
+          if (hMatch) {
+            const [, level, title] = hMatch;
+            return {
+              title: title.trim(),
+              headingLevel: Number.parseInt(level),
+              addTitleToContent: false,
+            };
+          }
+          break;
+        }
+      }
     }
 
-    const h1Match = /<h1[^>]*>([^<]+)<\/h1>/i.exec(xhtml);
-    if (h1Match) return h1Match[1].trim();
-
-    const h2Match = /<h2[^>]*>([^<]+)<\/h2>/i.exec(xhtml);
-    if (h2Match) return h2Match[1].trim();
-
-    return null;
+    return {};
   }
 
   // #endregion Parse - Protected helper methods

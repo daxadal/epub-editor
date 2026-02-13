@@ -36,7 +36,7 @@ ${styleLinks}
 </head>
 <body>
   <div id="${chapter.id}">
-    <h${chapter.headingLevel || 1}>${escapeXml(chapter.title)}</h${chapter.headingLevel || 1}>
+    ${chapter.addTitleToContent ? `<h${chapter.headingLevel}>${escapeXml(chapter.title)}</h${chapter.headingLevel}>` : ''}
     ${chapter.content}
   </div>
 </body>

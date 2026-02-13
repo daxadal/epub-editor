@@ -2,9 +2,11 @@
  * Shared types for both EPUB 2 and EPUB 3 builders
  */
 
+export type TitleExtraction = 'HEAD' | 'NAV' | 'CONTENT';
+
 export interface EPUBOptions {
   addDefaultStylesheet?: boolean;
-  ignoreHeadTitle?: boolean;
+  titleExtraction?: TitleExtraction[];
 }
 
 /**
@@ -37,11 +39,12 @@ export interface Chapter {
   title: string;
   content: string;
   filename: string;
-  parentId: string | null;
+  parentId?: string;
   order: number;
   children: Chapter[];
-  headingLevel?: number;
+  headingLevel: number;
   linear?: boolean;
+  addTitleToContent: boolean;
 }
 
 /**
@@ -74,6 +77,7 @@ export interface AddChapterOptions {
   parentId?: string;
   headingLevel?: number;
   linear?: boolean;
+  addTitleToContent?: boolean;
 }
 
 /**

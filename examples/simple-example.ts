@@ -18,7 +18,7 @@ async function createSimpleBook() {
 
   // Create a new EPUB
   const epub = new EPUBBuilder({
-    title: 'A Simple Guide',
+    title: 'A Simple Guide Version ' + (isEpub2 ? '2' : '3'),
     creator: 'Example Author',
     language: 'en',
     publisher: 'Example Press',
@@ -26,7 +26,7 @@ async function createSimpleBook() {
   });
 
   // Add chapters
-  console.log('✍️  Adding chapters...');
+  console.log('✍️ Adding chapters...');
 
   epub.addChapter({
     title: 'Introduction',
