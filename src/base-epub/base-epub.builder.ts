@@ -584,7 +584,7 @@ export abstract class BaseEPUBBuilder {
             const [, level, title] = hMatch;
             return {
               title: title.trim(),
-              headingLevel: parseInt(level),
+              headingLevel: Number.parseInt(level),
               addTitleToContent: false,
             };
           }
