@@ -24,6 +24,7 @@ import {
   ExportOptions,
   ImageResource,
   StylesheetResource,
+  TitleExtraction,
   ValidationResult,
 } from './base-epub.types';
 
@@ -44,7 +45,7 @@ export abstract class BaseEPUBBuilder {
   protected rootChapterIds: string[];
   protected chapterCounter: number;
   protected includeDefStyleSheet: boolean;
-  protected ignoreHeadTitle: boolean;
+  protected titleExtraction: TitleExtraction[];
 
   constructor(metadata: DublinCoreMetadata, options: EPUBOptions = {}) {
     if (!metadata.title) {
@@ -70,7 +71,7 @@ export abstract class BaseEPUBBuilder {
     this.chapterCounter = 0;
 
     this.includeDefStyleSheet = options.addDefaultStylesheet ?? true;
-    this.ignoreHeadTitle = options.ignoreHeadTitle ?? false;
+    this.titleExtraction = options.titleExtraction ?? ['HEAD', 'CONTENT'];
 
     if (this.includeDefStyleSheet) this.addDefaultStylesheet();
   }
@@ -562,19 +563,34 @@ export abstract class BaseEPUBBuilder {
   }
 
   protected extractTitleFromXHTML(xhtml: string): Partial<Chapter> {
-    if (!this.ignoreHeadTitle) {
-      const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
-      if (titleMatch) return { title: titleMatch[1].trim() };
-    }
+    for (const method of this.titleExtraction) {
+      switch (method) {
+        case 'HEAD': {
+          const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(xhtml);
+          if (titleMatch) return { title: titleMatch[1].trim() };
 
-    const hMatch = /<h(\d)[^>]*>([^<]+)<\/h\d>/i.exec(xhtml);
-    if (hMatch) {
-      const [, level, title] = hMatch;
-      return {
-        title: title.trim(),
-        headingLevel: parseInt(level),
-        addTitleToContent: false,
-      };
+          break;
+        }
+
+        case 'NAV': {
+          // TODO: Implement proper NAV parsing to extract chapter titles from the table of contents
+
+          break;
+        }
+
+        case 'CONTENT': {
+          const hMatch = /<h(\d)[^>]*>([^<]+)<\/h\d>/i.exec(xhtml);
+          if (hMatch) {
+            const [, level, title] = hMatch;
+            return {
+              title: title.trim(),
+              headingLevel: parseInt(level),
+              addTitleToContent: false,
+            };
+          }
+          break;
+        }
+      }
     }
 
     return {};

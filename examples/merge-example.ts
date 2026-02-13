@@ -29,7 +29,9 @@ async function mergeExample({
     sourceFiles.map(async (file) => {
       const fullPath = path.join(basePath, file);
       console.log(`   Loading: ${file}`);
-      return await EPUBBuilder.parse(fullPath, { ignoreHeadTitle: true });
+      return await EPUBBuilder.parse(fullPath, {
+        titleExtraction: ['CONTENT'],
+      });
     }),
   );
   console.log('✅ All EPUBs loaded successfully\n');
