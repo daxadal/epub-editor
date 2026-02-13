@@ -1,10 +1,9 @@
-import { promisify } from 'node:util';
 import * as path from 'node:path';
 
 import * as fs from 'fs-extra';
 import { v4 as uuidV4 } from 'uuid';
 import JSZip from 'jszip';
-import { parseString } from 'xml2js';
+import { parseStringPromise as parseXml } from 'xml2js';
 
 import {
   getMimeType,
@@ -27,8 +26,6 @@ import {
   TitleExtraction,
   ValidationResult,
 } from './base-epub.types';
-
-const parseXml = promisify(parseString);
 
 const MAX_FILES = 10000;
 const MAX_SIZE = 1000000000; // 1 GB
