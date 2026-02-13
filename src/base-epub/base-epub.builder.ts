@@ -72,7 +72,7 @@ export abstract class BaseEPUBBuilder {
     this.includeDefStyleSheet = options.addDefaultStylesheet ?? true;
     this.titleExtraction = options.titleExtraction ?? ['HEAD', 'CONTENT'];
     this.warnings = [];
-    this.logWarnings = options.logWarnings ?? true;
+    this.logWarnings = options.logWarnings ?? false;
 
     if (this.includeDefStyleSheet) this.addDefaultStylesheet();
   }
