@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/daxadal/epub-editor/compare/v1.1.1...v1.2.0) (2026-02-13)
+
+
+### Features
+
+* merge EPUBs as core functionality ([#12](https://github.com/daxadal/epub-editor/issues/12)) ([a05fa26](https://github.com/daxadal/epub-editor/commit/a05fa266b17240ede6a527aee671115999078cd0))
+
+
+### Bug Fixes
+
+* Avoid title duplication in chapter parsing ([#15](https://github.com/daxadal/epub-editor/issues/15)) ([be9547e](https://github.com/daxadal/epub-editor/commit/be9547e7bde54b7498db3b2cafabc3d3fc9b0c89))
+
 ## [1.1.1](https://github.com/daxadal/epub-editor/compare/v1.1.0...v1.1.1) (2026-02-10)
 
 
