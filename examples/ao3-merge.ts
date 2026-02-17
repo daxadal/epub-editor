@@ -5,14 +5,18 @@ import * as fs from 'fs-extra';
 
 import { EPUB2Builder, EPUB3Builder } from '../src';
 
-
-async function parseEpubs(folderPath: string, EPUBBuilder: typeof EPUB2Builder | typeof EPUB3Builder) {
+async function parseEpubs(
+  folderPath: string,
+  EPUBBuilder: typeof EPUB2Builder | typeof EPUB3Builder,
+) {
   console.log('📖 Loading source EPUBs...');
   const folderFiles = await fs.readdir(folderPath);
   const sourceEPUBs = await Promise.all(
-    folderFiles.map((file) => EPUBBuilder.parse(path.join(folderPath, file), {
-      titleExtraction: ['CONTENT'],
-    }))
+    folderFiles.map((file) =>
+      EPUBBuilder.parse(path.join(folderPath, file), {
+        titleExtraction: ['CONTENT'],
+      }),
+    ),
   );
 
   // Number EPUB titles
@@ -31,43 +35,13 @@ async function parseEpubs(folderPath: string, EPUBBuilder: typeof EPUB2Builder |
   return sourceEPUBs;
 }
 
-/**
- * Merge the series EPUBs into one combined EPUB
- * Run with: npx ts-node examples/merge-example.ts
- */
-async function mergeExample({
-
-   outputFile,
-  sourceFolder,
-}: {
-  outputFile: string;
-  sourceFolder: string;
-}) {
-  const isEpub2 = process.argv.includes('--epub2');
-  const EPUBBuilder = isEpub2 ? EPUB2Builder : EPUB3Builder;
-  console.log(`📚 Merging series...\n`);
-
-  const basePath = path.join(__dirname, '..');
-  const folderPath = path.join(basePath, sourceFolder);
-
-  // Parse all source EPUBs
-  const sourceEPUBs = await parseEpubs(folderPath, EPUBBuilder);
-
-
-  // Extract metadata from all EPUBs
-  const metadataList = sourceEPUBs.map((epub) => epub.getMetadata());
-
-  // Collect unique authors
-  const authors = new Set<string>();
-  metadataList.forEach((meta) => {
-    if (meta.creator) {
-      authors.add(meta.creator);
-    }
-  });
-
-  // Use the language from the first EPUB
+function generateMergedEpub(
+  sourceEPUBs: (EPUB2Builder | EPUB3Builder)[],
+  authors: Set<string>,
+  EPUBBuilder: typeof EPUB2Builder | typeof EPUB3Builder,
+) {
   const language = sourceEPUBs[0].getMetadata().language || 'en';
-  const seriesName = sourceEPUBs[0].getCalibreMetadata().seriesName ?? 'Series'
+  const seriesName = sourceEPUBs[0].getCalibreMetadata().seriesName ?? 'Series';
 
   console.log('📋 Merged Metadata:');
   console.log(`   Title: ${seriesName}`);
@@ -98,6 +72,43 @@ async function mergeExample({
 
     console.log(`      ✓ Added ${sourceEPUB.getAllChapters().length} chapters`);
   }
+  return mergedEPUB;
+}
+
+/**
+ * Merge the series EPUBs into one combined EPUB
+ * Run with: npx ts-node examples/merge-example.ts
+ */
+async function mergeExample({
+  outputFile,
+  sourceFolder,
+}: {
+  outputFile: string;
+  sourceFolder: string;
+}) {
+  const isEpub2 = process.argv.includes('--epub2');
+  const EPUBBuilder = isEpub2 ? EPUB2Builder : EPUB3Builder;
+  console.log(`📚 Merging series...\n`);
+
+  const basePath = path.join(__dirname, '..');
+  const folderPath = path.join(basePath, sourceFolder);
+
+  // Parse all source EPUBs
+  const sourceEPUBs = await parseEpubs(folderPath, EPUBBuilder);
+
+  // Extract metadata from all EPUBs
+  const metadataList = sourceEPUBs.map((epub) => epub.getMetadata());
+
+  // Collect unique authors
+  const authors = new Set<string>();
+  metadataList.forEach((meta) => {
+    if (meta.creator) {
+      authors.add(meta.creator);
+    }
+  });
+
+  // Use the language from the first EPUB
+  const mergedEPUB = generateMergedEpub(sourceEPUBs, authors, EPUBBuilder);
 
   // Export the merged EPUB
   const outputPath = path.join(basePath, outputFile);
@@ -124,4 +135,3 @@ mergeExample({
   console.error('\n❌ Error merging EPUBs:', error);
   process.exit(1);
 });
-
