@@ -31,6 +31,11 @@ export interface DublinCoreMetadata {
   coverage?: string;
 }
 
+export interface CalibreMetadata {
+seriesName?: string
+seriesIndex?: number
+}
+
 /**
  * Chapter structure in the EPUB
  */

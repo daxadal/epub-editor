@@ -255,6 +255,9 @@ export class EPUB3Builder extends BaseEPUBBuilder {
 
       await epub.extractResources(zip, opfData, opfPath);
 
+      const calibreMetadata = EPUB3Builder.extractCalibreMetadata(opfData);
+      epub.setCalibreMetadata(calibreMetadata);
+
       return epub;
     } catch (error) {
       throw new Error(

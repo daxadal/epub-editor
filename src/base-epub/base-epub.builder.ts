@@ -18,6 +18,7 @@ import {
   AddChapterOptions,
   AddImageOptions,
   AddStylesheetOptions,
+  CalibreMetadata,
   Chapter,
   DublinCoreMetadata,
   EPUBOptions,
@@ -39,6 +40,7 @@ const MAX_SIZE = 1000000000; // 1 GB
  */
 export abstract class BaseEPUBBuilder {
   protected metadata: DublinCoreMetadata;
+  protected calibreMetadata: CalibreMetadata;
   protected readonly chapters: Map<string, Chapter>;
   protected readonly images: Map<string, ImageResource>;
   protected readonly stylesheets: Map<string, StylesheetResource>;
@@ -63,6 +65,7 @@ export abstract class BaseEPUBBuilder {
       identifier: metadata.identifier || uuidV4(),
       date: metadata.date || new Date().toISOString().split('T')[0],
     };
+    this.calibreMetadata = {}
 
     this.chapters = new Map();
     this.images = new Map();
@@ -90,6 +93,14 @@ export abstract class BaseEPUBBuilder {
    */
   public getMetadata(): DublinCoreMetadata {
     return { ...this.metadata };
+  }
+
+  public setCalibreMetadata(metadata: Partial<CalibreMetadata>): void {
+    this.calibreMetadata = { ...this.calibreMetadata, ...metadata };
+  }
+
+  public getCalibreMetadata(): CalibreMetadata {
+    return { ...this.calibreMetadata };
   }
 
   // #endregion Metadata Getters/Setters
@@ -511,6 +522,22 @@ export abstract class BaseEPUBBuilder {
     };
 
     return metadata;
+  }
+
+  protected static extractCalibreMetadata(opfData: any): CalibreMetadata {
+    const meta = opfData?.package?.metadata?.[0].meta;
+
+    const parseMetaField = (fieldName: string) => {
+      const foundItem = meta?.find((item) => item?.$?.name === fieldName);
+      return foundItem ? foundItem?.$?.content : undefined;
+    };
+
+    const seriesName = parseMetaField('calibre:series');
+    const seriesIndex = parseMetaField('calibre:series_index');
+    return {
+      seriesName,
+      seriesIndex: seriesIndex ? Number.parseInt(seriesIndex) : undefined,
+    };
   }
 
   protected async extractResources(
