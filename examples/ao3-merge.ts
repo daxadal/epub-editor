@@ -40,6 +40,7 @@ function generateMergedEpub(
   authors: Set<string>,
   EPUBBuilder: typeof EPUB2Builder | typeof EPUB3Builder,
 ) {
+  // Use the language from the first EPUB
   const language = sourceEPUBs[0].getMetadata().language || 'en';
   const seriesName = sourceEPUBs[0].getCalibreMetadata().seriesName ?? 'Series';
 
@@ -49,8 +50,12 @@ function generateMergedEpub(
   console.log(`   Language: ${language}\n`);
 
   // Create the merged EPUB
+  const first = sourceEPUBs[0].getCalibreMetadata().seriesIndex;
+    const last =
+      sourceEPUBs[sourceEPUBs.length - 1].getCalibreMetadata().seriesIndex;
+
   const mergedEPUB = new EPUBBuilder({
-    title: seriesName,
+    title: `${seriesName} (${first}-${last})`,
     creator: Array.from(authors).join(', '),
     language,
     publisher: sourceEPUBs[0].getMetadata().publisher,
@@ -63,14 +68,14 @@ function generateMergedEpub(
   for (let i = 0; i < sourceEPUBs.length; i++) {
     const sourceEPUB = sourceEPUBs[i];
     const title = sourceEPUB.getMetadata().title;
-    const bookNumber = i + 1;
+    // const bookNumber = i + 1;
 
-    console.log(`\n   📕 Processing Book ${bookNumber}: ${title}`);
-    console.log(`      ✓ Created section: ${title}`);
+    // console.log(`\n   📕 Processing Book ${bookNumber}: ${title}`);
+    // console.log(`      ✓ Created section: ${title}`);
 
     mergedEPUB.addEpubAsChapter({ title, headingLevel: 1 }, sourceEPUB);
 
-    console.log(`      ✓ Added ${sourceEPUB.getAllChapters().length} chapters`);
+    // console.log(`      ✓ Added ${sourceEPUB.getAllChapters().length} chapters`);
   }
   return mergedEPUB;
 }
@@ -107,29 +112,45 @@ async function mergeExample({
     }
   });
 
-  // Use the language from the first EPUB
-  const mergedEPUB = generateMergedEpub(sourceEPUBs, authors, EPUBBuilder);
+  const chunkSize = 25;
+  for (let i = 0; i < sourceEPUBs.length; i += chunkSize) {
+    const chunk = sourceEPUBs.slice(i, i + chunkSize);
+    const filteredChunk = chunk.filter(
+      (epub) => epub.getAllChapters().length <= 10,
+    );
+    const mergedEPUB = generateMergedEpub(filteredChunk, authors, EPUBBuilder);
 
-  // Export the merged EPUB
-  const outputPath = path.join(basePath, outputFile);
-  console.log(`\n💾 Exporting merged EPUB to: ${outputPath}`);
+    // Export the merged EPUB
+    const first = filteredChunk[0].getCalibreMetadata().seriesIndex;
+    const last =
+      filteredChunk[filteredChunk.length - 1].getCalibreMetadata().seriesIndex;
 
-  await mergedEPUB.exportToFile(outputPath);
+    const outputPath = path.join(
+      basePath,
+      'examples',
+      `${outputFile}-${first}-${last}.epub`,
+    );
+    console.log(`\n💾 Exporting merged EPUB to: ${outputPath}`);
 
-  console.log('✅ Successfully created merged EPUB!');
-  console.log('\n📊 Summary:');
-  console.log(`   Total chapters: ${mergedEPUB.getAllChapters().length}`);
-  console.log(`   Total images: ${mergedEPUB.getAllImages().length}`);
-  console.log(`   Total stylesheets: ${mergedEPUB.getAllStylesheets().length}`);
+    await mergedEPUB.exportToFile(outputPath);
 
-  // Get file size
-  const stats = await fs.stat(outputPath);
-  console.log(`   File size: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
+    console.log('✅ Successfully created merged EPUB!');
+    console.log('\n📊 Summary:');
+    console.log(`   Total chapters: ${mergedEPUB.getAllChapters().length}`);
+    console.log(`   Total images: ${mergedEPUB.getAllImages().length}`);
+    console.log(
+      `   Total stylesheets: ${mergedEPUB.getAllStylesheets().length}`,
+    );
+
+    // Get file size
+    const stats = await fs.stat(outputPath);
+    console.log(`   File size: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
+  }
 }
 
 // Run the merge
 mergeExample({
-  outputFile: 'examples/writing-prompts.epub',
+  outputFile: 'writing-prompts',
   sourceFolder: 'resources/writing-prompts/downloads',
 }).catch((error) => {
   console.error('\n❌ Error merging EPUBs:', error);
