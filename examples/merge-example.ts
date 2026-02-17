@@ -100,10 +100,11 @@ async function mergeExample({
 // Run the merge
 mergeExample({
   seriesName: 'Re Merged Series',
-  outputFile: 'resources/re-merged.epub',
+  outputFile: 'examples/re-merged.epub',
   sourceFiles: [
     'examples/simple-guide-3.epub',
-    'resources/Diaries_from_an.epub',
+    'examples/simple-guide-3-modified-3.epub',
+    'examples/Diaries_from_an.epub',
   ],
 }).catch((error) => {
   console.error('\n❌ Error merging EPUBs:', error);

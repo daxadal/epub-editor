@@ -47,6 +47,11 @@ async function createSimpleBook() {
     alt: 'Image 1',
   });
 
+  epub.addStylesheet({
+    filename: 'styles.css',
+    content: 'h1 { color: green; }',
+  });
+
   epub.addChapter({
     title: 'Chapter 0',
     content:
