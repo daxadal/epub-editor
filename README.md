@@ -2,7 +2,7 @@
 
 A comprehensive TypeScript library for creating, parsing, and manipulating EPUB files.
 
-This library has been created using the official EPUB specification, programmed using Copilot + Claude Sonnet 4.5, and reviewed, debugged and fixed by me.
+This library has been drafted using the official EPUB specification, programmed using Copilot + Claude Sonnet 4.5, and expanded, reviewed, debugged and fixed by me.
 
 ## Features
 
@@ -87,119 +87,6 @@ epub.addChapter({
 await epub.exportToFile('modified-book.epub');
 ```
 
-## API Documentation
-
-### EPUB3Builder Class
-
-#### Constructor
-
-```typescript
-new EPUB3Builder(metadata: {
-  title: string;        // Required
-  creator: string;      // Required (author)
-  language?: string;    // Default: 'en'
-  identifier?: string;  // Auto-generated if not provided
-  date?: string;        // Default: current date
-  publisher?: string;
-  description?: string;
-  subject?: string | string[];
-  rights?: string;
-  contributor?: string | string[];
-})
-```
-
-#### Methods
-
-**Chapter Management**
-
-- `addChapter(options: AddChapterOptions): string` - Add a new chapter, returns chapter ID
-- `setChapterContent(chapterId: string, content: string): void` - Set chapter HTML content
-- `appendToChapter(chapterId: string, content: string): void` - Append to chapter content
-- `getChapter(chapterId: string): Chapter | undefined` - Get chapter by ID
-- `getRootChapters(): Chapter[]` - Get all top-level chapters
-- `deleteChapter(chapterId: string): void` - Delete a chapter and its children
-
-**Image Management**
-
-- `addImage(options: AddImageOptions): string` - Add an image, returns image ID
-- `getImage(imageId: string): ImageResource | undefined` - Get image by ID
-- `deleteImage(imageId: string): void` - Delete an image
-
-**Stylesheet Management**
-
-- `addStylesheet(options: AddStylesheetOptions): string` - Add custom CSS
-- Automatically includes a default stylesheet with clean, readable styles
-
-**Metadata**
-
-- `setMetadata(metadata: Partial<DublinCoreMetadata>): void` - Update metadata
-- `getMetadata(): DublinCoreMetadata` - Get current metadata
-
-**Validation & Export**
-
-- `validate(): ValidationResult` - Validate EPUB structure
-- `export(options?: ExportOptions): Promise<Buffer>` - Export to Buffer
-- `exportToFile(filepath: string, options?: ExportOptions): Promise<void>` - Export to file
-
-**Static Methods**
-
-- `EPUB3Builder.parse(filepath: string): Promise<EPUB3Builder>` - Parse EPUB file
-- `EPUB3Builder.parseBuffer(buffer: Buffer): Promise<EPUB3Builder>` - Parse from Buffer
-
-### Type Definitions
-
-#### AddChapterOptions
-
-```typescript
-interface AddChapterOptions {
-  title: string; // Chapter title (required)
-  content?: string; // HTML content
-  parentId?: string | null; // Parent chapter ID for nesting
-  headingLevel?: number; // 1-6, default based on nesting
-  linear?: boolean; // Include in reading order, default: true
-}
-```
-
-#### AddImageOptions
-
-```typescript
-interface AddImageOptions {
-  filename: string; // Image filename with extension
-  data: Buffer | string; // Image data (Buffer or base64)
-  alt?: string; // Alt text for accessibility
-  isCover?: boolean; // Mark as cover image
-}
-```
-
-#### ValidationResult
-
-```typescript
-interface ValidationResult {
-  isValid: boolean; // Overall validation status
-  errors: string[]; // Critical errors
-  warnings: string[]; // Non-critical warnings
-}
-```
-
-## Project Structure
-
-```
-epub-parser-2/
-├── src/
-│   ├── epub-builder.ts              # Main EPUB3Builder class
-│   ├── index.ts                     # Public API exports
-│   ├── types/
-│   │   ├── epub-builder-types.ts    # Type definitions
-│   │   ├── navigation-document.ts   # EPUB 3.3 Nav types
-│   │   └── index.ts                 # Type exports
-│   └── utils/
-│       ├── epub-templates.ts        # Document generators
-│       ├── mime-types.ts            # MIME type utilities
-│       └── default-styles.ts        # Default CSS
-├── EPUB_BUILDER_EXAMPLES.md         # Comprehensive examples
-└── package.json
-```
-
 ## Examples
 
 See [EPUB_BUILDER_EXAMPLES.md](EPUB_BUILDER_EXAMPLES.md) for comprehensive examples including:
@@ -278,7 +165,7 @@ try {
 
 ## EPUB 3.3 Compliance
 
-This library generates fully compliant EPUB 3.3 files including:
+This library generates fully compliant EPUB 2.0.1 and EPUB 3.3 files including:
 
 - ✅ Proper mimetype file (uncompressed, first in ZIP)
 - ✅ META-INF/container.xml with correct structure
@@ -352,6 +239,7 @@ https://github.com/daxadal/epub-editor
 ## Additional Resources
 
 - [EPUB 3.3 Specification](https://www.w3.org/TR/epub-33/)
+- [EPUB 2.0.1 Specification](https://idpf.org/epub/201)
 - [EPUB Navigation Document Types Documentation](src/types/README.md)
 - [Comprehensive Examples](EPUB_BUILDER_EXAMPLES.md)
 - [Dublin Core Metadata](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/)
