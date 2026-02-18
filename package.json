@@ -43,8 +43,14 @@
   },
   "keywords": [
     "epub",
+    "ebook",
     "editor",
-    "ebook"
+    "generator",
+    "parser",
+    "merge",
+    "epub-maker",
+    "epub-generator",
+    "epub-parser"
   ],
   "repository": {
     "type": "git",
