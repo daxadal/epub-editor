@@ -38,8 +38,12 @@ jobs:
           name: junit-results
           path: junit.xml
 
-      - name: Code Coverage Report
-        uses: ArtiomTr/jest-coverage-report-action@v2
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
 
       - name: "Lint"
         run: npm run lint
