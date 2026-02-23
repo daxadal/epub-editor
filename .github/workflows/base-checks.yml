@@ -29,8 +29,21 @@ jobs:
         run: npm run tsc
 
       - name: "Test"
-        run: npm run test
-        # TODO: Add artefacts: logs/, junit.xml
+        run: npm test
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: junit-results
+          path: junit.xml
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
 
       - name: "Lint"
         run: npm run lint
