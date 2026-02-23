@@ -11,4 +11,6 @@ module.exports = {
   transformIgnorePatterns: [
     "node_modules/(?!(uuid)/)",
   ],
+  collectCoverage: true,
+  coveragePathIgnorePatterns: ['node_modules', 'test'],
 };
