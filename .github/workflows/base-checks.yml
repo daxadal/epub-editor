@@ -30,7 +30,13 @@ jobs:
 
       - name: "Test"
         run: npm run test
-        # TODO: Add artefacts: logs/, junit.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: junit-results
+          path: junit.xml
 
       - name: "Lint"
         run: npm run lint
