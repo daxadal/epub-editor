@@ -240,6 +240,8 @@ Contributions are welcome! Please ensure:
 4. Error messages are descriptive
 5. Examples are updated for new features
 
+Besides fully programmed contributions, suggestions can be added in this board: https://github.com/users/daxadal/projects/1
+
 ## License
 
 MIT
