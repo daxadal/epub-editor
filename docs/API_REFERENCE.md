@@ -29,7 +29,7 @@ Complete API documentation for the EPUB Editor library.
 Creates and manipulates EPUB 3.3 files.
 
 ```typescript
-import { EPUB3Builder } from 'epub-editor';
+import { EPUB3Builder } from 'epub-editor-ts';
 
 const epub = new EPUB3Builder(metadata);
 ```
@@ -51,7 +51,7 @@ const epub = new EPUB3Builder(metadata);
 Creates and manipulates EPUB 2.0.1 files.
 
 ```typescript
-import { EPUB2Builder } from 'epub-editor';
+import { EPUB2Builder } from 'epub-editor-ts';
 
 const epub = new EPUB2Builder(metadata);
 ```
@@ -813,7 +813,7 @@ Convert EPUB 2 to EPUB 3.
 
 **Example:**
 ```typescript
-import { EPUB2Builder } from 'epub-editor';
+import { EPUB2Builder } from 'epub-editor-ts';
 
 // Parse EPUB 2
 const epub2 = await EPUB2Builder.parse('legacy-book.epub');
@@ -848,7 +848,7 @@ import {
   AddStylesheetOptions,
   ValidationResult,
   EPUBOptions,
-} from 'epub-editor';
+} from 'epub-editor-ts';
 ```
 
 ---
