@@ -22,7 +22,7 @@ Comprehensive examples for using the EPUB2Builder and EPUB3Builder classes to cr
 ### When to Use EPUB 3.3 (Recommended)
 
 ```typescript
-import { EPUB3Builder } from 'epub-editor';
+import { EPUB3Builder } from 'epub-editor-ts';
 
 const epub = new EPUB3Builder({
   title: 'Modern Book',
@@ -40,7 +40,7 @@ const epub = new EPUB3Builder({
 ### When to Use EPUB 2.0.1
 
 ```typescript
-import { EPUB2Builder } from 'epub-editor';
+import { EPUB2Builder } from 'epub-editor-ts';
 
 const epub = new EPUB2Builder({
   title: 'Legacy Compatible Book',
@@ -61,7 +61,7 @@ const epub = new EPUB2Builder({
 ### Minimal EPUB 3
 
 ```typescript
-import { EPUB3Builder } from 'epub-editor';
+import { EPUB3Builder } from 'epub-editor-ts';
 
 const epub = new EPUB3Builder({
   title: 'My First Book',
@@ -80,7 +80,7 @@ await epub.exportToFile('my-first-book.epub');
 ### Complete EPUB with Full Metadata
 
 ```typescript
-import { EPUB3Builder } from 'epub-editor';
+import { EPUB3Builder } from 'epub-editor-ts';
 
 const epub = new EPUB3Builder({
   title: 'The Complete Guide',
@@ -426,7 +426,7 @@ epub.updateMetadata({
 ### Parse an Existing EPUB
 
 ```typescript
-import { EPUB3Builder, EPUB2Builder } from 'epub-editor';
+import { EPUB3Builder, EPUB2Builder } from 'epub-editor-ts';
 
 // Parse EPUB 3
 const epub3 = await EPUB3Builder.parse('existing-book-3.epub');
@@ -482,7 +482,7 @@ const epub = await EPUB3Builder.parse('book.epub', {
 ### Basic Merging: Two Books
 
 ```typescript
-import { EPUB3Builder } from 'epub-editor';
+import { EPUB3Builder } from 'epub-editor-ts';
 
 // Parse source EPUBs
 const book1 = await EPUB3Builder.parse('book1.epub');
@@ -507,7 +507,7 @@ await merged.exportToFile('complete-series.epub');
 ### Merging a Trilogy
 
 ```typescript
-import { EPUB3Builder } from 'epub-editor';
+import { EPUB3Builder } from 'epub-editor-ts';
 
 // Parse all books
 const books = await Promise.all([
@@ -588,7 +588,7 @@ await merged.exportToFile('anthology.epub');
 ### Basic Conversion
 
 ```typescript
-import { EPUB2Builder } from 'epub-editor';
+import { EPUB2Builder } from 'epub-editor-ts';
 
 // Parse EPUB 2 file
 const epub2 = await EPUB2Builder.parse('legacy-book.epub');
@@ -609,7 +609,7 @@ await epub3.exportToFile('modernized-book.epub');
 ### Conversion with Validation
 
 ```typescript
-import { EPUB2Builder } from 'epub-editor';
+import { EPUB2Builder } from 'epub-editor-ts';
 
 // Parse EPUB 2
 const epub2 = await EPUB2Builder.parse('old-book.epub');
@@ -738,7 +738,7 @@ epub.addChapter({
 ### Handling Parse Errors
 
 ```typescript
-import { EPUB3Builder } from 'epub-editor';
+import { EPUB3Builder } from 'epub-editor-ts';
 
 try {
   const epub = await EPUB3Builder.parse('book.epub');

@@ -21,7 +21,7 @@ This library has been drafted using the official EPUB specifications, programmed
 ## Installation
 
 ```bash
-npm install epub-editor
+npm install epub-editor-ts
 ```
 
 ## Quick Start
@@ -29,7 +29,7 @@ npm install epub-editor
 ### Choose Your Format
 
 ```typescript
-import { EPUB3Builder, EPUB2Builder } from 'epub-editor';
+import { EPUB3Builder, EPUB2Builder } from 'epub-editor-ts';
 
 // For modern ereaders (recommended)
 const epub = new EPUB3Builder({ title: 'My Book', creator: 'Author' });
@@ -43,7 +43,7 @@ const epub = new EPUB2Builder({ title: 'My Book', creator: 'Author' });
 ### 📝 Create a New EPUB
 
 ```typescript
-import { EPUB3Builder } from 'epub-editor';
+import { EPUB3Builder } from 'epub-editor-ts';
 import * as fs from 'fs-extra';
 
 const epub = new EPUB3Builder({
@@ -74,7 +74,7 @@ await epub.exportToFile('my-book.epub');
 ### 📖 Parse and Edit an Existing EPUB
 
 ```typescript
-import { EPUB3Builder, EPUB2Builder } from 'epub-editor';
+import { EPUB3Builder, EPUB2Builder } from 'epub-editor-ts';
 
 // Parse (automatically detects EPUB 2 or 3)
 const epub = await EPUB3Builder.parse('existing-book.epub');
@@ -99,7 +99,7 @@ await epub.exportToFile('modified-book.epub');
 Combine multiple EPUB files into a single book, perfect for creating series compilations or omnibus editions.
 
 ```typescript
-import { EPUB3Builder } from 'epub-editor';
+import { EPUB3Builder } from 'epub-editor-ts';
 
 // Parse source EPUBs
 const book1 = await EPUB3Builder.parse('book1.epub');
@@ -125,7 +125,7 @@ await series.exportToFile('complete-trilogy.epub');
 ### 🔄 Convert EPUB 2 to EPUB 3
 
 ```typescript
-import { EPUB2Builder } from 'epub-editor';
+import { EPUB2Builder } from 'epub-editor-ts';
 
 // Parse EPUB 2 file
 const epub2 = await EPUB2Builder.parse('old-book.epub');

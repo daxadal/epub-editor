@@ -1,5 +1,5 @@
 {
-  "name": "epub-editor",
+  "name": "epub-editor-ts",
   "version": "1.2.0",
   "description": "Epub Editor",
   "main": "dist/index.ts",

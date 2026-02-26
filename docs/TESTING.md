@@ -1,6 +1,6 @@
 # Testing Documentation
 
-Comprehensive test suite for the epub-editor library, covering EPUB 2 and EPUB 3 creation, parsing, editing, merging, and validation.
+Comprehensive test suite for the epub-editor-ts library, covering EPUB 2 and EPUB 3 creation, parsing, editing, merging, and validation.
 
 ## Overview
 
